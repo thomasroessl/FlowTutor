@@ -1,0 +1,2 @@
+dearpygui==1.6.2
+Shapely==1.8.2
