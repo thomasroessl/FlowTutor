@@ -1,3 +1,5 @@
+from ast import Return
+from email.mime import nonmultipart
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
@@ -18,6 +20,8 @@ class FlowChart:
     dragging_shape = None
 
     selected_shape = None
+
+    shape_index = 0
 
     # The offset of the currently dragging shape to its origin before moving
     drag_offset = (0, 0)
@@ -71,6 +75,7 @@ class FlowChart:
             dpg.add_mouse_drag_handler(callback=self.on_drag)
             dpg.add_mouse_click_handler(callback=self.on_mouse_click)
             dpg.add_mouse_release_handler(callback=self.on_mouse_release)
+            dpg.add_key_press_handler(dpg.mvKey_Delete, callback=self.on_delete_press)
 
     def get_point_on_canvas(self, point_on_screen):
         """Maps the point in screen coordinates to canvas coordinates."""
@@ -78,16 +83,7 @@ class FlowChart:
         x, y = point_on_screen
         return (x - offsetX, y - offsetY)
 
-    def on_hover(self, _, data):
-        """Sets the mouse poition variable and redraws all objects."""
-        if not dpg.is_item_hovered(self.tag):
-            self.mouse_position_on_canvas = None
-            return
-
-        self.mouse_position_on_canvas = self.get_point_on_canvas(data)
-
-        self.hovered_shape = None
-
+    def redraw_all(self):
         for shape in self.shapes:
             # The currently draggingis skipped. It gets redrawn in on_drag.
             if shape == self.dragging_shape:
@@ -100,6 +96,18 @@ class FlowChart:
 
         for connection in self.connections:
             self.redraw_connection(connection)
+
+    def on_hover(self, _, data):
+        """Sets the mouse poition variable and redraws all objects."""
+        if not dpg.is_item_hovered(self.tag):
+            self.mouse_position_on_canvas = None
+            return
+
+        self.mouse_position_on_canvas = self.get_point_on_canvas(data)
+
+        self.hovered_shape = None
+        self.redraw_all()
+        
 
     def on_drag(self):
         """Redraws the currently dragging shape to its new position."""
@@ -132,11 +140,35 @@ class FlowChart:
         self.dragging_shape = None
         self.resize()
 
+    def on_delete_press(self):
+        if self.selected_shape == None:
+            return
+        self.remove_shape(self.selected_shape)
+
+        src_connections = self.get_src_connections(self.selected_shape)
+        dst_connections = self.get_dst_connections(self.selected_shape)
+        
+        if len(src_connections) == 1 and len(dst_connections) == 1:
+            self.remove_connection(src_connections[0])
+            self.remove_connection(dst_connections[0])
+            self.add_connection(dst_connections[0]["src"], src_connections[0]["dst"])
+
+
+        self.selected_shape = None
+
+        self.redraw_all()
+
     def add_shape(self, type, pos):
-        tag = f"shape{len(self.shapes) + 1}"
+        self.shape_index += 1
+        tag = f"shape{self.shape_index}"
         self.shapes.append(tag)
         self.draw_shape(tag, type, pos)
         return tag
+
+    def remove_shape(self, tag):
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
+        self.shapes.remove(tag)
 
     def add_connection(self, src, dst):
         connection = {
@@ -146,6 +178,23 @@ class FlowChart:
         self.connections.append(connection)
         self.draw_connection(connection)
 
+    def remove_connection(self, connection):
+        if connection is None:
+            return
+        src, dst = itemgetter("src", "dst")(connection)
+        tag = f"{src}->{dst}"
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
+        self.connections.remove(connection)
+
+    def get_src_connections(self, shape_tag):
+        """Returns all connections with the shape as source."""
+        return [c for c in self.connections if c["src"] == shape_tag]
+
+    def get_dst_connections(self, shape_tag):
+        """Returns all connections with the shape as destination."""
+        return [c for c in self.connections if c["dst"] == shape_tag]
+
     def is_shape_hovered(self, shape_data, pos):
         points = shape_data["points"]
         point = Point(*pos)
@@ -154,6 +203,8 @@ class FlowChart:
 
     def redraw_shape(self, tag, shape_data=None, pos=None):
         """Deletes a shape and draws a new version of it."""
+        if not dpg.does_item_exist(tag):
+            return
         if tag is None:
             return
         if shape_data is None:
@@ -169,12 +220,15 @@ class FlowChart:
             return
         src, dst = itemgetter("src", "dst")(connection)
         tag = f"{src}->{dst}"
-        dpg.delete_item(tag)
-        self.draw_connection(connection)
+        if dpg.does_item_exist(tag):
+            dpg.delete_item(tag)
+            self.draw_connection(connection)
 
     def draw_connection(self, connection):
         """Draws a connection between two shapes."""
         src, dst = itemgetter("src", "dst")(connection)
+        if not dpg.does_item_exist(src) or not dpg.does_item_exist(dst):
+            return
         src_data = dpg.get_item_user_data(src)
         dst_data = dpg.get_item_user_data(dst)
 
