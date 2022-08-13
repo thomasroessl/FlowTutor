@@ -19,11 +19,14 @@ class FlowChart:
 
     selected_shape = None
 
+    # The offset of the currently dragging shape to its origin before moving
     drag_offset = (0, 0)
 
+    # The size of the GUI parent
     parent_size = (0, 0)
 
-    point_on_canvas = None
+
+    mouse_position_on_canvas = None
 
     @staticmethod
     def get_assignment_points():
@@ -70,26 +73,30 @@ class FlowChart:
             dpg.add_mouse_click_handler(callback=self.on_mouse_click)
             dpg.add_mouse_release_handler(callback=self.on_mouse_release)
 
+
     def get_point_on_canvas(self, point_on_screen):
+        """Maps the point in screen coordinates to canvas coordinates."""
         offsetX, offsetY = dpg.get_item_rect_min(self.tag)
         x, y = point_on_screen
         return (x - offsetX, y - offsetY)
 
     def on_hover(self, _, data):
+        """Sets the mouse poition variable and redraws all objects."""
         if not dpg.is_item_hovered(self.tag):
-            self.point_on_canvas = None
+            self.mouse_position_on_canvas = None
             return
 
-        self.point_on_canvas = self.get_point_on_canvas(data)
+        self.mouse_position_on_canvas = self.get_point_on_canvas(data)
 
         self.hovered_shape = None
 
         for shape in self.shapes:
+            # The currently draggingis skipped. It gets redrawn in on_drag. 
             if shape == self.dragging_shape:
                 self.hovered_shape = shape
                 continue
             shape_data = dpg.get_item_user_data(shape)
-            if self.is_shape_hovered(shape_data, self.point_on_canvas):
+            if self.is_shape_hovered(shape_data, self.mouse_position_on_canvas):
                 self.hovered_shape = shape
             self.redraw_shape(shape, shape_data)
 
@@ -97,14 +104,16 @@ class FlowChart:
             self.redraw_connection(connection)
 
     def on_drag(self):
-        if self.point_on_canvas is None or self.dragging_shape is None:
+        """Redraws the currently dragging shape to its new position."""
+        if self.mouse_position_on_canvas is None or self.dragging_shape is None:
             return
-        (cX, cY) = self.point_on_canvas
+        (cX, cY) = self.mouse_position_on_canvas
         (oX, oY) = self.drag_offset
         self.redraw_shape(self.dragging_shape, pos=(cX - oX, cY - oY))
 
     def on_mouse_click(self):
-        if self.point_on_canvas is None:
+        """Handles pressing down of the mouse button."""
+        if self.mouse_position_on_canvas is None:
             return
 
         prev_selected_shape = self.selected_shape
@@ -115,7 +124,7 @@ class FlowChart:
             shape_data = dpg.get_item_user_data(self.hovered_shape)
             self.dragging_shape = self.hovered_shape
             (pX, pY) = shape_data["pos"]
-            (cX, cY) = self.point_on_canvas
+            (cX, cY) = self.mouse_position_on_canvas
             self.drag_offset = (cX - pX, cY - pY)
             self.redraw_shape(self.hovered_shape, shape_data)
 
@@ -146,6 +155,7 @@ class FlowChart:
         return polygon.contains(point)
 
     def redraw_shape(self, tag, shape_data=None, pos=None):
+        """Deletes a shape and draws a new version of it."""
         if tag is None:
             return
         if shape_data is None:
@@ -156,6 +166,7 @@ class FlowChart:
         self.draw_shape(tag, shape_data["type"], pos)
 
     def redraw_connection(self, connection):
+        """Deletes a connection and draws a new version of it."""
         if connection is None:
             return
         src, dst = itemgetter("src", "dst")(connection)
@@ -164,6 +175,7 @@ class FlowChart:
         self.draw_connection(connection)
 
     def draw_connection(self, connection):
+        """Draws a connection between two shapes."""
         src, dst = itemgetter("src", "dst")(connection)
         src_data = dpg.get_item_user_data(src)
         dst_data = dpg.get_item_user_data(dst)
@@ -235,6 +247,7 @@ class FlowChart:
                           tag, color=text_color, size=18)
 
     def resize(self):
+        """Sets the size of the drawing area."""
         width, height = self.parent_size
 
         for shape in self.shapes:
@@ -248,6 +261,7 @@ class FlowChart:
         dpg.set_item_width(self.tag, width-16)
 
     def get_max_y(self):
+        """Returns the larges y value of all shapes."""
         max_y = 0
         for shape in self.shapes:
             shape_data = dpg.get_item_user_data(shape)

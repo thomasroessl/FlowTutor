@@ -72,9 +72,5 @@ while dpg.is_dearpygui_running():
             flowchart.add_connection(shape2, shape3)
 
         is_initialized = True
-        # with dpg.theme() as flowchart_container_theme:
-        #     with dpg.theme_component(dpg.mvAll):
-        #         dpg.add_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0), category=dpg.mvThemeCat_Core)
-        # dpg.bind_item_theme("flowchart_container", flowchart_container_theme)
 
 dpg.destroy_context()
