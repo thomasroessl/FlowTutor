@@ -25,7 +25,6 @@ class FlowChart:
     # The size of the GUI parent
     parent_size = (0, 0)
 
-
     mouse_position_on_canvas = None
 
     @staticmethod
@@ -73,7 +72,6 @@ class FlowChart:
             dpg.add_mouse_click_handler(callback=self.on_mouse_click)
             dpg.add_mouse_release_handler(callback=self.on_mouse_release)
 
-
     def get_point_on_canvas(self, point_on_screen):
         """Maps the point in screen coordinates to canvas coordinates."""
         offsetX, offsetY = dpg.get_item_rect_min(self.tag)
@@ -91,7 +89,7 @@ class FlowChart:
         self.hovered_shape = None
 
         for shape in self.shapes:
-            # The currently draggingis skipped. It gets redrawn in on_drag. 
+            # The currently draggingis skipped. It gets redrawn in on_drag.
             if shape == self.dragging_shape:
                 self.hovered_shape = shape
                 continue
@@ -179,11 +177,36 @@ class FlowChart:
         src, dst = itemgetter("src", "dst")(connection)
         src_data = dpg.get_item_user_data(src)
         dst_data = dpg.get_item_user_data(dst)
+
+        dst_in_points: list = dst_data["in_points"]
+        src_out_points: list = src_data["out_points"]
+
         with dpg.draw_node(
                 tag=f"{src}->{dst}",
                 parent=self.tag):
-            dpg.draw_arrow(dst_data["in_points"][0], src_data["out_points"][0], color=(
-                255, 255, 255), thickness=2, size=10)
+            if len(src_out_points) == 2:
+                out_x, out_y = src_out_points[0]
+                in_x, in_y = dst_in_points[0]
+                dpg.draw_line(
+                    (in_x, out_y), 
+                    src_out_points[0], 
+                    color=(255, 255, 255), 
+                    thickness=2)
+                dpg.draw_arrow(
+                    (in_x, in_y), 
+                    (in_x, out_y), 
+                    color=(255, 255, 255), 
+                    thickness=2, 
+                    size=10)
+            else:
+                dpg.draw_arrow(
+                    dst_in_points[0], 
+                    src_out_points[0], 
+                    color=(255, 255, 255), 
+                    thickness=2, 
+                    size=10)
+                pass
+
         pass
 
     def draw_shape(self, tag, type, pos):
@@ -222,8 +245,10 @@ class FlowChart:
             pass
 
         points = list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points))
-        in_points = list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), in_points))
-        out_points = list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), out_points))
+        in_points = list(
+            map(lambda p: (p[0] + pos_x, p[1] + pos_y), in_points))
+        out_points = list(
+            map(lambda p: (p[0] + pos_x, p[1] + pos_y), out_points))
 
         if tag == self.selected_shape:
             border_color = (21, 151, 236)
