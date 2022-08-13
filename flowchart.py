@@ -1,5 +1,3 @@
-from ast import Return
-from email.mime import nonmultipart
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
