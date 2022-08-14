@@ -21,17 +21,17 @@ with dpg.viewport_menu_bar(tag="menu_bar"):
 
 def add_assignment():
     shape = flowchart.add_shape(ShapeType.Assignment, [220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], shape)
+    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
     flowchart.resize()
 
 def add_conditional():
     shape = flowchart.add_shape(ShapeType.Conditional, [220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], shape)
+    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
     flowchart.resize()
 
 def add_loop():
     shape = flowchart.add_shape(ShapeType.Loop, [220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], shape)
+    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
     flowchart.resize()
 
 with dpg.window(tag="main_window"):
@@ -66,10 +66,10 @@ while dpg.is_dearpygui_running():
             flowchart = FlowChart("flowchart", 1000, 1000)
             shape1 = flowchart.add_shape(ShapeType.Assignment, [220, 20])
             shape2 = flowchart.add_shape(ShapeType.Conditional, [220, 170])
-            shape3 = flowchart.add_shape(ShapeType.Loop, [20, 340])
+            shape3 = flowchart.add_shape(ShapeType.Loop, [95, 340])
 
-            flowchart.add_connection(shape1, shape2)
-            flowchart.add_connection(shape2, shape3)
+            flowchart.add_connection(shape1, 0, shape2)
+            flowchart.add_connection(shape2, 0, shape3)
 
         is_initialized = True
 
