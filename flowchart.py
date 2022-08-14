@@ -137,7 +137,8 @@ class FlowChart:
             connection_shape_data = dpg.get_item_user_data(connection_shape)
             connection_shape_pos, connection_shape_out_points = itemgetter(
                 "pos", "out_points")(connection_shape_data)
-            _, connection_point_y = connection_shape_out_points[int(connection_index)]
+            _, connection_point_y = connection_shape_out_points[
+                int(connection_index)]
             if len(connection_shape_out_points) == 2:
                 if int(connection_index) == 0:
                     new_shape_pos = [
@@ -146,7 +147,8 @@ class FlowChart:
                     new_shape_pos = [
                         connection_shape_pos[0] + 125, connection_point_y + 80]
             else:
-                new_shape_pos = [connection_shape_pos[0], connection_point_y + 80]
+                new_shape_pos = [
+                    connection_shape_pos[0], connection_point_y + 80]
             new_shape = self.add_shape(ShapeType.Assignment, new_shape_pos)
             self.add_connection(connection_shape, connection_index, new_shape)
         elif self.hovered_shape is not None:
@@ -173,7 +175,6 @@ class FlowChart:
     def on_delete_press(self):
         if self.selected_shape is None:
             return
-        self.remove_shape(self.selected_shape)
 
         src_connections = self.get_src_connections(self.selected_shape)
         dst_connections = self.get_dst_connections(self.selected_shape)
@@ -183,10 +184,43 @@ class FlowChart:
             self.remove_connection(dst_connections[0])
             self.add_connection(
                 dst_connections[0]["src"], dst_connections[0]["index"], src_connections[0]["dst"])
+        elif len(src_connections) == 0 and len(dst_connections) == 1:
+            self.remove_connection(dst_connections[0])
+        elif len(src_connections) > 1:
+            def callback():
+                for child in self.get_shape_children(self.selected_shape):
+                    self.remove_shape(child)
+                self.remove_shape(self.selected_shape)
+                self.redraw_all()
+                self.cleanup_connections()
+            self.show_approve_modal(
+                "Delete Node",
+                "Deleting this node will also delete its children.",
+                callback)
+            return
+
+        self.remove_shape(self.selected_shape)
 
         self.selected_shape = None
 
         self.redraw_all()
+
+    def cleanup_connections(self):
+        self.connections = list(filter(lambda c: dpg.does_item_exist(
+            c["src"]) and dpg.does_item_exist(c["dst"]), self.connections))
+
+    def show_approve_modal(self, label, message, callback):
+        with dpg.window(label=label, modal=True, tag="approval_modal", autosize=True):
+            dpg.add_text(message)
+            with dpg.group(horizontal=True):
+                dpg.add_button(
+                    label="OK",
+                    width=75,
+                    callback=lambda: (callback(), dpg.delete_item("approval_modal")))
+                dpg.add_button(
+                    label="Cancel",
+                    width=75,
+                    callback=lambda: dpg.delete_item("approval_modal"))
 
     def add_shape(self, type, pos):
         self.shape_index += 1
