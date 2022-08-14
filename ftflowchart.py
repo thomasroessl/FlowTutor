@@ -1,14 +1,15 @@
 import dearpygui.dearpygui as dpg
 import re
+from operator import itemgetter
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
-from operator import itemgetter
+from ftshapetype import FTShapeType
+from ftmodals import FTModals
+from ftshapes import FTShapes
 
-from shapetype import ShapeType
 
-
-class FlowChart:
+class FTFlowChart:
 
     shapes = []
 
@@ -30,39 +31,9 @@ class FlowChart:
     # The size of the GUI parent
     parent_size = (0, 0)
 
+    mouse_position = None
+
     mouse_position_on_canvas = None
-
-    @staticmethod
-    def get_assignment_points():
-        return [
-            (0, 0),
-            (150, 0),
-            (150, 75),
-            (0, 75),
-            (0, 0)
-        ]
-
-    @staticmethod
-    def get_conditional_points():
-        return [
-            (75, 0),
-            (0, 50),
-            (75, 100),
-            (150, 50),
-            (75, 0)
-        ]
-
-    @staticmethod
-    def get_loop_points():
-        return [
-            (0, 37.5),
-            (20, 75),
-            (130, 75),
-            (150, 37.5),
-            (130, 0),
-            (20, 0),
-            (0, 37.5)
-        ]
 
     def __init__(self, tag, width, height):
         self.width = width
@@ -104,6 +75,8 @@ class FlowChart:
 
     def on_hover(self, _, data):
         """Sets the mouse poition variable and redraws all objects."""
+        self.mouse_position = data
+
         if not dpg.is_item_hovered(self.tag):
             self.mouse_position_on_canvas = None
             return
@@ -130,6 +103,8 @@ class FlowChart:
 
         self.selected_shape = self.hovered_shape
 
+        dpg.configure_item("selected_node", default_value=self.selected_shape)
+
         if self.hovered_connector is not None:
             m = re.search('(.*)\[(.*)\]', self.hovered_connector)
             connection_shape = m.group(1)
@@ -149,8 +124,37 @@ class FlowChart:
             else:
                 new_shape_pos = [
                     connection_shape_pos[0], connection_point_y + 80]
-            new_shape = self.add_shape(ShapeType.Assignment, new_shape_pos)
-            self.add_connection(connection_shape, connection_index, new_shape)
+
+            def assignment_callback():
+                new_shape = self.add_shape(
+                    FTShapeType.Assignment, new_shape_pos)
+                self.add_connection(
+                    connection_shape, connection_index, new_shape)
+
+            def contitional_callback():
+                new_shape = self.add_shape(
+                    FTShapeType.Conditional, new_shape_pos)
+                self.add_connection(
+                    connection_shape, connection_index, new_shape)
+
+            def loop_callback():
+                new_shape = self.add_shape(FTShapeType.Loop, new_shape_pos)
+                self.add_connection(
+                    connection_shape, connection_index, new_shape)
+
+            def input_callback():
+                new_shape = self.add_shape(FTShapeType.Input, new_shape_pos)
+                self.add_connection(
+                    connection_shape, connection_index, new_shape)
+
+            def output_callback():
+                new_shape = self.add_shape(FTShapeType.Output, new_shape_pos)
+                self.add_connection(
+                    connection_shape, connection_index, new_shape)
+
+            FTModals.show_node_type_modal(
+                assignment_callback, contitional_callback, loop_callback, input_callback, output_callback, self.mouse_position)
+
         elif self.hovered_shape is not None:
             shape_data = dpg.get_item_user_data(self.hovered_shape)
             self.dragging_shape = self.hovered_shape
@@ -193,7 +197,7 @@ class FlowChart:
                 self.remove_shape(self.selected_shape)
                 self.redraw_all()
                 self.cleanup_connections()
-            self.show_approve_modal(
+            FTModals.show_approval_modal(
                 "Delete Node",
                 "Deleting this node will also delete its children.",
                 callback)
@@ -208,19 +212,6 @@ class FlowChart:
     def cleanup_connections(self):
         self.connections = list(filter(lambda c: dpg.does_item_exist(
             c["src"]) and dpg.does_item_exist(c["dst"]), self.connections))
-
-    def show_approve_modal(self, label, message, callback):
-        with dpg.window(label=label, modal=True, tag="approval_modal", autosize=True):
-            dpg.add_text(message)
-            with dpg.group(horizontal=True):
-                dpg.add_button(
-                    label="OK",
-                    width=75,
-                    callback=lambda: (callback(), dpg.delete_item("approval_modal")))
-                dpg.add_button(
-                    label="Cancel",
-                    width=75,
-                    callback=lambda: dpg.delete_item("approval_modal"))
 
     def add_shape(self, type, pos):
         self.shape_index += 1
@@ -372,30 +363,41 @@ class FlowChart:
         out_points = []
         border_color = text_color = (255, 255, 255)
 
-        if type == ShapeType.Assignment:
+        if type == FTShapeType.Assignment:
             width = 150
             height = 75
-            points = FlowChart.get_assignment_points()
+            points = FTShapes.get_assignment_points()
             in_points = [(75, 0)]
             out_points = [(75, 75)]
             border_color = text_color = (255, 255, 170)
-        elif type == ShapeType.Conditional:
+        elif type == FTShapeType.Conditional:
             width = 150
             height = 100
-            points = FlowChart.get_conditional_points()
+            points = FTShapes.get_conditional_points()
             in_points = [(75, 0)]
             out_points = [(0, 50), (150, 50)]
             border_color = text_color = (255, 170, 170)
-        elif type == ShapeType.Loop:
+        elif type == FTShapeType.Loop:
             width = 150
             height = 75
-            points = FlowChart.get_loop_points()
+            points = FTShapes.get_loop_points()
             in_points = [(75, 0)]
             out_points = [(75, 75)]
             border_color = text_color = (255, 208, 147)
-        elif type == ShapeType.Input:
-            pass
-        elif type == ShapeType.Output:
+        elif type == FTShapeType.Input:
+            width = 150
+            height = 75
+            points = FTShapes.get_input_points()
+            in_points = [(75, 0)]
+            out_points = [(75, 75)]
+            border_color = text_color = (147, 171, 255)
+        elif type == FTShapeType.Output:
+            width = 150
+            height = 75
+            points = FTShapes.get_output_points()
+            in_points = [(75, 0)]
+            out_points = [(75, 75)]
+            border_color = text_color = (147, 255, 149)
             pass
 
         points = list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points))
@@ -460,13 +462,3 @@ class FlowChart:
                 height = max_y + 16
         dpg.set_item_height(self.tag, height-16)
         dpg.set_item_width(self.tag, width-16)
-
-    def get_max_y(self):
-        """Returns the larges y value of all shapes."""
-        max_y = 0
-        for shape in self.shapes:
-            shape_data = dpg.get_item_user_data(shape)
-            for _, y in shape_data["points"]:
-                if y > max_y:
-                    max_y = y
-        return max_y

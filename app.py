@@ -1,8 +1,7 @@
-from turtle import width
 import dearpygui.dearpygui as dpg
 
-from flowchart import FlowChart
-from shapetype import ShapeType
+from ftflowchart import FTFlowChart
+from ftshapetype import FTShapeType
 
 dpg.create_context()
 
@@ -20,46 +19,17 @@ with dpg.viewport_menu_bar(tag="menu_bar"):
         dpg.add_menu_item(label="About")
 
 
-def add_assignment():
-    shape = flowchart.add_shape(ShapeType.Assignment, [
-                                220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
-    flowchart.resize()
-
-
-def add_conditional():
-    shape = flowchart.add_shape(ShapeType.Conditional, [
-                                220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
-    flowchart.resize()
-
-
-def add_loop():
-    shape = flowchart.add_shape(
-        ShapeType.Loop, [220, flowchart.get_max_y() + 50])
-    flowchart.add_connection(flowchart.shapes[-2], 0, shape)
-    flowchart.resize()
-
-
 with dpg.window(tag="main_window"):
     with dpg.group(tag="main_group", pos=[7, 30], horizontal=True):
-        with dpg.child_window(width=217):
-            dpg.add_button(label="Assignment", width=200,
-                           callback=add_assignment)
-            dpg.add_button(label="Conditional", width=200,
-                           callback=add_conditional)
-            dpg.add_button(label="Loop", width=200, callback=add_loop)
-            dpg.add_button(label="Input", width=200)
-            dpg.add_button(label="Output", width=200)
-
-
-
+        with dpg.child_window(width=217, label="Selected Node"):
+            dpg.add_text("Selected Node:")
+            dpg.add_text("None", tag="selected_node")
+            pass
 
 def on_window_resize():
     if flowchart is not None:
         flowchart.parent_size = dpg.get_item_rect_size("flowchart_container")
         flowchart.resize()
-
 
 with dpg.item_handler_registry(tag="window_handler"):
     dpg.add_item_resize_handler(callback=on_window_resize)
@@ -76,10 +46,10 @@ while dpg.is_dearpygui_running():
     dpg.render_dearpygui_frame()
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
-            flowchart = FlowChart("flowchart", 1000, 1000)
-            shape1 = flowchart.add_shape(ShapeType.Assignment, [220, 20])
-            shape2 = flowchart.add_shape(ShapeType.Conditional, [220, 170])
-            shape3 = flowchart.add_shape(ShapeType.Loop, [95, 340])
+            flowchart = FTFlowChart("flowchart", 1000, 1000)
+            shape1 = flowchart.add_shape(FTShapeType.Assignment, [220, 20])
+            shape2 = flowchart.add_shape(FTShapeType.Conditional, [220, 170])
+            shape3 = flowchart.add_shape(FTShapeType.Loop, [95, 300])
 
             flowchart.add_connection(shape1, 0, shape2)
             flowchart.add_connection(shape2, 0, shape3)
