@@ -1,14 +1,17 @@
+import os
 import dearpygui.dearpygui as dpg
 
-from ftflowchart import FTFlowChart
-from ftnodetype import FTNodeType
+from flowchart import FlowChart
+from assignment import Assignment
+from conditional import Conditional
+from loop import Loop
 
 dpg.create_context()
 
 flowchart = None
 
 with dpg.font_registry():
-    deafault_font = dpg.add_font("inconsolata.ttf", 18)
+    deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), "../assets/inconsolata.ttf"), 18)
 dpg.bind_font(deafault_font)
 
 with dpg.viewport_menu_bar(tag="menu_bar"):
@@ -24,7 +27,6 @@ with dpg.window(tag="main_window"):
         with dpg.child_window(width=217, label="Selected Node"):
             dpg.add_text("Selected Node:")
             dpg.add_text("None", tag="selected_node")
-            pass
 
 def on_window_resize():
     if flowchart is not None:
@@ -46,13 +48,13 @@ while dpg.is_dearpygui_running():
     dpg.render_dearpygui_frame()
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
-            flowchart = FTFlowChart("flowchart", 1000, 1000)
-            shape1 = flowchart.add_node(FTNodeType.Assignment, [220, 20])
-            shape2 = flowchart.add_node(FTNodeType.Conditional, [220, 170])
-            shape3 = flowchart.add_node(FTNodeType.Loop, [95, 300])
+            flowchart = FlowChart("flowchart", 1000, 1000)
+            node1 =flowchart.add_node(Assignment(), (220, 20))
+            node2 =flowchart.add_node(Conditional(), (220, 170))
+            node3 = flowchart.add_node(Loop(), [95, 300])
 
-            flowchart.add_connection(shape1, 0, shape2)
-            flowchart.add_connection(shape2, 0, shape3)
+            flowchart.add_connection(node1, 0, node2)
+            flowchart.add_connection(node2, 0, node3)
 
         is_initialized = True
 

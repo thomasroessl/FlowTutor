@@ -1,7 +1,12 @@
 import dearpygui.dearpygui as dpg
 
+from assignment import Assignment
+from conditional import Conditional
+from loop import Loop
+from input import Input
+from output import Output
 
-class FTModals:
+class Modals:
 
     @staticmethod
     def show_approval_modal(label, message, callback):
@@ -23,7 +28,7 @@ class FTModals:
                     callback=lambda: dpg.delete_item("approval_modal"))
 
     @staticmethod
-    def show_node_type_modal(assignment_callback, conditional_callback, loop_callback, input_callback, output_callback, pos):
+    def show_node_type_modal(callback, pos):
         with dpg.window(
                 label="Node Type",
                 pos=pos,
@@ -34,16 +39,16 @@ class FTModals:
             with dpg.group():
                 dpg.add_button(
                     label="Assignment",
-                    callback=lambda: (assignment_callback(), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Assignment()), dpg.delete_item("node_type_modal")))
                 dpg.add_button(
                     label="Conditional",
-                    callback=lambda: (conditional_callback(), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Conditional()), dpg.delete_item("node_type_modal")))
                 dpg.add_button(
                     label="Loop",
-                    callback=lambda: (loop_callback(), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Loop()), dpg.delete_item("node_type_modal")))
                 dpg.add_button(
                     label="Input",
-                    callback=lambda: (input_callback(), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Input()), dpg.delete_item("node_type_modal")))
                 dpg.add_button(
                     label="Output",
-                    callback=lambda: (output_callback(), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Output()), dpg.delete_item("node_type_modal")))
