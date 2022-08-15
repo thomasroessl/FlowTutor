@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 
 from ftflowchart import FTFlowChart
-from ftshapetype import FTShapeType
+from ftnodetype import FTNodeType
 
 dpg.create_context()
 
@@ -47,9 +47,9 @@ while dpg.is_dearpygui_running():
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
             flowchart = FTFlowChart("flowchart", 1000, 1000)
-            shape1 = flowchart.add_shape(FTShapeType.Assignment, [220, 20])
-            shape2 = flowchart.add_shape(FTShapeType.Conditional, [220, 170])
-            shape3 = flowchart.add_shape(FTShapeType.Loop, [95, 300])
+            shape1 = flowchart.add_node(FTNodeType.Assignment, [220, 20])
+            shape2 = flowchart.add_node(FTNodeType.Conditional, [220, 170])
+            shape3 = flowchart.add_node(FTNodeType.Loop, [95, 300])
 
             flowchart.add_connection(shape1, 0, shape2)
             flowchart.add_connection(shape2, 0, shape3)

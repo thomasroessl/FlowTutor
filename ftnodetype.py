@@ -1,6 +1,6 @@
 from enum import Enum
 
-class FTShapeType(Enum):
+class FTNodeType(Enum):
     Assignment = 1
     Conditional = 2
     Loop = 3
