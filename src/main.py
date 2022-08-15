@@ -55,7 +55,7 @@ while dpg.is_dearpygui_running():
 
             flowchart.add_connection(node1, 0, node2)
             flowchart.add_connection(node2, 0, node3)
-
+            flowchart.redraw_all()
         is_initialized = True
 
 dpg.destroy_context()

@@ -5,6 +5,8 @@ from shapely.geometry import Point
 from modals import Modals
 from node import Node
 from connection import Connection
+from conditional import Conditional
+from connector import Connector
 
 
 class FlowChart:
@@ -13,7 +15,7 @@ class FlowChart:
 
     connections: list[Connection] = []
 
-    hovered_connector = None
+    hovered_add_button = None
 
     dragging_node: Node = None
 
@@ -61,7 +63,7 @@ class FlowChart:
         (oX, oY) = self.drag_offset
         self.dragging_node.pos = (cX - oX, cY - oY)
         self.dragging_node.redraw(
-            self.tag, self.mouse_position_on_canvas, self.selected_node)
+            self.tag, self.mouse_position_on_canvas, self.selected_node, self.connections)
 
     def on_mouse_click(self):
         """Handles pressing down of the mouse button."""
@@ -69,8 +71,8 @@ class FlowChart:
             return
         prev_selected_node = self.selected_node
         self.select_node(self.find_hovered_node())
-        if self.hovered_connector is not None:
-            m = re.search('(.*)\[(.*)\]', self.hovered_connector)
+        if self.hovered_add_button is not None:
+            m = re.search('(.*)\[(.*)\]', self.hovered_add_button)
             connection_node_tag = m.group(1)
             connection_index = m.group(2)
             connection_node = self.find_node(connection_node_tag)
@@ -91,6 +93,7 @@ class FlowChart:
                 new_node_tag = self.add_node(node, new_node_pos)
                 self.add_connection(connection_node_tag,
                                     connection_index, new_node_tag)
+                self.redraw_all()
             Modals.show_node_type_modal(callback, self.mouse_position)
         elif self.selected_node is not None:
             self.dragging_node = self.selected_node
@@ -98,18 +101,18 @@ class FlowChart:
             (cX, cY) = self.mouse_position_on_canvas
             self.drag_offset = (cX - pX, cY - pY)
             self.dragging_node.redraw(
-                self.tag, self.mouse_position_on_canvas, self.selected_node)
+                self.tag, self.mouse_position_on_canvas, self.selected_node, self.connections)
 
         if prev_selected_node is not None:
             prev_selected_node.redraw(
-                self.tag, self.mouse_position_on_canvas, self.selected_node)
+                self.tag, self.mouse_position_on_canvas, self.selected_node, self.connections)
 
     def on_mouse_release(self):
         self.dragging_node = None
         self.resize()
 
     def on_delete_press(self):
-        if self.selected_node is None:
+        if self.selected_node is None or isinstance(self.select_node, Connector):
             return
         src_connections = self.selected_node.get_src_connections(
             self.connections)
@@ -140,18 +143,19 @@ class FlowChart:
         self.redraw_all()
 
     def redraw_all(self):
-        self.hovered_connector = None
+        self.hovered_add_button = None
         for connection in self.connections:
             connection.redraw(self.tag, self.nodes)
-        is_connector_drawn = False
+        is_add_button_drawn = False
         for node in self.nodes:
             # The currently draggingis skipped. It gets redrawn in on_drag.
             if node == self.dragging_node:
                 continue
             node.redraw(self.tag, self.mouse_position_on_canvas,
-                        self.selected_node)
-            if not is_connector_drawn:
-                is_connector_drawn = self.draw_connector(node)
+                        self.selected_node, self.connections)
+            if not is_add_button_drawn:
+                is_add_button_drawn = self.draw_add_button(node)
+        self.resize()
 
     def find_node(self, tag: str) -> Node:
         return next(filter(lambda n: n.tag == tag, self.nodes), None)
@@ -168,11 +172,21 @@ class FlowChart:
         dpg.configure_item(
             "selected_node", default_value=None if self.selected_node is None else self.selected_node.tag)
 
-    def get_node_children(self, node: Node, connection_index: int = None):
+    def get_node_children(self, node: Node, cond_count: int = 0, connection_index: int = None):
         children: list[Node] = []
+        if isinstance(node, Conditional):
+            cond_count += 1
         for connection in filter(lambda c: c.src == node.tag and (connection_index is None or c.index == connection_index), self.connections):
             child = self.find_node(connection.dst)
-            children.extend([child, *self.get_node_children(child)])
+            if isinstance(child, Connector):
+                if cond_count == 1:
+                    children.append(child)
+                else:
+                    children.extend(
+                        [child, *self.get_node_children(child, cond_count - 1)])
+            else:
+                children.extend(
+                    [child, *self.get_node_children(child, cond_count)])
         return children
 
     def cleanup_connections(self):
@@ -181,8 +195,16 @@ class FlowChart:
 
     def add_node(self, node: Node, pos: tuple[int, int]) -> str:
         node.pos = pos
-        node.draw(self.tag, self.mouse_position_on_canvas)
+        node.draw(self.tag, self.mouse_position_on_canvas, self.connections)
         self.nodes.append(node)
+        if isinstance(node, Conditional):
+            pos_x, pos_y = pos
+            connector_node = Connector()
+            self.add_node(connector_node,
+                          (pos_x + node.width/2 - 25, pos_y + 100))
+            self.nodes.append(connector_node)
+            self.add_connection(node.tag, 0, connector_node.tag)
+            self.add_connection(node.tag, 1, connector_node.tag)
         return node.tag
 
     def add_connection(self, src_tag: str, index: int, dst_tag: str):
@@ -191,18 +213,24 @@ class FlowChart:
         if existing_connection is not None:
             self.move_children(src_tag, int(index), 135)
             self.remove_connection(existing_connection)
-            additional_connection = Connection(
-                dst_tag, 0, existing_connection.dst)
-            self.connections.append(additional_connection)
+            existing_additional_connection = self.find_connection(dst_tag, 0)
+            if existing_additional_connection is None:
+                additional_connection = Connection(
+                    dst_tag, 0, existing_connection.dst)
+                self.connections.append(additional_connection)
+            else:
+                additional_connection = Connection(
+                    existing_additional_connection.dst, 0, existing_connection.dst)
+                self.connections.append(additional_connection)
         new_connection = Connection(src_tag, int(index), dst_tag)
         self.connections.append(new_connection)
-        self.redraw_all()
 
     def remove_node(self, node: Node):
         if node is None:
             return
         node.delete()
-        self.nodes.remove(node)
+        if self.nodes.__contains__(node):
+            self.nodes.remove(node)
 
     def remove_connection(self, connection: Connection):
         if connection is None:
@@ -214,14 +242,16 @@ class FlowChart:
         node = self.find_node(node_tag)
         if node is None:
             return
-        for child in self.get_node_children(node, connection_index):
-            child.pos[1] += dist
+        for child in self.get_node_children(node, 0, connection_index):
+            pos_x, pos_y = child.pos
+            child.pos = (pos_x, pos_y + dist)
             child.redraw(self.tag, self.mouse_position_on_canvas,
-                         self.selected_node)
+                         self.selected_node, self.connections)
+        self.resize()
 
-    def draw_connector(self, node: Node):
+    def draw_add_button(self, node: Node):
         """Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
-           Returns True if a connector was drawn.
+           Returns True if an add button was drawn.
         """
         close_point = None
         if self.mouse_position_on_canvas is not None:
@@ -229,14 +259,12 @@ class FlowChart:
                 filter(
                     lambda p: Point(p).distance(Point(self.mouse_position_on_canvas)) < 12, node.out_points), None)
         if close_point is not None:
-            with dpg.draw_node(
-                    tag="connector",
-                    parent=node.tag):
+            with dpg.draw_node(parent=node.tag):
                 dpg.draw_circle(close_point, 12, fill=(255, 255, 255))
                 x, y = close_point
                 dpg.draw_text((x - 6.5, y - 15), "+",
                               color=(0, 0, 0), size=29)
-                self.hovered_connector = f"{node.tag}[{node.out_points.index(close_point)}]"
+                self.hovered_add_button = f"{node.tag}[{node.out_points.index(close_point)}]"
             return True
         return False
 

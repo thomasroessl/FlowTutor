@@ -52,7 +52,11 @@ class Node(ABC):
 
     @property
     def bounds(self):
-        return Polygon(self.points).bounds
+        if len(self.points) == 1:
+            c_x, c_y = self.points[0]
+            return (c_x - 25, c_y - 25, c_x + 25, c_y + 25)
+        else:
+            return Polygon(self.points).bounds
 
     @property
     @abstractmethod
@@ -84,31 +88,39 @@ class Node(ABC):
     def shape(self) -> list[tuple[int, int]]:
         pass
 
-    def draw(self, parent: str, mouse_pos: tuple, is_selected=False):
+    def draw(self, parent: str, mouse_pos: tuple, connections, is_selected=False):
         color = self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
                 tag=self.tag,
                 parent=parent):
-            dpg.draw_polygon(self.points, color=color,
-                             thickness=4 if is_selected else 3 if self.is_hovered(mouse_pos) else 2)
-            label = str(self.type).split(".")[1]
-            text_width, text_height = dpg.get_text_size(label)
-            dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
-                          label, color=color, size=18)
+            thickness = 4 if is_selected else 3 if self.is_hovered(
+                mouse_pos) else 2
+            if len(self.points) == 1:
+                dpg.draw_circle(self.points[0], 25,
+                                color=color, thickness=thickness)
+            else:
+                dpg.draw_polygon(self.points, color=color, thickness=thickness)
+                label = str(self.type).split(".")[1]
+                text_width, text_height = dpg.get_text_size(label)
+                dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
+                              label, color=color, size=18)
 
-    def redraw(self, parent: str, mouse_pos: tuple[int, int], selected_node):
+    def redraw(self, parent: str, mouse_pos: tuple[int, int], selected_node, connections):
         """Deletes the node and draws a new version of it."""
-        if dpg.does_item_exist(self.tag):
-            dpg.delete_item(self.tag)
-        self.draw(parent, mouse_pos, selected_node == self)
+        self.delete()
+        self.draw(parent, mouse_pos, connections, selected_node == self)
 
     def is_hovered(self, mouse_pos: tuple[int, int]):
         if mouse_pos is None:
             return False
         point = Point(*mouse_pos)
-        polygon = Polygon(self.points)
-        return polygon.contains(point)
+        if len(self.points) == 1:
+            center = Point(*self.points[0])
+            return point.distance(center) <= 25
+        else:
+            polygon = Polygon(self.points)
+            return polygon.contains(point)
 
     def get_src_connections(self, connections):
         """Returns all connections with the node as source."""

@@ -6,3 +6,4 @@ class NodeType(Enum):
     Loop = 3
     Input = 4
     Output = 5
+    Connector = 5
