@@ -49,12 +49,12 @@ while dpg.is_dearpygui_running():
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
             flowchart = FlowChart("flowchart", 1000, 1000)
-            node1 =flowchart.add_node(Assignment(), (220, 20))
-            node2 =flowchart.add_node(Conditional(), (220, 170))
-            node3 = flowchart.add_node(Loop(), [95, 300])
-
-            flowchart.add_connection(node1, 0, node2)
-            flowchart.add_connection(node2, 0, node3)
+            node1 = Assignment()
+            node2 = Conditional()
+            node3 = Loop()
+            flowchart.add_node(node1, None)
+            flowchart.add_node(node2, node1)
+            flowchart.add_node(node3, node2)
             flowchart.redraw_all()
         is_initialized = True
 

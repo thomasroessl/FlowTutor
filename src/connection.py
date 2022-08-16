@@ -3,26 +3,32 @@ import dearpygui.dearpygui as dpg
 from node import Node
 from conditional import Conditional
 from connector import Connector
+from loop import Loop
 
 
 class Connection:
 
-    def __init__(self, src: str, index: int, dst: str):
+    def __init__(self, src: str, src_ind: int, dst: str, dst_ind: int = 0):
         self._src = src
-        self._index = index
+        self._src_ind = src_ind
         self._dst = dst
+        self._dst_ind = dst_ind
 
     @property
     def tag(self) -> str:
-        return f"{self.src}[{self.index}]->{self.dst}"
+        return f"{self.src}[{self.src_ind}]->{self.dst}[{self.dst_ind}]"
 
     @property
     def src(self) -> str:
         return self._src
 
     @property
-    def index(self) -> int:
-        return self._index
+    def src_ind(self) -> int:
+        return self._src_ind
+
+    @property
+    def dst_ind(self) -> int:
+        return self._dst_ind
 
     @property
     def dst(self) -> str:
@@ -42,13 +48,69 @@ class Connection:
         dst_in_points = dst_node.in_points
         src_out_points = src_node.out_points
 
-        out_x, out_y = src_out_points[int(self.index)]
+        out_x, out_y = src_out_points[int(self.src_ind)]
+
+        dst_ind = 0 if len(dst_in_points) == 1 else int(self.dst_ind)
 
         with dpg.draw_node(
                 tag=self.tag,
                 parent=parent):
-            if isinstance(src_node, Conditional) and isinstance(dst_node, Connector):
-                in_x, in_y = dst_in_points[0]
+            if src_node == dst_node:
+                in_x, in_y = dst_in_points[1]
+                dpg.draw_line(
+                    (out_x + 60, out_y),
+                    (out_x, out_y),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_line(
+                    (out_x + 60, out_y + 75),
+                    (out_x + 60, out_y),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_line(
+                    (out_x - 40, out_y + 75),
+                    (out_x + 60, out_y + 75),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_arrow(
+                    (in_x, in_y),
+                    (out_x - 40, out_y + 75),
+                    color=(255, 255, 255),
+                    thickness=2,
+                    size=10)
+            elif isinstance(src_node, Loop) and int(self.src_ind) == 1:
+                in_x, in_y = dst_in_points[dst_ind]
+                dpg.draw_line(
+                    (in_x, out_y),
+                    (out_x, out_y),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_arrow(
+                    (in_x, in_y),
+                    (in_x, out_y),
+                    color=(255, 255, 255),
+                    thickness=2,
+                    size=10)
+            elif isinstance(dst_node, Loop) and int(self.dst_ind) == 1:
+                in_x, in_y = dst_in_points[dst_ind]
+                dpg.draw_line(
+                    (out_x, out_y + 50),
+                    (out_x, out_y),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_line(
+                    (in_x, out_y + 50),
+                    (out_x, out_y + 50),
+                    color=(255, 255, 255),
+                    thickness=2)
+                dpg.draw_arrow(
+                    (in_x, in_y),
+                    (in_x, out_y + 50),
+                    color=(255, 255, 255),
+                    thickness=2,
+                    size=10)
+            elif isinstance(src_node, Conditional) and isinstance(dst_node, Connector):
+                in_x, in_y = dst_in_points[dst_ind]
                 dst_offset = 25 if out_x > in_x else -25
                 dpg.draw_line(
                     (out_x + dst_offset * 2, out_y),
@@ -67,7 +129,7 @@ class Connection:
                     thickness=2,
                     size=10)
             elif isinstance(src_node, Conditional):
-                in_x, in_y = dst_in_points[0]
+                in_x, in_y = dst_in_points[dst_ind]
                 dpg.draw_line(
                     (in_x, out_y),
                     (out_x, out_y),
@@ -80,7 +142,7 @@ class Connection:
                     thickness=2,
                     size=10)
             elif isinstance(dst_node, Connector):
-                in_x, in_y = dst_in_points[0]
+                in_x, in_y = dst_in_points[dst_ind]
                 dst_offset = 25 if out_x > in_x else -25
                 dpg.draw_line(
                     (out_x, in_y + 25),
@@ -95,7 +157,7 @@ class Connection:
                     size=10)
             else:
                 dpg.draw_arrow(
-                    dst_in_points[0],
+                    dst_in_points[dst_ind],
                     (out_x, out_y),
                     color=(255, 255, 255),
                     thickness=2,
