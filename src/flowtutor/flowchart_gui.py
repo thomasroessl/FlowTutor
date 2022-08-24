@@ -1,3 +1,4 @@
+from typing import Optional
 import dearpygui.dearpygui as dpg
 import re
 from shapely.geometry import Point
@@ -16,11 +17,11 @@ class FlowChartGUI:
 
     connections: list[Connection] = []
 
-    hovered_add_button = None
+    hovered_add_button: Optional[str] = None
 
-    dragging_node: Node = None
+    dragging_node: Optional[Node] = None
 
-    selected_node: Node = None
+    selected_node: Optional[Node] = None
 
     # The offset of the currently dragging node to its origin before moving
     drag_offset: tuple[int, int] = (0, 0)
@@ -28,9 +29,9 @@ class FlowChartGUI:
     # The size of the GUI parent
     parent_size: tuple[int, int] = (0, 0)
 
-    mouse_position: tuple[int, int] = None
+    mouse_position: Optional[tuple[int, int]] = None
 
-    mouse_position_on_canvas: tuple[int, int] = None
+    mouse_position_on_canvas: Optional[tuple[int, int]] = None
 
     def __init__(self, tag: str, width: int, height: int):
         self.width = width
@@ -74,10 +75,11 @@ class FlowChartGUI:
         self.select_node(self.find_hovered_node())
         if self.hovered_add_button is not None:
             m = re.search(r'(.*)\[(.*)\]\[(.*)\]', self.hovered_add_button)
-            parent_tag = m.group(1)
-            src_index = m.group(2)
-            dst_index = m.group(3)
-            parent = self.find_node(parent_tag)
+            if m is not None:
+                parent_tag = m.group(1)
+                src_index = m.group(2)
+                dst_index = m.group(3)
+                parent = self.find_node(parent_tag)
 
             def callback(node):
                 self.add_node(node, parent, int(src_index), int(dst_index))
@@ -115,8 +117,9 @@ class FlowChartGUI:
             self.remove_connection(dst_connections[0])
         elif len(src_connections) > 1:
             def callback():
-                for child in self.get_node_children(self.selected_node):
-                    self.remove_node(child)
+                if self.selected_node is not None:
+                    for child in self.get_node_children(self.selected_node):
+                        self.remove_node(child)
                 self.remove_node(self.selected_node)
                 self.redraw_all()
                 self.cleanup_connections()
@@ -145,8 +148,8 @@ class FlowChartGUI:
                 is_add_button_drawn = self.draw_add_button(node)
         self.resize()
 
-    def find_node(self, tag: str) -> Node:
-        return next(filter(lambda n: n.tag == tag, self.nodes), None)
+    def find_node(self, tag: str) -> Optional[Node]:
+        return next(filter(lambda n: n is not None and n.tag == tag, self.nodes), None)
 
     def find_hovered_node(self):
         return next(filter(lambda n: n.is_hovered(
@@ -155,12 +158,12 @@ class FlowChartGUI:
     def find_connection(self, src_tag: str, index: int):
         return next(filter(lambda c: c.src == src_tag and c.src_ind == int(index), self.connections), None)
 
-    def select_node(self, node: Node):
+    def select_node(self, node: Optional[Node]):
         self.selected_node = node
         dpg.configure_item(
             "selected_node", default_value=None if self.selected_node is None else self.selected_node.tag)
 
-    def get_node_children(self, node: Node, cond_count: int = 0, connection_index: int = None):
+    def get_node_children(self, node: Node, cond_count: int = 0, connection_index: Optional[int] = None):
         children: list[Node] = []
         if isinstance(node, Conditional):
             cond_count += 1
@@ -173,7 +176,7 @@ class FlowChartGUI:
                 else:
                     children.extend(
                         [child, *self.get_node_children(child, cond_count - 1)])
-            else:
+            elif child is not None:
                 children.extend(
                     [child, *self.get_node_children(child, cond_count)])
         return children
@@ -182,12 +185,12 @@ class FlowChartGUI:
         self.connections = list(filter(lambda c: dpg.does_item_exist(c.src)
                                        and dpg.does_item_exist(c.dst), self.connections))
 
-    def add_node(self, node: Node, parent: Node, src_ind: int = 0, dst_ind: int = 0) -> str:
+    def add_node(self, node: Node, parent: Optional[Node], src_ind: int = 0, dst_ind: int = 0):
         if parent is None:
             pos = (135, 20)
         elif isinstance(node, Connector):
             pos_x, pos_y = parent.pos
-            pos = (pos_x + parent.width/2 - 25, pos_y + 180)
+            pos = (int(pos_x + parent.width/2 - 25), int(pos_y + 180))
         else:
             _, connection_point_y = parent.out_points[int(src_ind)]
             if isinstance(parent, Conditional):
@@ -231,25 +234,25 @@ class FlowChartGUI:
         new_connection = Connection(src_tag, int(src_ind), dst_tag, int(dst_ind))
         self.connections.append(new_connection)
 
-    def remove_node(self, node: Node):
+    def remove_node(self, node: Optional[Node]):
         if node is None:
             return
         node.delete()
         if self.nodes.__contains__(node):
             self.nodes.remove(node)
 
-    def remove_connection(self, connection: Connection):
+    def remove_connection(self, connection: Optional[Connection]):
         if connection is None:
             return
         connection.delete()
         self.connections.remove(connection)
 
-    def move_below(self, node: Node):
+    def move_below(self, node: Optional[Node]):
         if node is None:
             return
         for node_below in [n for n in self.nodes if n.pos[1] > node.pos[1]]:
             pos_x, pos_y = node_below.pos
-            node_below.pos = (pos_x, pos_y + node.height / 2 + 20)
+            node_below.pos = (pos_x, int(pos_y + node.height / 2 + 20))
         self.redraw_all()
 
     def draw_add_button(self, node: Node):

@@ -1,4 +1,5 @@
 import os
+from typing import Union
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart_gui import FlowChartGUI
@@ -8,7 +9,7 @@ from flowtutor.flowchart.loop import Loop
 
 dpg.create_context()
 
-flowchart = None
+flowchart: Union[FlowChartGUI, None] = None
 
 with dpg.font_registry():
     deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), "../../assets/inconsolata.ttf"), 18)

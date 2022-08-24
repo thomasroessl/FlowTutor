@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional, Union
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry.polygon import Polygon
@@ -88,7 +89,7 @@ class Node(ABC):
     def shape(self) -> list[tuple[int, int]]:
         pass
 
-    def draw(self, parent: str, mouse_pos: tuple, connections, is_selected=False):
+    def draw(self, parent: str, mouse_pos: Optional[tuple[int, int]], connections, is_selected=False):
         color = self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
@@ -106,12 +107,12 @@ class Node(ABC):
                 dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
                               label, color=color, size=18)
 
-    def redraw(self, parent: str, mouse_pos: tuple[int, int], selected_node, connections):
+    def redraw(self, parent: str, mouse_pos: Optional[tuple[int, int]], selected_node, connections):
         """Deletes the node and draws a new version of it."""
         self.delete()
         self.draw(parent, mouse_pos, connections, selected_node == self)
 
-    def is_hovered(self, mouse_pos: tuple[int, int]):
+    def is_hovered(self, mouse_pos: Union[tuple[int, int], None]):
         if mouse_pos is None:
             return False
         point = Point(*mouse_pos)
