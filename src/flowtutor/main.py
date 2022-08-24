@@ -6,6 +6,7 @@ from flowtutor.flowchart_gui import FlowChartGUI
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.loop import Loop
+from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 
 dpg.create_context()
@@ -17,18 +18,22 @@ def on_light_theme_menu_item_click():
     dpg.bind_theme(create_theme_light())
     if flowchart:
         flowchart.redraw_all()
+    Settings.set_setting("theme", "light")
 
 
 def on_dark_theme_menu_item_click():
     dpg.bind_theme(create_theme_dark())
     if flowchart:
         flowchart.redraw_all()
+    Settings.set_setting("theme", "dark")
 
 
 def on_window_resize():
     if flowchart is not None:
         flowchart.parent_size = dpg.get_item_rect_size("flowchart_container")
         flowchart.resize()
+        Settings.set_setting("height", dpg.get_viewport_height())
+        Settings.set_setting("width", dpg.get_viewport_width())
 
 
 with dpg.font_registry():
@@ -58,9 +63,15 @@ dpg.bind_item_handler_registry("main_window", "window_handler")
 
 dpg.configure_app()
 
-dpg.create_viewport(title="FlowTutor")
+dpg.create_viewport(
+    title="FlowTutor",
+    width=int(Settings.get_setting("width", 1000)),
+    height=int(Settings.get_setting("height", 1000)))
 
-dpg.bind_theme(create_theme_light())
+if Settings.get_setting("theme", "light") == "light":
+    dpg.bind_theme(create_theme_light())
+else:
+    dpg.bind_theme(create_theme_dark())
 
 dpg.setup_dearpygui()
 dpg.show_viewport()
@@ -72,7 +83,7 @@ while dpg.is_dearpygui_running():
     dpg.render_dearpygui_frame()
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
-            flowchart = FlowChartGUI("flowchart", 1000, 1000)
+            flowchart = FlowChartGUI("flowchart", 2000, 2000)
             node1 = Assignment()
             node2 = Conditional()
             node3 = Loop()

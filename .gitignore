@@ -157,3 +157,6 @@ cython_debug/
 
 #MacOS
 .DS_Store
+
+#FlowTutor
+flowtutor_settings
