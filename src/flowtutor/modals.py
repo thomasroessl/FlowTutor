@@ -6,6 +6,7 @@ from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
 
+
 class Modals:
 
     @staticmethod

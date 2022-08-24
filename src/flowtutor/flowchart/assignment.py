@@ -7,7 +7,7 @@ class Assignment(Node):
     @property
     def type(self):
         return NodeType.Assignment
-    
+
     @property
     def width(self):
         return 150

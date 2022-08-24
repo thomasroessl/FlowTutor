@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class NodeType(Enum):
     Assignment = 1
     Conditional = 2

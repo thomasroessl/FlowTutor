@@ -73,7 +73,7 @@ class FlowChartGUI:
         prev_selected_node = self.selected_node
         self.select_node(self.find_hovered_node())
         if self.hovered_add_button is not None:
-            m = re.search('(.*)\[(.*)\]\[(.*)\]', self.hovered_add_button)
+            m = re.search(r'(.*)\[(.*)\]\[(.*)\]', self.hovered_add_button)
             parent_tag = m.group(1)
             src_index = m.group(2)
             dst_index = m.group(3)
@@ -164,7 +164,8 @@ class FlowChartGUI:
         children: list[Node] = []
         if isinstance(node, Conditional):
             cond_count += 1
-        for connection in filter(lambda c: c.src != c.dst and c.src == node.tag and (connection_index is None or c.src_ind == connection_index), self.connections):
+        for connection in filter(lambda c: c.src != c.dst and c.src == node.tag
+                                 and (connection_index is None or c.src_ind == connection_index), self.connections):
             child = self.find_node(connection.dst)
             if isinstance(child, Connector):
                 if cond_count == 1:

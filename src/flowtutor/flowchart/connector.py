@@ -1,7 +1,3 @@
-
-
-import dearpygui.dearpygui as dpg
-
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.node_type import NodeType
 

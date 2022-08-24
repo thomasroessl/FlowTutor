@@ -28,10 +28,12 @@ with dpg.window(tag="main_window"):
             dpg.add_text("Selected Node:")
             dpg.add_text("None", tag="selected_node")
 
+
 def on_window_resize():
     if flowchart is not None:
         flowchart.parent_size = dpg.get_item_rect_size("flowchart_container")
         flowchart.resize()
+
 
 with dpg.item_handler_registry(tag="window_handler"):
     dpg.add_item_resize_handler(callback=on_window_resize)
