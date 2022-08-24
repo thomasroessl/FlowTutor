@@ -5,6 +5,7 @@ import dearpygui.dearpygui as dpg
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
 from flowtutor.flowchart.node_type import NodeType
+from flowtutor.themes import theme_colors
 
 
 class Node(ABC):
@@ -95,17 +96,19 @@ class Node(ABC):
         with dpg.draw_node(
                 tag=self.tag,
                 parent=parent):
-            thickness = 4 if is_selected else 3 if self.is_hovered(
-                mouse_pos) else 2
+            text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
+            thickness = 3 if is_selected else 2 if self.is_hovered(
+                mouse_pos) else 1
             if len(self.points) == 1:
-                dpg.draw_circle(self.points[0], 25,
-                                color=color, thickness=thickness)
+                dpg.draw_circle(self.points[0], 25, fill=color)
+                dpg.draw_circle(self.points[0], 25, color=text_color, thickness=thickness)
             else:
-                dpg.draw_polygon(self.points, color=color, thickness=thickness)
+                dpg.draw_polygon(self.points, fill=color)
+                dpg.draw_polygon(self.points, color=text_color, thickness=thickness)
                 label = str(self.type).split(".")[1]
                 text_width, text_height = dpg.get_text_size(label)
                 dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
-                              label, color=color, size=18)
+                              label, color=(0, 0, 0), size=18)
 
     def redraw(self, parent: str, mouse_pos: Optional[tuple[int, int]], selected_node, connections):
         """Deletes the node and draws a new version of it."""

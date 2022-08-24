@@ -4,6 +4,7 @@ from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.loop import Loop
+from flowtutor.themes import theme_colors
 
 
 class Connection:
@@ -52,6 +53,8 @@ class Connection:
 
         dst_ind = 0 if len(dst_in_points) == 1 else int(self.dst_ind)
 
+        text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
+
         with dpg.draw_node(
                 tag=self.tag,
                 parent=parent):
@@ -60,22 +63,22 @@ class Connection:
                 dpg.draw_line(
                     (out_x + 60, out_y),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_line(
                     (out_x + 60, out_y + 75),
                     (out_x + 60, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_line(
                     (out_x - 40, out_y + 75),
                     (out_x + 60, out_y + 75),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
                     (out_x - 40, out_y + 75),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             elif isinstance(src_node, Loop) and int(self.src_ind) == 1:
@@ -83,12 +86,12 @@ class Connection:
                 dpg.draw_line(
                     (in_x, out_y),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
                     (in_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             elif isinstance(dst_node, Loop) and int(self.dst_ind) == 1:
@@ -96,17 +99,17 @@ class Connection:
                 dpg.draw_line(
                     (out_x, out_y + 50),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_line(
                     (in_x, out_y + 50),
                     (out_x, out_y + 50),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
                     (in_x, out_y + 50),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             elif isinstance(src_node, Conditional) and isinstance(dst_node, Connector):
@@ -115,17 +118,17 @@ class Connection:
                 dpg.draw_line(
                     (out_x + dst_offset * 2, out_y),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_line(
                     (out_x + dst_offset * 2, in_y + 25),
                     (out_x + dst_offset * 2, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x + dst_offset, in_y + 25),
                     (out_x + dst_offset * 2, in_y + 25),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             elif isinstance(src_node, Conditional):
@@ -133,12 +136,12 @@ class Connection:
                 dpg.draw_line(
                     (in_x, out_y),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
                     (in_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             elif isinstance(dst_node, Connector):
@@ -147,19 +150,19 @@ class Connection:
                 dpg.draw_line(
                     (out_x, in_y + 25),
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x + dst_offset, in_y + 25),
                     (out_x, in_y + 25),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
             else:
                 dpg.draw_arrow(
                     dst_in_points[dst_ind],
                     (out_x, out_y),
-                    color=(255, 255, 255),
+                    color=text_color,
                     thickness=2,
                     size=10)
 

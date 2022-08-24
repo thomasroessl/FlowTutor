@@ -5,6 +5,7 @@ import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.node_type import NodeType
+from flowtutor.themes import theme_colors
 
 
 class Conditional(Node):
@@ -52,17 +53,18 @@ class Conditional(Node):
         with dpg.draw_node(
                 tag=tag,
                 parent=parent):
+            text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
             text_false = "False"
             text_false_width, text_false_height = dpg.get_text_size(
                 text_false)
             dpg.draw_text((pos_x - text_false_width - 5, pos_y + self.height/2 - text_false_height - 5),
-                          text_false, color=self.color, size=18)
+                          text_false, color=text_color, size=18)
 
             text_true = "True"
             _, text_true_height = dpg.get_text_size(text_true)
             dpg.draw_text((pos_x + self.width + 5, pos_y + self.height/2 - text_true_height - 5),
-                          text_true, color=self.color, size=18)
+                          text_true, color=text_color, size=18)
 
     def delete(self):
         super().delete()
