@@ -1,9 +1,9 @@
 import dearpygui.dearpygui as dpg
 
-from node import Node
-from conditional import Conditional
-from connector import Connector
-from loop import Loop
+from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.connector import Connector
+from flowtutor.flowchart.loop import Loop
 
 
 class Connection:

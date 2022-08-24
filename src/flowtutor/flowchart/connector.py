@@ -2,8 +2,8 @@
 
 import dearpygui.dearpygui as dpg
 
-from node import Node
-from nodetype import NodeType
+from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.node_type import NodeType
 
 
 class Connector(Node):

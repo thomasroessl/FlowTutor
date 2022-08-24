@@ -3,7 +3,7 @@ from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
-from nodetype import NodeType
+from flowtutor.flowchart.node_type import NodeType
 
 
 class Node(ABC):

@@ -1,14 +1,14 @@
 
 
-from node import Node
-from nodetype import NodeType
+from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.node_type import NodeType
 
 
-class Input(Node):
+class Output(Node):
 
     @property
     def type(self):
-        return NodeType.Input
+        return NodeType.Output
 
     @property
     def width(self):
@@ -28,7 +28,7 @@ class Input(Node):
 
     @property
     def color(self):
-        return (147, 171, 255)
+        return (147, 255, 149)
 
     @property
     def shape(self):

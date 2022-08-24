@@ -1,17 +1,17 @@
 import os
 import dearpygui.dearpygui as dpg
 
-from flowchart import FlowChart
-from assignment import Assignment
-from conditional import Conditional
-from loop import Loop
+from flowtutor.flowchart_gui import FlowChartGUI
+from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.loop import Loop
 
 dpg.create_context()
 
 flowchart = None
 
 with dpg.font_registry():
-    deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), "../assets/inconsolata.ttf"), 18)
+    deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), "../../assets/inconsolata.ttf"), 18)
 dpg.bind_font(deafault_font)
 
 with dpg.viewport_menu_bar(tag="menu_bar"):
@@ -48,7 +48,7 @@ while dpg.is_dearpygui_running():
     dpg.render_dearpygui_frame()
     if not is_initialized:
         with dpg.child_window(tag="flowchart_container", parent="main_group", horizontal_scrollbar=True):
-            flowchart = FlowChart("flowchart", 1000, 1000)
+            flowchart = FlowChartGUI("flowchart", 1000, 1000)
             node1 = Assignment()
             node2 = Conditional()
             node3 = Loop()

@@ -2,15 +2,15 @@ import dearpygui.dearpygui as dpg
 import re
 from shapely.geometry import Point
 
-from modals import Modals
-from node import Node
-from connection import Connection
-from conditional import Conditional
-from connector import Connector
-from loop import Loop
+from flowtutor.modals import Modals
+from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.connection import Connection
+from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.connector import Connector
+from flowtutor.flowchart.loop import Loop
 
 
-class FlowChart:
+class FlowChartGUI:
 
     nodes: list[Node] = []
 

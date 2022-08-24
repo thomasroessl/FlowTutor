@@ -1,10 +1,10 @@
 import dearpygui.dearpygui as dpg
 
-from assignment import Assignment
-from conditional import Conditional
-from loop import Loop
-from input import Input
-from output import Output
+from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.input import Input
+from flowtutor.flowchart.output import Output
 
 class Modals:
 
