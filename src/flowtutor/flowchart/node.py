@@ -1,25 +1,29 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
-from flowtutor.flowchart.node_type import NodeType
+
 from flowtutor.themes import theme_colors
+
+if TYPE_CHECKING:
+    from flowtutor.flowchart.connection import Connection
+
+FLOWCHART_TAG = 'flowchart'
 
 
 class Node(ABC):
 
-    def __init__(self, tag=None):
-        if tag is None:
-            self.tag = str(uuid4())
-        else:
-            self.tag = tag
+    def __init__(self):
+        self._tag = str(uuid4())
+        self._connections: list[Connection] = []
+        self._scope_stack: list[str] = []
+        self._pos = (0, 0)
 
-    @property
-    @abstractmethod
-    def type(self) -> NodeType:
-        pass
+    def __repr__(self) -> str:
+        return f'({self.tag})'
 
     @property
     def tag(self) -> str:
@@ -28,6 +32,18 @@ class Node(ABC):
     @tag.setter
     def tag(self, tag: str):
         self._tag = tag
+
+    @property
+    def scope_stack(self) -> list[str]:
+        return self._scope_stack
+
+    @scope_stack.setter
+    def scope_stack(self, scope_stack: list[str]):
+        self._scope_stack = scope_stack
+
+    @property
+    def scope(self) -> Optional[str]:
+        return self.scope_stack[-1] if self.scope_stack else None
 
     @property
     def points(self) -> list[tuple[int, int]]:
@@ -90,12 +106,23 @@ class Node(ABC):
     def shape(self) -> list[tuple[int, int]]:
         pass
 
-    def draw(self, parent: str, mouse_pos: Optional[tuple[int, int]], connections, is_selected=False):
+    @property
+    def connections(self) -> list[Connection]:
+        return self._connections
+
+    @connections.setter
+    def connections(self, connections: list[Connection]):
+        self._connections = connections
+
+    def find_connection(self, index: int) -> Optional[Connection]:
+        return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
+
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected=False):
         color = self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
                 tag=self.tag,
-                parent=parent):
+                parent=FLOWCHART_TAG):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
             thickness = 3 if is_selected else 2 if self.is_hovered(
                 mouse_pos) else 1
@@ -105,15 +132,18 @@ class Node(ABC):
             else:
                 dpg.draw_polygon(self.points, fill=color)
                 dpg.draw_polygon(self.points, color=text_color, thickness=thickness)
-                label = str(self.type).split(".")[1]
+                label = self.__class__.__name__
                 text_width, text_height = dpg.get_text_size(label)
                 dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
                               label, color=(0, 0, 0), size=18)
 
-    def redraw(self, parent: str, mouse_pos: Optional[tuple[int, int]], selected_node, connections):
+        for connection in self.connections:
+            connection.draw(self)
+
+    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_node):
         """Deletes the node and draws a new version of it."""
         self.delete()
-        self.draw(parent, mouse_pos, connections, selected_node == self)
+        self.draw(mouse_pos, selected_node == self)
 
     def is_hovered(self, mouse_pos: Union[tuple[int, int], None]):
         if mouse_pos is None:
@@ -125,14 +155,6 @@ class Node(ABC):
         else:
             polygon = Polygon(self.points)
             return polygon.contains(point)
-
-    def get_src_connections(self, connections):
-        """Returns all connections with the node as source."""
-        return [c for c in connections if c.src == self.tag]
-
-    def get_dst_connections(self, connections):
-        """Returns all connections with the node as destination."""
-        return [c for c in connections if c.dst == self.tag]
 
     def delete(self):
         if dpg.does_item_exist(self.tag):

@@ -1,14 +1,9 @@
 
 
 from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.node_type import NodeType
 
 
 class Input(Node):
-
-    @property
-    def type(self):
-        return NodeType.Input
 
     @property
     def width(self):

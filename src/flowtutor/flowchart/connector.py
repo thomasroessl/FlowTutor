@@ -1,12 +1,7 @@
 from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.node_type import NodeType
 
 
 class Connector(Node):
-
-    @property
-    def type(self):
-        return NodeType.Connector
 
     @property
     def width(self):

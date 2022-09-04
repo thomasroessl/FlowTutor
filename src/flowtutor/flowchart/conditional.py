@@ -3,16 +3,11 @@
 from typing import Optional
 import dearpygui.dearpygui as dpg
 
-from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.node_type import NodeType
+from flowtutor.flowchart.node import Node, FLOWCHART_TAG
 from flowtutor.themes import theme_colors
 
 
 class Conditional(Node):
-
-    @property
-    def type(self):
-        return NodeType.Conditional
 
     @property
     def width(self):
@@ -44,15 +39,15 @@ class Conditional(Node):
             (75, 0)
         ]
 
-    def draw(self, parent: str, mouse_pos: Optional[tuple[int, int]], connections, is_selected=False):
-        super().draw(parent, mouse_pos, is_selected)
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected=False):
+        super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):
             return
         with dpg.draw_node(
                 tag=tag,
-                parent=parent):
+                parent=FLOWCHART_TAG):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
             text_false = "False"
