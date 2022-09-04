@@ -128,10 +128,13 @@ class Flowchart:
         if parent is None:
             return
         successor = self.find_successor(node)
-        parent.connections = [c for c in parent.connections if c.dst_node != node]
+        old_connection = next(filter(lambda c: c is not None and c.dst_node == node, parent.connections), None)
+        if old_connection is None:
+            return
+        parent.connections.remove(old_connection)
         if successor is None:
             return
-        parent.connections.append(Connection(successor, 0))
+        parent.connections.append(Connection(successor, old_connection.src_ind))
 
     def move_below(self, parent: Node):
         for child in self.deduplicate(self.get_all_children(parent)):
