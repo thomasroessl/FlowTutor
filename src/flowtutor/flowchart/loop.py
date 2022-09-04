@@ -66,3 +66,6 @@ class Loop(Node):
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
+
+    def has_nested_nodes(self):
+        return True

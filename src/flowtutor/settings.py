@@ -20,4 +20,3 @@ class Settings:
                 if len(content) > 0:
                     Settings.settings = literal_eval(content)
         return Settings.settings.get(key, default)
-

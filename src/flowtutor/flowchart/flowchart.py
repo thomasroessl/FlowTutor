@@ -1,10 +1,14 @@
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
+
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.loop import Loop
-from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.root import Root
+
+if TYPE_CHECKING:
+    from flowtutor.flowchart.node import Node
 
 
 class Flowchart:
@@ -43,6 +47,22 @@ class Flowchart:
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)
+
+    def find_parent(self, node: Node) -> Optional[Node]:
+        return next(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self), None)
+
+    def find_successor(self, node: Node) -> Optional[Node]:
+        if isinstance(node, Conditional):
+            connector = next(filter(lambda n: isinstance(n, Connector)
+                             and n.scope and n.scope[-1] == node.tag, self), None)
+            if connector is not None:
+                connection = connector.find_connection(0)
+                return None if connection is None else connection.dst_node
+            else:
+                return None
+        else:
+            connection = node.find_connection(0)
+            return None if connection is None else connection.dst_node
 
     def find_hovered_node(self, mouse_position: tuple[int, int]):
         return next(filter(lambda n: n.is_hovered(mouse_position), self), None)
@@ -101,13 +121,17 @@ class Flowchart:
 
         node.pos = pos
 
-    def remove_node(self, node: Optional[Node]):
-        if node is None:
+    def remove_node(self, node: Node):
+        if isinstance(node, Connector) or isinstance(node, Root):
             return
-
-        node.delete()
-        # if node in self.nodes:
-        #     self.nodes.remove(node)
+        parent = self.find_parent(node)
+        if parent is None:
+            return
+        successor = self.find_successor(node)
+        parent.connections = [c for c in parent.connections if c.dst_node != node]
+        if successor is None:
+            return
+        parent.connections.append(Connection(successor, 0))
 
     def move_below(self, parent: Node):
         for child in self.deduplicate(self.get_all_children(parent)):
@@ -115,3 +139,7 @@ class Flowchart:
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, int(pos_y + parent.height + 50))
         pass
+
+    def clear(self):
+        for node in self:
+            node.delete()

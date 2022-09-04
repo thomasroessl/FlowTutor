@@ -152,6 +152,9 @@ class Node(ABC):
             polygon = Polygon(self.points)
             return polygon.contains(point)
 
+    def has_nested_nodes(self):
+        return False
+
     def delete(self):
         if dpg.does_item_exist(self.tag):
             dpg.delete_item(self.tag)

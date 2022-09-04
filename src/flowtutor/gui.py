@@ -1,15 +1,17 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 import re
-from typing import Optional
-import dearpygui.dearpygui as dpg
 import os
+import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
+
 from flowtutor.flowchart.flowchart import Flowchart
-from flowtutor.flowchart.root import Root
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
-from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.connector import Connector
+
+if TYPE_CHECKING:
+    from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'
 
@@ -161,20 +163,23 @@ class GUI:
         self.resize()
 
     def on_delete_press(self):
-        if self.selected_node is None or isinstance(self.select_node, Connector) or isinstance(self.select_node, Root):
+        if self.selected_node is None:
             return
-        # def callback():
-        #     self.flowchart.remove_node(self.selected_node)
-        #     self.select_node(None)
-        #     self.redraw_all()
 
-        # if self.selected_node.has_child:
-        #     Modals.show_approval_modal(
-        #         'Delete Node',
-        #         'Deleting this node will also delete its children.',
-        #         callback)
-        # else:
-        #     callback()
+        def callback():
+            if self.selected_node is not None:
+                self.flowchart.clear()
+                self.flowchart.remove_node(self.selected_node)
+                self.select_node(None)
+                self.redraw_all()
+
+        if self.selected_node.has_nested_nodes():
+            Modals.show_approval_modal(
+                'Delete Node',
+                'Deleting this node will also delete all nested nodes.',
+                callback)
+        else:
+            callback()
 
     def select_node(self, node: Optional[Node]):
         self.selected_node = node

@@ -1,5 +1,3 @@
-
-
 from flowtutor.flowchart.node import Node
 
 
