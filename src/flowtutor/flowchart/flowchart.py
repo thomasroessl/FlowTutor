@@ -21,6 +21,9 @@ class Flowchart:
     def __iter__(self):
         return self.deduplicate(self.get_all_nodes(self.root))
 
+    def __len__(self):
+        return len(list(self.__iter__()))
+
     def deduplicate(self, it):
         seen = set()
         for x in it:
@@ -31,7 +34,7 @@ class Flowchart:
     def get_all_nodes(self, node: Node):
         yield node
         for connection in node.connections:
-            if connection.dst_node.tag != node.scope and node != connection.dst_node:
+            if connection.dst_node.tag not in node.scope and node != connection.dst_node:
                 yield from self.get_all_nodes(connection.dst_node)
 
     def get_all_children(self, node: Node):
@@ -46,13 +49,11 @@ class Flowchart:
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):
 
-        child.scope_stack = parent.scope_stack.copy()
-        if isinstance(parent, Conditional):
-            child.scope_stack.append(parent.tag)
+        child.scope = parent.scope.copy()
+        if isinstance(parent, Conditional) or isinstance(parent, Loop) and src_ind == 1:
+            child.scope.append(parent.tag)
         elif isinstance(parent, Connector):
-            child.scope_stack.pop()
-        elif isinstance(parent, Loop) and src_ind == 1:
-            child.scope_stack.append(parent.tag)
+            child.scope.pop()
 
         self.set_start_position(child, parent, src_ind)
         if isinstance(child, Connector):
@@ -110,6 +111,7 @@ class Flowchart:
 
     def move_below(self, parent: Node):
         for child in self.deduplicate(self.get_all_children(parent)):
-            if child != parent and parent.scope != child.tag:
+            if child != parent and child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, int(pos_y + parent.height + 50))
+        pass

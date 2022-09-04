@@ -74,7 +74,7 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(self.dst_node, Loop) and parent.scope == self.dst_node.tag:
+            elif isinstance(self.dst_node, Loop) and self.dst_node.tag in parent.scope:
                 in_x, in_y = dst_in_points[1]
                 dpg.draw_line(
                     (out_x, out_y + 30),

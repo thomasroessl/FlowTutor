@@ -19,7 +19,7 @@ class Node(ABC):
     def __init__(self):
         self._tag = str(uuid4())
         self._connections: list[Connection] = []
-        self._scope_stack: list[str] = []
+        self._scope: list[str] = []
         self._pos = (0, 0)
 
     def __repr__(self) -> str:
@@ -34,16 +34,12 @@ class Node(ABC):
         self._tag = tag
 
     @property
-    def scope_stack(self) -> list[str]:
-        return self._scope_stack
+    def scope(self) -> list[str]:
+        return self._scope
 
-    @scope_stack.setter
-    def scope_stack(self, scope_stack: list[str]):
-        self._scope_stack = scope_stack
-
-    @property
-    def scope(self) -> Optional[str]:
-        return self.scope_stack[-1] if self.scope_stack else None
+    @scope.setter
+    def scope(self, scope: list[str]):
+        self._scope = scope
 
     @property
     def points(self) -> list[tuple[int, int]]:
