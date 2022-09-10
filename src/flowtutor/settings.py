@@ -1,10 +1,10 @@
 from ast import literal_eval
-from typing import Union
+from typing import Dict, Union
 
 
 class Settings:
 
-    settings: dict[str, Union[str, int, float, bool]] = {}
+    settings: Dict[str, Union[str, int, float, bool]] = {}
 
     @staticmethod
     def set_setting(key: str, value: Union[str, int, float, bool]):

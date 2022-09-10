@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry.polygon import Polygon
@@ -42,7 +42,7 @@ class Node(ABC):
         self._scope = scope
 
     @property
-    def points(self) -> list[tuple[int, int]]:
+    def points(self) -> list[Tuple[int, int]]:
         pos_x, pos_y = self.pos
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.shape))
 
@@ -57,11 +57,11 @@ class Node(ABC):
         pass
 
     @property
-    def pos(self) -> tuple[int, int]:
+    def pos(self) -> Tuple[int, int]:
         return self._pos
 
     @pos.setter
-    def pos(self, pos: tuple[int, int]):
+    def pos(self, pos: Tuple[int, int]):
         self._pos = pos
 
     @property
@@ -74,21 +74,21 @@ class Node(ABC):
 
     @property
     @abstractmethod
-    def raw_in_points(self) -> list[tuple[int, int]]:
+    def raw_in_points(self) -> list[Tuple[int, int]]:
         pass
 
     @property
     @abstractmethod
-    def raw_out_points(self) -> list[tuple[int, int]]:
+    def raw_out_points(self) -> list[Tuple[int, int]]:
         pass
 
     @property
-    def in_points(self) -> list[tuple[int, int]]:
+    def in_points(self) -> list[Tuple[int, int]]:
         pos_x, pos_y = self.pos
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_in_points))
 
     @property
-    def out_points(self) -> list[tuple[int, int]]:
+    def out_points(self) -> list[Tuple[int, int]]:
         pos_x, pos_y = self.pos
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_out_points))
 
@@ -99,7 +99,7 @@ class Node(ABC):
 
     @property
     @abstractmethod
-    def shape(self) -> list[tuple[int, int]]:
+    def shape(self) -> list[Tuple[int, int]]:
         pass
 
     @property
@@ -113,7 +113,7 @@ class Node(ABC):
     def find_connection(self, index: int) -> Optional[Connection]:
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 
-    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected=False):
+    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
         color = self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
@@ -136,12 +136,12 @@ class Node(ABC):
         for connection in self.connections:
             connection.draw(self)
 
-    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_node):
+    def redraw(self, mouse_pos: Optional[Tuple[int, int]], selected_node):
         """Deletes the node and draws a new version of it."""
         self.delete()
         self.draw(mouse_pos, selected_node == self)
 
-    def is_hovered(self, mouse_pos: Union[tuple[int, int], None]):
+    def is_hovered(self, mouse_pos: Union[Tuple[int, int], None]):
         if mouse_pos is None:
             return False
         point = Point(*mouse_pos)

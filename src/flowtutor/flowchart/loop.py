@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
@@ -39,7 +39,7 @@ class Loop(Node):
             (0, 37.5)
         ]
 
-    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected=False):
+    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+"$"

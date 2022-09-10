@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -64,7 +64,7 @@ class Flowchart:
             connection = node.find_connection(0)
             return None if connection is None else connection.dst_node
 
-    def find_hovered_node(self, mouse_position: tuple[int, int]):
+    def find_hovered_node(self, mouse_position: Tuple[int, int]):
         return next(filter(lambda n: n.is_hovered(mouse_position), self), None)
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):

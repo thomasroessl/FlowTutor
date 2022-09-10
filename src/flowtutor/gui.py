@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 import re
 import os
 import dearpygui.dearpygui as dpg
@@ -25,14 +25,14 @@ class GUI:
     selected_node: Optional[Node] = None
 
     # The offset of the currently dragging node to its origin before moving
-    drag_offset: tuple[int, int] = (0, 0)
+    drag_offset: Tuple[int, int] = (0, 0)
 
     # The size of the GUI parent
-    parent_size: tuple[int, int] = (0, 0)
+    parent_size: Tuple[int, int] = (0, 0)
 
-    mouse_position: Optional[tuple[int, int]] = None
+    mouse_position: Optional[Tuple[int, int]] = None
 
-    mouse_position_on_canvas: Optional[tuple[int, int]] = None
+    mouse_position_on_canvas: Optional[Tuple[int, int]] = None
 
     def __init__(self, width: int, height: int):
         self.width = width
@@ -112,7 +112,7 @@ class GUI:
         Settings.set_setting('width', dpg.get_viewport_width())
         pass
 
-    def on_hover(self, _, data: tuple[int, int]):
+    def on_hover(self, _, data: Tuple[int, int]):
         '''Sets the mouse poition variable and redraws all objects.'''
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -232,7 +232,7 @@ class GUI:
         dpg.set_item_height(FLOWCHART_TAG, height-16)
         dpg.set_item_width(FLOWCHART_TAG, width-16)
 
-    def get_point_on_canvas(self, point_on_screen: tuple[int, int]):
+    def get_point_on_canvas(self, point_on_screen: Tuple[int, int]):
         '''Maps the point in screen coordinates to canvas coordinates.'''
         offsetX, offsetY = dpg.get_item_rect_min(FLOWCHART_TAG)
         x, y = point_on_screen
