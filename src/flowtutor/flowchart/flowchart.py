@@ -43,7 +43,8 @@ class Flowchart:
 
     def get_all_children(self, node: Node):
         for connection in node.connections:
-            yield from self.get_all_nodes(connection.dst_node)
+            if connection.dst_node.tag not in node.scope and node != connection.dst_node:
+                yield from self.get_all_nodes(connection.dst_node)
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)
@@ -137,8 +138,8 @@ class Flowchart:
         parent.connections.append(Connection(successor, old_connection.src_ind))
 
     def move_below(self, parent: Node):
-        for child in self.deduplicate(self.get_all_children(parent)):
-            if child != parent and child.tag not in parent.scope:
+        for i, child in enumerate(self.deduplicate(self.get_all_children(parent))):
+            if child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, int(pos_y + parent.shape_height + 50))
         pass
