@@ -7,6 +7,7 @@ from shapely.geometry import Point
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
@@ -76,15 +77,23 @@ class GUI:
                                            callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
                                                                      self.redraw_all()))
                     with dpg.group(horizontal=True):
-                        dpg.add_text('Type')
-                        dpg.add_combo(['Integer', 'Float', 'String'],
-                                      tag='selected_assignment_type', indent=50, width=-1,
-                                      callback=lambda _, data: self.selected_node.__setattr__('var_type', data))
-                    with dpg.group(horizontal=True):
                         dpg.add_text('Value')
                         dpg.add_input_text(tag='selected_assignment_value', indent=50, width=-1,
                                            callback=lambda _, data: (self.selected_node.__setattr__('var_value', data),
                                                                      self.redraw_all()))
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_declaration', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Declaration')
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Name')
+                        dpg.add_input_text(tag='selected_declaration_name', indent=50, width=-1, no_spaces=True,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
+                                                                     self.redraw_all()))
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Type')
+                        dpg.add_combo(['Integer', 'Float', 'String'],
+                                      tag='selected_declaration_type', indent=50, width=-1,
+                                      callback=lambda _, data: self.selected_node.__setattr__('var_type', data))
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_conditional', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Conditional')
@@ -155,15 +164,19 @@ class GUI:
         self.selected_node = node
         dpg.hide_item('selected_any')
         dpg.hide_item('selected_assignment')
+        dpg.hide_item('selected_declaration')
         dpg.hide_item('selected_conditional')
         dpg.hide_item('selected_loop')
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         if isinstance(self.selected_node, Assignment):
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
-            dpg.configure_item('selected_assignment_type', default_value=self.selected_node.var_type)
             dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
             dpg.show_item('selected_assignment')
+        elif isinstance(self.selected_node, Declaration):
+            dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
+            dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)
+            dpg.show_item('selected_declaration')
         elif isinstance(self.selected_node, Conditional):
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_conditional')

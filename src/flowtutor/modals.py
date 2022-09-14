@@ -2,6 +2,7 @@ import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
@@ -44,6 +45,10 @@ class Modals:
                     label="Assignment",
                     width=-1,
                     callback=lambda: (callback(Assignment()), dpg.delete_item("node_type_modal")))
+                dpg.add_button(
+                    label="Declaration",
+                    width=-1,
+                    callback=lambda: (callback(Declaration()), dpg.delete_item("node_type_modal")))
                 dpg.add_button(
                     label="Conditional",
                     width=-1,
