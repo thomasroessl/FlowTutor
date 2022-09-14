@@ -53,8 +53,10 @@ class GUI:
 
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
+                dpg.add_menu_item(label='Open...')
+                dpg.add_separator()
                 dpg.add_menu_item(label='Save')
-                dpg.add_menu_item(label='Save As')
+                dpg.add_menu_item(label='Save As...')
             with dpg.menu(label='View'):
                 with dpg.menu(label='Theme'):
                     dpg.add_menu_item(label='Light', callback=self.on_light_theme_menu_item_click)

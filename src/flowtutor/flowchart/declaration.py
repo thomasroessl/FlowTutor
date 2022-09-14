@@ -2,7 +2,6 @@ from typing import Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
-from flowtutor.themes import theme_colors
 
 
 class Declaration(Node):
@@ -75,7 +74,7 @@ class Declaration(Node):
         with dpg.draw_node(
                 tag=tag,
                 parent=FLOWCHART_TAG):
-            text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
+            text_color = (0, 0, 0)
 
             dpg.draw_line(
                 (pos_x + 10 + self.get_left_x(), pos_y),

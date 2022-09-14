@@ -15,7 +15,7 @@ class Flowchart:
 
     def __init__(self):
         root = Root()
-        root.pos = (135, 20)
+        root.pos = (290, 20)
         self._root = root
 
     @property
@@ -115,6 +115,8 @@ class Flowchart:
                     pos = (parent.pos[0] + 125, connection_point_y + 50)
             elif isinstance(parent, Loop) and int(src_ind) == 1:
                 pos = (parent.pos[0] + 145, connection_point_y + 50)
+            elif isinstance(parent, Loop):
+                pos = (parent.pos[0] - 35, connection_point_y + 50)
             elif isinstance(parent, Connector):
                 pos = (parent.pos[0] - parent.shape_width, connection_point_y + 50)
             else:

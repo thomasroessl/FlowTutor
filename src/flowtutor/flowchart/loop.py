@@ -21,11 +21,11 @@ class Loop(Node):
 
     @property
     def raw_in_points(self):
-        return [(75, 0), (110, 75)]
+        return [(75, 0), (125, 75)]
 
     @property
     def raw_out_points(self):
-        return [(75, 75), (self.get_right_x(), 37.5)]
+        return [(40, 75), (self.get_right_x(), 37.5)]
 
     @property
     def color(self):
@@ -72,7 +72,7 @@ class Loop(Node):
             text_false = "False"
             text_false_width, _ = dpg.get_text_size(
                 text_false)
-            dpg.draw_text((pos_x + self.shape_width / 2 - text_false_width - 10,
+            dpg.draw_text((pos_x - 10,
                            pos_y + self.shape_height + 5),
                           text_false, color=text_color, size=18)
 
