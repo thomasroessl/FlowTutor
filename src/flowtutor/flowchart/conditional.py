@@ -27,8 +27,8 @@ class Conditional(Node):
 
     @property
     def raw_out_points(self):
-        return [(self.shape_width//2 - self.width//2, 50),
-                ((self.width + self.shape_width)//2, 50)]
+        return [(self.get_left_x(), 50),
+                (self.get_right_x(), 50)]
 
     @property
     def color(self):
@@ -73,13 +73,13 @@ class Conditional(Node):
             text_false = "False"
             text_false_width, text_false_height = dpg.get_text_size(
                 text_false)
-            dpg.draw_text((pos_x - text_false_width - 5 + (self.shape_width//2 - self.width//2),
+            dpg.draw_text((pos_x - text_false_width - 5 + self.get_left_x(),
                            pos_y + self.shape_height/2 - text_false_height - 5),
                           text_false, color=text_color, size=18)
 
             text_true = "True"
             _, text_true_height = dpg.get_text_size(text_true)
-            dpg.draw_text((pos_x + 5 + (self.width + self.shape_width)//2,
+            dpg.draw_text((pos_x + 5 + self.get_right_x(),
                            pos_y + self.shape_height/2 - text_true_height - 5),
                           text_true, color=text_color, size=18)
 

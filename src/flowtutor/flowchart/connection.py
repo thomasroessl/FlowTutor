@@ -51,13 +51,13 @@ class Connection:
                     color=text_color,
                     thickness=2)
                 dpg.draw_line(
-                    (out_x - 40, out_y + 75),
+                    (in_x, out_y + 75),
                     (out_x + 60, out_y + 75),
                     color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
-                    (out_x - 40, out_y + 75),
+                    (in_x, out_y + 75),
                     color=text_color,
                     thickness=2,
                     size=10)

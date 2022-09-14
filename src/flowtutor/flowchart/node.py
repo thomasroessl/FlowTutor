@@ -132,6 +132,12 @@ class Node(ABC):
     def connections(self, connections: list[Connection]):
         self._connections = connections
 
+    def get_left_x(self):
+        return self.shape_width//2 - self.width//2
+
+    def get_right_x(self):
+        return (self.width + self.shape_width)//2
+
     def find_connection(self, index: int) -> Optional[Connection]:
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 

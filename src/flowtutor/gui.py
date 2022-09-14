@@ -8,6 +8,7 @@ from shapely.geometry import Point
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.loop import Loop
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
@@ -60,10 +61,10 @@ class GUI:
 
         with dpg.window(tag='main_window'):
             with dpg.group(tag='main_group', horizontal=True):
-                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_none', show=True):
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_any', show=True):
                     with dpg.menu_bar():
                         dpg.add_text('Selected Node')
-                    dpg.add_text('None')
+                    dpg.add_text('None', tag='selected_any_name')
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_assignment', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Assignment')
@@ -88,6 +89,14 @@ class GUI:
                     with dpg.group():
                         dpg.add_text('Condition')
                         dpg.add_input_text(tag='selected_conditional_condition', width=-1,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('condition', data),
+                                                                     self.redraw_all()))
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_loop', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Loop')
+                    with dpg.group():
+                        dpg.add_text('Condition')
+                        dpg.add_input_text(tag='selected_loop_condition', width=-1,
                                            callback=lambda _, data: (self.selected_node.__setattr__('condition', data),
                                                                      self.redraw_all()))
 
@@ -126,19 +135,28 @@ class GUI:
 
     def on_select_node(self, node: Optional[Node]):
         self.selected_node = node
+        dpg.hide_item('selected_any')
         dpg.hide_item('selected_assignment')
         dpg.hide_item('selected_conditional')
-        dpg.hide_item('selected_none')
+        dpg.hide_item('selected_loop')
         if isinstance(self.selected_node, Assignment):
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_assignment_type', default_value=self.selected_node.var_type)
             dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
             dpg.show_item('selected_assignment')
-        if isinstance(self.selected_node, Conditional):
+        elif isinstance(self.selected_node, Conditional):
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_conditional')
+        elif isinstance(self.selected_node, Loop):
+            dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)
+            dpg.show_item('selected_loop')
         else:
-            dpg.show_item('selected_none')
+            dpg.show_item('selected_any')
+            if self.selected_node:
+                selected_name = self.selected_node.__class__.__name__
+            else:
+                selected_name = 'None'
+            dpg.configure_item('selected_any_name', default_value=selected_name)
 
     def on_light_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_light())

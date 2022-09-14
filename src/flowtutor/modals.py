@@ -16,7 +16,7 @@ class Modals:
                 modal=True,
                 tag="approval_modal",
                 autosize=True,
-                pos=(100, 100),
+                pos=(250, 100),
                 on_close=lambda: dpg.delete_item("approval_modal")):
             dpg.add_text(message)
             with dpg.group(horizontal=True):
