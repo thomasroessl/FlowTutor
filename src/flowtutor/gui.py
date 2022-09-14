@@ -1,11 +1,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Tuple
 import re
-import os
+import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 
 from flowtutor.flowchart.flowchart import Flowchart
+from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.conditional import Conditional
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
@@ -57,10 +59,37 @@ class GUI:
                 dpg.add_menu_item(label='About')
 
         with dpg.window(tag='main_window'):
-            with dpg.group(tag='main_group', pos=[7, 30], horizontal=True):
-                with dpg.child_window(width=217, label='Selected Node'):
-                    dpg.add_text('Selected Node:')
-                    dpg.add_text('None', tag='selected_node')
+            with dpg.group(tag='main_group', horizontal=True):
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_none', show=True):
+                    with dpg.menu_bar():
+                        dpg.add_text('Selected Node')
+                    dpg.add_text('None')
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_assignment', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Assignment')
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Name')
+                        dpg.add_input_text(tag='selected_assignment_name', indent=50, width=-1, no_spaces=True,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
+                                                                     self.redraw_all()))
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Type')
+                        dpg.add_combo(['Integer', 'Float', 'String'],
+                                      tag='selected_assignment_type', indent=50, width=-1,
+                                      callback=lambda _, data: self.selected_node.__setattr__('var_type', data))
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Value')
+                        dpg.add_input_text(tag='selected_assignment_value', indent=50, width=-1,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('var_value', data),
+                                                                     self.redraw_all()))
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_conditional', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Conditional')
+                    with dpg.group():
+                        dpg.add_text('Condition')
+                        dpg.add_input_text(tag='selected_conditional_condition', width=-1,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('condition', data),
+                                                                     self.redraw_all()))
 
         with dpg.item_handler_registry(tag='window_handler'):
             dpg.add_item_resize_handler(callback=self.on_window_resize)
@@ -94,6 +123,22 @@ class GUI:
                 dpg.add_mouse_release_handler(callback=self.on_mouse_release)
                 dpg.add_key_press_handler(
                     dpg.mvKey_Delete, callback=self.on_delete_press)
+
+    def on_select_node(self, node: Optional[Node]):
+        self.selected_node = node
+        dpg.hide_item('selected_assignment')
+        dpg.hide_item('selected_conditional')
+        dpg.hide_item('selected_none')
+        if isinstance(self.selected_node, Assignment):
+            dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
+            dpg.configure_item('selected_assignment_type', default_value=self.selected_node.var_type)
+            dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
+            dpg.show_item('selected_assignment')
+        if isinstance(self.selected_node, Conditional):
+            dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
+            dpg.show_item('selected_conditional')
+        else:
+            dpg.show_item('selected_none')
 
     def on_light_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_light())
@@ -135,7 +180,7 @@ class GUI:
         if self.mouse_position_on_canvas is None:
             return
         prev_selected_node = self.selected_node
-        self.select_node(self.flowchart.find_hovered_node(self.mouse_position_on_canvas))
+        self.on_select_node(self.flowchart.find_hovered_node(self.mouse_position_on_canvas))
         if self.hovered_add_button is not None:
             m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
             if m is not None:
@@ -170,7 +215,7 @@ class GUI:
             if self.selected_node is not None:
                 self.flowchart.clear()
                 self.flowchart.remove_node(self.selected_node)
-                self.select_node(None)
+                self.on_select_node(None)
                 self.redraw_all()
 
         if self.selected_node.has_nested_nodes():
@@ -180,11 +225,6 @@ class GUI:
                 callback)
         else:
             callback()
-
-    def select_node(self, node: Optional[Node]):
-        self.selected_node = node
-        dpg.configure_item(
-            'selected_node', default_value=None if self.selected_node is None else self.selected_node.tag)
 
     def redraw_all(self):
         self.hovered_add_button = None

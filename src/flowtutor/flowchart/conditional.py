@@ -9,6 +9,10 @@ from flowtutor.themes import theme_colors
 
 class Conditional(Node):
 
+    def __init__(self):
+        super().__init__()
+        self._condition = ''
+
     @property
     def shape_width(self):
         return 150
@@ -23,7 +27,8 @@ class Conditional(Node):
 
     @property
     def raw_out_points(self):
-        return [(0, 50), (150, 50)]
+        return [(self.shape_width//2 - self.width//2, 50),
+                ((self.width + self.shape_width)//2, 50)]
 
     @property
     def color(self):
@@ -41,7 +46,18 @@ class Conditional(Node):
 
     @property
     def label(self):
-        return self.__class__.__name__
+        if self.condition:
+            return self.condition
+        else:
+            return self.__class__.__name__
+
+    @property
+    def condition(self) -> str:
+        return self._condition
+
+    @condition.setter
+    def condition(self, condition: str):
+        self._condition = condition
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
         super().draw(mouse_pos, is_selected)
@@ -57,12 +73,14 @@ class Conditional(Node):
             text_false = "False"
             text_false_width, text_false_height = dpg.get_text_size(
                 text_false)
-            dpg.draw_text((pos_x - text_false_width - 5, pos_y + self.shape_height/2 - text_false_height - 5),
+            dpg.draw_text((pos_x - text_false_width - 5 + (self.shape_width//2 - self.width//2),
+                           pos_y + self.shape_height/2 - text_false_height - 5),
                           text_false, color=text_color, size=18)
 
             text_true = "True"
             _, text_true_height = dpg.get_text_size(text_true)
-            dpg.draw_text((pos_x + self.shape_width + 5, pos_y + self.shape_height/2 - text_true_height - 5),
+            dpg.draw_text((pos_x + 5 + (self.width + self.shape_width)//2,
+                           pos_y + self.shape_height/2 - text_true_height - 5),
                           text_true, color=text_color, size=18)
 
     def delete(self):

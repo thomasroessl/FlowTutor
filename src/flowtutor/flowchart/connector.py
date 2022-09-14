@@ -5,6 +5,8 @@ from flowtutor.flowchart.node import Node
 
 class Connector(Node):
 
+    _shape_points = list(Point(25, 25).buffer(25).exterior.coords)
+
     @property
     def shape_width(self):
         return 50
@@ -27,7 +29,7 @@ class Connector(Node):
 
     @property
     def shape_points(self):
-        return Point(0, 0).buffer(25).exterior.coords
+        return self._shape_points
 
     @property
     def label(self):

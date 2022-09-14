@@ -6,6 +6,7 @@ class Assignment(Node):
     def __init__(self):
         super().__init__()
         self._var_name = ''
+        self._var_type = 'Integer'
         self._var_value = ''
 
     @property
@@ -52,6 +53,14 @@ class Assignment(Node):
     @var_name.setter
     def var_name(self, var_name: str):
         self._var_name = var_name
+
+    @property
+    def var_type(self) -> str:
+        return self._var_type
+
+    @var_type.setter
+    def var_type(self, var_type: str):
+        self._var_type = var_type
 
     @property
     def var_value(self) -> str:

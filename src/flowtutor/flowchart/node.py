@@ -45,22 +45,27 @@ class Node(ABC):
     def shape(self) -> Polygon:
         pos_x, pos_y = self.pos
 
-        label_width, _ = dpg.get_text_size(self.label)
-
-        delta = label_width + 20 - self.shape_width
+        delta = self.width - self.shape_width
 
         if delta > 0:
             points = []
             for p in self.shape_points:
                 x, y = p
                 if x < self.shape_width / 2:
-                    points.append((x - delta/2, y))
+                    points.append((x - delta//2, y))
+                elif x > self.shape_width / 2:
+                    points.append((x + delta//2, y))
                 else:
-                    points.append((x + delta/2, y))
+                    points.append((x, y))
         else:
             points = self.shape_points.copy()
 
         return Polygon(list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points)))
+
+    @property
+    def width(self) -> int:
+        label_width, _ = dpg.get_text_size(self.label)
+        return int(max(self.shape_width, label_width + 40))
 
     @property
     @abstractmethod

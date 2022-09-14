@@ -118,7 +118,7 @@ def create_theme_light() -> int:
             set_theme_color(dpg.mvThemeCol_PopupBg, (255, 255, 255, 0.98 * 255))
             set_theme_color(dpg.mvThemeCol_Border, (0, 0, 0, 0.30 * 255))
             set_theme_color(dpg.mvThemeCol_BorderShadow, (0, 0, 0, 0))
-            set_theme_color(dpg.mvThemeCol_FrameBg, (255, 255, 255, 255))
+            set_theme_color(dpg.mvThemeCol_FrameBg, (230, 230, 230, 255))
             set_theme_color(dpg.mvThemeCol_FrameBgHovered, (0.26 * 255, 0.59 * 255, 0.98 * 255, 0.40 * 255))
             set_theme_color(dpg.mvThemeCol_FrameBgActive, (0.26 * 255, 0.59 * 255, 0.98 * 255, 0.67 * 255))
             set_theme_color(dpg.mvThemeCol_TitleBg, (0.96 * 255, 0.96 * 255, 0.96 * 255, 255))
