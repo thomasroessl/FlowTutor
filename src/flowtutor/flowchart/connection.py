@@ -95,20 +95,26 @@ class Connection:
                 pass
             elif isinstance(parent, Conditional) and isinstance(self.dst_node, Connector):
                 in_x, in_y = dst_in_points[0]
-                dst_offset = 25 if out_x > in_x else -25
+                dst_offset = 50
+                if int(self.src_ind) == 1:
+                    in_x += 25
+                    line_x = max(out_x, in_x) + dst_offset
+                else:
+                    in_x -= 25
+                    line_x = min(out_x, in_x) - dst_offset
                 dpg.draw_line(
-                    (out_x + dst_offset * 2, out_y),
                     (out_x, out_y),
+                    (line_x, out_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_line(
-                    (out_x + dst_offset * 2, in_y + 25),
-                    (out_x + dst_offset * 2, out_y),
+                    (line_x, in_y + 25),
+                    (line_x, out_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
-                    (in_x + dst_offset, in_y + 25),
-                    (out_x + dst_offset * 2, in_y + 25),
+                    (in_x, in_y + 25),
+                    (line_x, in_y + 25),
                     color=text_color,
                     thickness=2,
                     size=10)
