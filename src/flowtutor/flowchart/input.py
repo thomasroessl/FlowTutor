@@ -5,6 +5,10 @@ from flowtutor.flowchart.node import Node
 
 class Input(Node):
 
+    def __init__(self):
+        super().__init__()
+        self._var_name = ''
+
     @property
     def shape_width(self):
         return 150
@@ -26,6 +30,14 @@ class Input(Node):
         return (147, 171, 255)
 
     @property
+    def var_name(self) -> str:
+        return self._var_name
+
+    @var_name.setter
+    def var_name(self, var_name: str):
+        self._var_name = var_name
+
+    @property
     def shape_points(self):
         return [
             (20, 0),
@@ -36,5 +48,8 @@ class Input(Node):
         ]
 
     @property
-    def label(self):
-        return self.__class__.__name__
+    def label(self) -> str:
+        if self.var_name:
+            return f'{self.var_name} = Input'
+        else:
+            return self.__class__.__name__

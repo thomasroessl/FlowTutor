@@ -8,7 +8,9 @@ from shapely.geometry import Point
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.output import Output
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
@@ -99,6 +101,22 @@ class GUI:
                         dpg.add_input_text(tag='selected_loop_condition', width=-1,
                                            callback=lambda _, data: (self.selected_node.__setattr__('condition', data),
                                                                      self.redraw_all()))
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_input', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Input')
+                    with dpg.group(horizontal=True):
+                        dpg.add_text('Name')
+                        dpg.add_input_text(tag='selected_input_name', indent=50, width=-1, no_spaces=True,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
+                                                                     self.redraw_all()))
+                with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_output', show=False):
+                    with dpg.menu_bar():
+                        dpg.add_text('Output')
+                    with dpg.group():
+                        dpg.add_text('Expression')
+                        dpg.add_input_text(tag='selected_output_expression', width=-1,
+                                           callback=lambda _, data: (self.selected_node.__setattr__('expression', data),
+                                                                     self.redraw_all()))
 
         with dpg.item_handler_registry(tag='window_handler'):
             dpg.add_item_resize_handler(callback=self.on_window_resize)
@@ -139,6 +157,8 @@ class GUI:
         dpg.hide_item('selected_assignment')
         dpg.hide_item('selected_conditional')
         dpg.hide_item('selected_loop')
+        dpg.hide_item('selected_input')
+        dpg.hide_item('selected_output')
         if isinstance(self.selected_node, Assignment):
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_assignment_type', default_value=self.selected_node.var_type)
@@ -150,6 +170,12 @@ class GUI:
         elif isinstance(self.selected_node, Loop):
             dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_loop')
+        elif isinstance(self.selected_node, Input):
+            dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
+            dpg.show_item('selected_input')
+        elif isinstance(self.selected_node, Output):
+            dpg.configure_item('selected_output_expression', default_value=self.selected_node.expression)
+            dpg.show_item('selected_output')
         else:
             dpg.show_item('selected_any')
             if self.selected_node:

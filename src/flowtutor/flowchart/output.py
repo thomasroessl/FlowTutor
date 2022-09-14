@@ -3,6 +3,10 @@ from flowtutor.flowchart.node import Node
 
 class Output(Node):
 
+    def __init__(self):
+        super().__init__()
+        self._expression = ''
+
     @property
     def shape_width(self):
         return 150
@@ -34,5 +38,16 @@ class Output(Node):
         ]
 
     @property
-    def label(self):
-        return self.__class__.__name__
+    def expression(self) -> str:
+        return self._expression
+
+    @expression.setter
+    def expression(self, expression: str):
+        self._expression = expression
+
+    @property
+    def label(self) -> str:
+        if self.expression:
+            return f'Output:\n{self.expression}'
+        else:
+            return self.__class__.__name__
