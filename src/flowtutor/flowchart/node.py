@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
-from shapely.geometry.polygon import Polygon
+from shapely.geometry import Polygon
 from shapely.geometry import Point
 
 from flowtutor.themes import theme_colors
@@ -42,18 +42,34 @@ class Node(ABC):
         self._scope = scope
 
     @property
-    def points(self) -> list[Tuple[int, int]]:
+    def shape(self) -> Polygon:
         pos_x, pos_y = self.pos
-        return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.shape))
+
+        label_width, _ = dpg.get_text_size(self.label)
+
+        delta = label_width + 20 - self.shape_width
+
+        if delta > 0:
+            points = []
+            for p in self.shape_points:
+                x, y = p
+                if x < self.shape_width / 2:
+                    points.append((x - delta/2, y))
+                else:
+                    points.append((x + delta/2, y))
+        else:
+            points = self.shape_points.copy()
+
+        return Polygon(list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points)))
 
     @property
     @abstractmethod
-    def width(self) -> int:
+    def shape_width(self) -> int:
         pass
 
     @property
     @abstractmethod
-    def height(self) -> int:
+    def shape_height(self) -> int:
         pass
 
     @property
@@ -66,11 +82,7 @@ class Node(ABC):
 
     @property
     def bounds(self):
-        if len(self.points) == 1:
-            c_x, c_y = self.points[0]
-            return (c_x - 25, c_y - 25, c_x + 25, c_y + 25)
-        else:
-            return Polygon(self.points).bounds
+        return self.shape.bounds
 
     @property
     @abstractmethod
@@ -99,7 +111,12 @@ class Node(ABC):
 
     @property
     @abstractmethod
-    def shape(self) -> list[Tuple[int, int]]:
+    def shape_points(self) -> list[Tuple[int, int]]:
+        pass
+
+    @property
+    @abstractmethod
+    def label(self) -> str:
         pass
 
     @property
@@ -122,16 +139,12 @@ class Node(ABC):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
             thickness = 3 if is_selected else 2 if self.is_hovered(
                 mouse_pos) else 1
-            if len(self.points) == 1:
-                dpg.draw_circle(self.points[0], 25, fill=color)
-                dpg.draw_circle(self.points[0], 25, color=text_color, thickness=thickness)
-            else:
-                dpg.draw_polygon(self.points, fill=color)
-                dpg.draw_polygon(self.points, color=text_color, thickness=thickness)
-                label = self.__class__.__name__
-                text_width, text_height = dpg.get_text_size(label)
-                dpg.draw_text((pos_x + self.width / 2 - text_width / 2, pos_y + self.height / 2 - text_height / 2),
-                              label, color=(0, 0, 0), size=18)
+            dpg.draw_polygon(list(self.shape.exterior.coords), fill=color)
+            dpg.draw_polygon(list(self.shape.exterior.coords), color=text_color, thickness=thickness)
+            text_width, text_height = dpg.get_text_size(self.label)
+            dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
+                           pos_y + self.shape_height / 2 - text_height / 2),
+                          self.label, color=(0, 0, 0), size=18)
 
         for connection in self.connections:
             connection.draw(self)
@@ -145,12 +158,7 @@ class Node(ABC):
         if mouse_pos is None:
             return False
         point = Point(*mouse_pos)
-        if len(self.points) == 1:
-            center = Point(*self.points[0])
-            return point.distance(center) <= 25
-        else:
-            polygon = Polygon(self.points)
-            return polygon.contains(point)
+        return self.shape.contains(point)
 
     def has_nested_nodes(self):
         return False

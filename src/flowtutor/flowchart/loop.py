@@ -8,11 +8,11 @@ from flowtutor.themes import theme_colors
 class Loop(Node):
 
     @property
-    def width(self):
+    def shape_width(self):
         return 150
 
     @property
-    def height(self):
+    def shape_height(self):
         return 75
 
     @property
@@ -28,7 +28,7 @@ class Loop(Node):
         return (255, 208, 147)
 
     @property
-    def shape(self):
+    def shape_points(self):
         return [
             (0, 37.5),
             (20, 75),
@@ -38,6 +38,10 @@ class Loop(Node):
             (20, 0),
             (0, 37.5)
         ]
+
+    @property
+    def label(self):
+        return self.__class__.__name__
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
         super().draw(mouse_pos, is_selected)
@@ -53,12 +57,12 @@ class Loop(Node):
             text_false = "False"
             text_false_width, _ = dpg.get_text_size(
                 text_false)
-            dpg.draw_text((pos_x + self.width / 2 - text_false_width - 10, pos_y + self.height + 5),
+            dpg.draw_text((pos_x + self.shape_width / 2 - text_false_width - 10, pos_y + self.shape_height + 5),
                           text_false, color=text_color, size=18)
 
             text_true = "True"
             _, text_true_height = dpg.get_text_size(text_true)
-            dpg.draw_text((pos_x + self.width + 5, pos_y + self.height/2 - text_true_height - 5),
+            dpg.draw_text((pos_x + self.shape_width + 5, pos_y + self.shape_height/2 - text_true_height - 5),
                           text_true, color=text_color, size=18)
 
     def delete(self):

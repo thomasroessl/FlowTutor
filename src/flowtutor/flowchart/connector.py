@@ -1,14 +1,16 @@
+from shapely.geometry import Point
+
 from flowtutor.flowchart.node import Node
 
 
 class Connector(Node):
 
     @property
-    def width(self):
+    def shape_width(self):
         return 50
 
     @property
-    def height(self):
+    def shape_height(self):
         return 50
 
     @property
@@ -24,7 +26,9 @@ class Connector(Node):
         return (255, 170, 170)
 
     @property
-    def shape(self):
-        return [
-            (25, 25)
-        ]
+    def shape_points(self):
+        return Point(0, 0).buffer(25).exterior.coords
+
+    @property
+    def label(self):
+        return ''

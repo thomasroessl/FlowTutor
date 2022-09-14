@@ -103,7 +103,7 @@ class Flowchart:
     def set_start_position(self, node: Node, parent: Node, src_ind: int):
         if isinstance(node, Connector):
             pos_x, pos_y = parent.pos
-            pos = (int(pos_x + parent.width/2 - node.width/2),
+            pos = (int(pos_x + parent.shape_width/2 - node.shape_width/2),
                    int(pos_y))
         else:
             _, connection_point_y = parent.out_points[int(src_ind)]
@@ -115,7 +115,7 @@ class Flowchart:
             elif isinstance(parent, Loop) and int(src_ind) == 1:
                 pos = (parent.pos[0] + 145, connection_point_y + 50)
             elif isinstance(parent, Connector):
-                pos = (parent.pos[0] - parent.width, connection_point_y + 50)
+                pos = (parent.pos[0] - parent.shape_width, connection_point_y + 50)
             else:
                 pos = (parent.pos[0], connection_point_y + 50)
 
@@ -140,7 +140,7 @@ class Flowchart:
         for child in self.deduplicate(self.get_all_children(parent)):
             if child != parent and child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
-                child.pos = (pos_x, int(pos_y + parent.height + 50))
+                child.pos = (pos_x, int(pos_y + parent.shape_height + 50))
         pass
 
     def clear(self):

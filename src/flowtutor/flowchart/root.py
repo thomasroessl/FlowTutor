@@ -4,11 +4,11 @@ from flowtutor.flowchart.node import Node
 class Root(Node):
 
     @property
-    def width(self):
+    def shape_width(self):
         return 150
 
     @property
-    def height(self):
+    def shape_height(self):
         return 75
 
     @property
@@ -24,7 +24,7 @@ class Root(Node):
         return (200, 170, 255)
 
     @property
-    def shape(self):
+    def shape_points(self):
         return [
             (0, 37.5),
             (1, 30),
@@ -62,3 +62,7 @@ class Root(Node):
             (1, 45),
             (0, 37.5)
         ]
+
+    @property
+    def label(self):
+        return 'Main'
