@@ -65,6 +65,7 @@ class Conditional(Node):
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):
             return
+        # Draw labels for the branches
         with dpg.draw_node(
                 tag=tag,
                 parent=FLOWCHART_TAG):

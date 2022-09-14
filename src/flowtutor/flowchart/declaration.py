@@ -71,6 +71,7 @@ class Declaration(Node):
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):
             return
+        # Draw extra lines for the declaration node
         with dpg.draw_node(
                 tag=tag,
                 parent=FLOWCHART_TAG):
