@@ -44,7 +44,7 @@ class Node(ABC):
         self._scope = scope
 
     @property
-    def shape(self) -> Polygon:
+    def shape(self) -> Polygon:  # pragma: no cover
         pos_x, pos_y = self.pos
 
         delta = self.width - self.shape_width
@@ -143,7 +143,7 @@ class Node(ABC):
     def find_connection(self, index: int) -> Optional[Connection]:
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
+    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         color = self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
@@ -176,6 +176,6 @@ class Node(ABC):
     def has_nested_nodes(self):
         return False
 
-    def delete(self):
+    def delete(self):  # pragma: no cover
         if dpg.does_item_exist(self.tag):
             dpg.delete_item(self.tag)

@@ -58,7 +58,7 @@ class Loop(Node):
     def condition(self, condition: str):
         self._condition = condition
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
+    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+"$"
@@ -82,7 +82,7 @@ class Loop(Node):
                            pos_y + self.shape_height/2 - text_true_height - 5),
                           text_true, color=text_color, size=18)
 
-    def delete(self):
+    def delete(self):  # pragma: no cover
         super().delete()
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):

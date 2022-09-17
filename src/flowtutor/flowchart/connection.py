@@ -27,7 +27,7 @@ class Connection:
     def src_ind(self) -> int:
         return self._src_ind
 
-    def draw(self, parent: Node):
+    def draw(self, parent: Node):  # pragma: no cover
 
         dst_in_points = self.dst_node.in_points
         src_out_points = parent.out_points

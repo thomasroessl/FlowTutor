@@ -64,7 +64,7 @@ class Declaration(Node):
     def var_type(self, var_type: str):
         self._var_type = var_type
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):
+    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+"$"
@@ -88,7 +88,7 @@ class Declaration(Node):
                 color=text_color,
                 thickness=1)
 
-    def delete(self):
+    def delete(self):  # pragma: no cover
         super().delete()
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):

@@ -101,7 +101,7 @@ class Flowchart:
                 child.connections.append(Connection(child, 1))
             self.move_below(child)
 
-    def set_start_position(self, node: Node, parent: Node, src_ind: int):
+    def set_start_position(self, node: Node, parent: Node, src_ind: int):  # pragma: no cover
         if isinstance(node, Connector):
             pos_x, pos_y = parent.pos
             pos = (int(pos_x + parent.shape_width/2 - node.shape_width/2),
@@ -139,7 +139,7 @@ class Flowchart:
             return
         parent.connections.append(Connection(successor, old_connection.src_ind))
 
-    def move_below(self, parent: Node):
+    def move_below(self, parent: Node):  # pragma: no cover
         for i, child in enumerate(self.deduplicate(self.get_all_children(parent))):
             if child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
