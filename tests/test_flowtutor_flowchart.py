@@ -8,7 +8,7 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
-from flowtutor.flowchart.root import Root
+from flowtutor.flowchart.function import Function
 from flowtutor.flowchart.connector import Connector
 
 from flowtutor.flowchart.node import dpg as node_dpg
@@ -27,7 +27,7 @@ ALL_NODES = [
     Input,
     Loop,
     Output,
-    Root
+    Function
 ]
 
 
@@ -41,8 +41,9 @@ class TestFlowchart:
 
     def test_flowchart_initialize_root(self):
         flowchart = Flowchart()
-        assert len(flowchart) == 1, 'A new flowchart should contain exactly one Node'
-        assert any(map(lambda node: isinstance(node, Root), flowchart)), 'A new flowchart should contain the root node'
+        assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("Main" and "End")'
+        assert all(map(lambda node: isinstance(node, Function), flowchart)), ('A new flowchart should contain '
+                                                                              'the root nodes')
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_nodes(self, node_class):
@@ -51,7 +52,7 @@ class TestFlowchart:
         node2 = node_class()
         flowchart.add_node(flowchart.root, node1)
         flowchart.add_node(node1, node2)
-        assert len(flowchart) == 3, 'After adding 2 nodes, there should be 3 nodes in the flowchart'
+        assert len(flowchart) == 4, 'After adding 2 nodes, there should be 4 nodes in the flowchart'
         root_connection_0 = flowchart.root.find_connection(0)
         assert root_connection_0 is not None
         assert root_connection_0.dst_node == node1, 'There should be a connection from root to node1'
@@ -63,7 +64,7 @@ class TestFlowchart:
         flowchart = Flowchart()
         loop1 = Loop()
         flowchart.add_node(flowchart.root, loop1)
-        assert len(flowchart) == 2, 'After adding a loop, there should be 2 nodes in the flowchart'
+        assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
         root_connection_0 = flowchart.root.find_connection(0)
         assert root_connection_0 is not None
         assert root_connection_0.dst_node == loop1, 'There should be a connection from root to the loop'
@@ -75,7 +76,7 @@ class TestFlowchart:
         flowchart = Flowchart()
         node1 = Conditional()
         flowchart.add_node(flowchart.root, node1)
-        assert len(flowchart) == 3, ('After adding a conditional, there should be 3 nodes in the flowchart'
+        assert len(flowchart) == 4, ('After adding a conditional, there should be 4 nodes in the flowchart'
                                      ' (including the conditional connector)')
         root_connection_0 = flowchart.root.find_connection(0)
         assert root_connection_0 is not None
@@ -96,19 +97,19 @@ class TestFlowchart:
         flowchart = Flowchart()
         node1 = node_class()
         flowchart.add_node(flowchart.root, node1)
-        assert len(flowchart) == 2, 'After adding a node, there should be 2 nodes in the flowchart'
+        assert len(flowchart) == 3, 'After adding a node, there should be 3 nodes in the flowchart'
         flowchart.remove_node(node1)
-        assert len(flowchart) == 1, 'After removing the node, there should be 1 node in the flowchart'
-        assert any(map(lambda node: isinstance(node, Root), flowchart)), 'The remaining node should be the root'
+        assert len(flowchart) == 2, 'After removing the node, there should be 2 node in the flowchart'
+        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
 
     def test_flowchart_add_and_remove_conditional(self):
         flowchart = Flowchart()
         conditional1 = Conditional()
         flowchart.add_node(flowchart.root, conditional1)
-        assert len(flowchart) == 3, 'After adding a conditional, there should be 2 nodes in the flowchart'
+        assert len(flowchart) == 4, 'After adding a conditional, there should be 4 nodes in the flowchart'
         flowchart.remove_node(conditional1)
-        assert len(flowchart) == 1, 'After removing the conditional, there should be 1 nodes in the flowchart'
-        assert any(map(lambda node: isinstance(node, Root), flowchart)), 'The remaining node should be the root'
+        assert len(flowchart) == 2, 'After removing the conditional, there should be 2 nodes in the flowchart'
+        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_node_in_loop_body(self, node_class):
@@ -117,8 +118,8 @@ class TestFlowchart:
         node1 = node_class()
         flowchart.add_node(flowchart.root, loop1)
         flowchart.add_node(loop1, node1, 1)
-        assert len(flowchart) == 3, ('After adding a loop and a node in the loop body, '
-                                     'there should be 3 nodes in the flowchart')
+        assert len(flowchart) == 4, ('After adding a loop and a node in the loop body, '
+                                     'there should be 4 nodes in the flowchart')
         loop_connection_1 = loop1.find_connection(1)
         assert loop_connection_1 is not None
         assert loop_connection_1.dst_node == node1, 'There should be a connection from the loop to the node'
@@ -133,11 +134,11 @@ class TestFlowchart:
 
         conditional1 = Conditional()
         flowchart.add_node(flowchart.root, conditional1)
-        assert len(flowchart) == 3, 'After adding a conditional, there should be 3 nodes in the flowchart'
+        assert len(flowchart) == 4, 'After adding a conditional, there should be 4 nodes in the flowchart'
 
         conditional2 = Conditional()
         flowchart.add_node(conditional1, conditional2, 1)
-        assert len(flowchart) == 5, 'After adding a second conditional, there should be 5 nodes in the flowchart'
+        assert len(flowchart) == 6, 'After adding a second conditional, there should be 6 nodes in the flowchart'
         conditional1_connection_1 = conditional1.find_connection(1)
         assert conditional1_connection_1 is not None
         assert conditional1_connection_1.dst_node == conditional2, ('There should be a connection '
@@ -148,21 +149,21 @@ class TestFlowchart:
 
         node1 = node_class()
         flowchart.add_node(conditional2, node1, 0)
-        assert len(flowchart) == 6, ('After adding a node to the second conditional, '
-                                     'there should be 6 nodes in the flowchart')
+        assert len(flowchart) == 7, ('After adding a node to the second conditional, '
+                                     'there should be 7 nodes in the flowchart')
         assert conditional2.tag == node1.scope[-1], 'The inner scope of node1 should be the second conditional'
         assert conditional1.tag == node1.scope[-2], 'The outer scope of node1 should be the first conditional'
 
         node2 = node_class()
         flowchart.add_node(conditional2, node2, 0)
-        assert len(flowchart) == 7, ('After adding another node to the second conditional, '
-                                     'there should be 7 nodes in the flowchart')
+        assert len(flowchart) == 8, ('After adding another node to the second conditional, '
+                                     'there should be 8 nodes in the flowchart')
         assert conditional2.tag == node2.scope[-1], 'The inner scope of node2 should be the second conditional'
         assert conditional1.tag == node2.scope[-2], 'The outer scope of node2 should be the first conditional'
 
         flowchart.remove_node(conditional1)
-        assert len(flowchart) == 1, 'After removing the outer conditional, there should be 1 node in the flowchart'
-        assert any(map(lambda node: isinstance(node, Root), flowchart)), 'The remaining node should be the root'
+        assert len(flowchart) == 2, 'After removing the outer conditional, there should be 2 nodes in the flowchart'
+        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_and_remove_nested_loops(self, node_class):
@@ -170,26 +171,27 @@ class TestFlowchart:
 
         loop1 = Loop()
         flowchart.add_node(flowchart.root, loop1)
-        assert len(flowchart) == 2, 'After adding a loop, there should be 2 nodes in the flowchart'
+        assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
 
         loop2 = Loop()
         flowchart.add_node(loop1, loop2, 1)
-        assert len(flowchart) == 3, 'After adding another loop, there should be 3 nodes in the flowchart'
+        assert len(flowchart) == 4, 'After adding another loop, there should be 4 nodes in the flowchart'
         assert loop1.tag == loop2.scope[-1], ('The scope of the second loop should be the first loop')
 
         node1 = node_class()
         flowchart.add_node(loop2, node1, 1)
-        assert len(flowchart) == 4, 'After adding a node to the second loop, there should be 6 nodes in the flowchart'
+        assert len(flowchart) == 5, ('After adding a node to the second loop body,'
+                                     'there should be 5 nodes in the flowchart')
         assert loop2.tag == node1.scope[-1], 'The inner scope of node1 should be the second conditional'
         assert loop1.tag == node1.scope[-2], 'The outer scope of node1 should be the first conditional'
 
         node2 = node_class()
         flowchart.add_node(loop2, node2, 1)
-        assert len(flowchart) == 5, ('After adding another node to the second loop, '
+        assert len(flowchart) == 6, ('After adding another node to the second loop body, '
                                      'there should be 6 nodes in the flowchart')
         assert loop2.tag == node2.scope[-1], 'The inner scope of node2 should be the second conditional'
         assert loop1.tag == node2.scope[-2], 'The outer scope of node2 should be the first conditional'
 
         flowchart.remove_node(loop1)
-        assert len(flowchart) == 1, 'After removing the outer loop, there should be 1 node in the flowchart'
-        assert any(map(lambda node: isinstance(node, Root), flowchart)), 'The remaining node should be the root'
+        assert len(flowchart) == 2, 'After removing the outer loop, there should be 1 node in the flowchart'
+        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'

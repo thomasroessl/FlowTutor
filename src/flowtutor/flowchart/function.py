@@ -1,7 +1,11 @@
 from flowtutor.flowchart.node import Node
 
 
-class Root(Node):
+class Function(Node):
+
+    def __init__(self, name: str = ''):
+        super().__init__()
+        self._name = name
 
     @property
     def shape_width(self):
@@ -64,5 +68,13 @@ class Root(Node):
         ]
 
     @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
+    @property
     def label(self):
-        return 'Main'
+        return self.name

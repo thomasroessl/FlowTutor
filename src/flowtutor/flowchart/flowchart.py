@@ -5,7 +5,7 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.loop import Loop
-from flowtutor.flowchart.root import Root
+from flowtutor.flowchart.function import Function
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -14,9 +14,11 @@ if TYPE_CHECKING:
 class Flowchart:
 
     def __init__(self):
-        root = Root()
+        root = Function('Main')
         root.pos = (290, 20)
         self._root = root
+        end = Function('End')
+        self.add_node(root, end)
 
     @property
     def root(self) -> Node:
@@ -125,7 +127,7 @@ class Flowchart:
         node.pos = pos
 
     def remove_node(self, node: Node):
-        if isinstance(node, Connector) or isinstance(node, Root):
+        if isinstance(node, Connector) or isinstance(node, Function):
             return
         parent = self.find_parent(node)
         if parent is None:
