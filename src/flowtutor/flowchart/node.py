@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 FLOWCHART_TAG = 'flowchart'
 
+__all__ = ['Node', 'dpg']
+
 
 class Node(ABC):
 
