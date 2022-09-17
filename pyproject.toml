@@ -17,7 +17,7 @@ warn_unused_configs = true
 no_implicit_reexport = true
 
 [tool.pytest.ini_options]
-addopts = "--cov=flowtutor"
+addopts = "--cov"
 testpaths = [
     "tests",
 ]

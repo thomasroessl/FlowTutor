@@ -1,0 +1,14 @@
+[paths]
+    source = 
+        src
+        */site-packages
+
+[run]
+source = 
+    flowtutor
+omit = 
+    */flowtutor/__init__.py
+    */flowtutor/flowchart/__init__.py 
+    */flowtutor/main.py 
+    */flowtutor/gui.py 
+    */flowtutor/themes.py
