@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class Flowchart:
 
     def __init__(self):
+        self._lang = 'c'
         root = Function('Main')
         root.pos = (290, 20)
         self._root = root
@@ -23,6 +24,14 @@ class Flowchart:
     @property
     def root(self) -> Node:
         return self._root
+
+    @property
+    def lang(self) -> str:
+        return self._lang
+
+    @lang.setter
+    def lang(self, lang: str):
+        self._lang = lang
 
     def __iter__(self):
         return self.deduplicate(self.get_all_nodes(self.root))

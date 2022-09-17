@@ -47,6 +47,17 @@ class GUI:
 
         dpg.create_context()
 
+        c_image_width, c_image_height, _, c_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/c.png'))
+        python_image_width, python_image_height, _, python_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/python.png'))
+
+        with dpg.texture_registry():
+            dpg.add_static_texture(width=c_image_width, height=c_image_height,
+                                   default_value=c_image_data, tag="c_image")
+            dpg.add_static_texture(width=python_image_width, height=python_image_height,
+                                   default_value=python_image_data, tag="python_image")
+
         with dpg.font_registry():
             deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../assets/inconsolata.ttf'), 18)
         dpg.bind_font(deafault_font)
@@ -153,7 +164,11 @@ class GUI:
             dpg.add_drawlist(tag=FLOWCHART_TAG,
                              width=self.width,
                              height=self.height)
-
+            if self.flowchart.lang == 'c':
+                dpg.add_image('c_image', pos=(10, 10))
+            elif self.flowchart.lang == 'python':
+                dpg.add_image('python_image', pos=(10, 10))
+            
             with dpg.handler_registry():
                 dpg.add_mouse_move_handler(callback=self.on_hover)
                 dpg.add_mouse_drag_handler(callback=self.on_drag)
