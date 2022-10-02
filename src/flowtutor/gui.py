@@ -12,6 +12,7 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
+from flowtutor.language import Language
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
@@ -104,9 +105,38 @@ class GUI:
                                                                      self.redraw_all()))
                     with dpg.group(horizontal=True):
                         dpg.add_text('Type')
-                        dpg.add_combo(['Integer', 'Float', 'String'],
+                        dpg.add_combo(Language.get_data_types(),
                                       tag='selected_declaration_type', indent=50, width=-1,
                                       callback=lambda _, data: self.selected_node.__setattr__('var_type', data))
+                    if Language.has_pointers():
+                        with dpg.group(horizontal=True):
+                            dpg.add_checkbox(label='Pointer', tag='selected_declaration_is_pointer', indent=50,
+                                             callback=lambda _, data: (self.selected_node.__setattr__('is_pointer',
+                                                                                                      data),
+                                                                       self.selected_node.__setattr__('is_array',
+                                                                                                      False),
+                                                                       self.on_select_node(self.selected_node),
+                                                                       self.redraw_all()))
+                    if Language.has_arrays():
+                        with dpg.group(horizontal=True):
+                            dpg.add_checkbox(label='Array', tag='selected_declaration_is_array', indent=50,
+                                             callback=lambda _, data: (self.selected_node.__setattr__('is_array',
+                                                                                                      data),
+                                                                       self.selected_node.__setattr__('is_pointer',
+                                                                                                      False),
+                                                                       self.on_select_node(self.selected_node),
+                                                                       self.redraw_all()))
+                    if Language.has_arrays():
+                        with dpg.group(horizontal=True, tag='selected_declaration_array_size_group', show=False):
+                            dpg.add_text('Size')
+                            dpg.add_input_text(tag='selected_declaration_array_size',
+                                               indent=50,
+                                               width=-1,
+                                               no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('array_size',
+                                                                                                        data),
+                                                                         self.redraw_all()))
+
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_conditional', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Conditional')
@@ -193,6 +223,13 @@ class GUI:
         elif isinstance(self.selected_node, Declaration):
             dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)
+            dpg.configure_item('selected_declaration_is_array', default_value=self.selected_node.is_array)
+            if self.selected_node.is_array:
+                dpg.show_item('selected_declaration_array_size_group')
+            else:
+                dpg.hide_item('selected_declaration_array_size_group')
+            dpg.configure_item('selected_declaration_array_size', default_value=self.selected_node.array_size)
+            dpg.configure_item('selected_declaration_is_pointer', default_value=self.selected_node.is_pointer)
             dpg.show_item('selected_declaration')
         elif isinstance(self.selected_node, Conditional):
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)

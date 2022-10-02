@@ -2,6 +2,7 @@ from typing import Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
+from flowtutor.language import Language
 
 
 class Declaration(Node):
@@ -9,7 +10,10 @@ class Declaration(Node):
     def __init__(self):
         super().__init__()
         self._var_name = ''
-        self._var_type = 'Integer'
+        self._var_type = Language.get_data_types()[0]
+        self._array_size = ''
+        self._is_array = False
+        self._is_pointer = False
 
     @property
     def shape_width(self):
@@ -44,7 +48,9 @@ class Declaration(Node):
     @property
     def label(self) -> str:
         if self.var_name:
-            return f'{self.var_type} {self.var_name}'
+            return (f'{self.var_type} '
+                    f'{"*" if self.is_pointer else ""}'
+                    f'{self.var_name}{"[" if self.is_array else ""}{self.array_size}{"]" if self.is_array else ""}')
         else:
             return self.__class__.__name__
 
@@ -63,6 +69,30 @@ class Declaration(Node):
     @var_type.setter
     def var_type(self, var_type: str):
         self._var_type = var_type
+
+    @property
+    def is_array(self) -> bool:
+        return self._is_array
+
+    @is_array.setter
+    def is_array(self, is_array: bool):
+        self._is_array = is_array
+
+    @property
+    def array_size(self) -> str:
+        return self._array_size
+
+    @array_size.setter
+    def array_size(self, array_size: str):
+        self._array_size = array_size
+
+    @property
+    def is_pointer(self) -> bool:
+        return self._is_pointer
+
+    @is_pointer.setter
+    def is_pointer(self, is_pointer: bool):
+        self._is_pointer = is_pointer
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
