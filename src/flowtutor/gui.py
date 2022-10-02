@@ -179,11 +179,22 @@ class GUI:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_input', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Input')
-                    with dpg.group(horizontal=True):
-                        dpg.add_text('Name')
-                        dpg.add_input_text(tag='selected_input_name', indent=50, width=-1, no_spaces=True,
-                                           callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
-                                                                     self.redraw_all()))
+                    if Language.has_var_declaration():
+                        with dpg.group(horizontal=True):
+                            dpg.add_text('Name')
+                            dpg.add_combo([],
+                                          tag='selected_input_name', indent=50, width=-1,
+                                          callback=lambda _, data: (self.selected_node.__setattr__('var_name',
+                                                                                                   data),
+                                                                    self.on_select_node(self.selected_node),
+                                                                    self.redraw_all()))
+                    else:
+                        with dpg.group(horizontal=True):
+                            dpg.add_text('Name')
+                            dpg.add_input_text(tag='selected_input_name', indent=50, width=-1, no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('var_name',
+                                                                                                        data),
+                                                                         self.redraw_all()))
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_output', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Output')
@@ -274,6 +285,10 @@ class GUI:
             dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_loop')
         elif isinstance(self.selected_node, Input):
+            self.declared_variables = list(self.flowchart.get_all_declarations())
+            if Language.has_var_declaration():
+                dpg.configure_item('selected_input_name',
+                                   items=list(map(lambda d: d.var_name, self.declared_variables)))
             dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
             dpg.show_item('selected_input')
         elif isinstance(self.selected_node, Output):
