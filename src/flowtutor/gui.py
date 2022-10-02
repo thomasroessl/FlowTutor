@@ -168,7 +168,7 @@ class GUI:
                 dpg.add_image('c_image', pos=(10, 10))
             elif self.flowchart.lang == 'python':
                 dpg.add_image('python_image', pos=(10, 10))
-            
+
             with dpg.handler_registry():
                 dpg.add_mouse_move_handler(callback=self.on_hover)
                 dpg.add_mouse_drag_handler(callback=self.on_drag)
