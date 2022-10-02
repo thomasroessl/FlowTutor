@@ -1,9 +1,10 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Generator, Optional, Tuple
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
+from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.function import Function
 
@@ -39,23 +40,31 @@ class Flowchart:
     def __len__(self):
         return len(list(self.__iter__()))
 
-    def deduplicate(self, it):
+    def deduplicate(self, it) -> Generator[Node, None, None]:
         seen = set()
-        for x in it:
-            if x not in seen:
-                yield x
-                seen.add(x)
+        for node in it:
+            if node not in seen:
+                yield node
+                seen.add(node)
 
-    def get_all_nodes(self, node: Node):
+    def get_all_nodes(self, node: Node) -> Generator[Node, None, None]:
         yield node
         for connection in node.connections:
             if connection.dst_node.tag not in node.scope and node != connection.dst_node:
                 yield from self.get_all_nodes(connection.dst_node)
 
-    def get_all_children(self, node: Node):
+    def get_all_children(self, node: Node) -> Generator[Node, None, None]:
         for connection in node.connections:
             if connection.dst_node.tag not in node.scope and node != connection.dst_node:
                 yield from self.get_all_nodes(connection.dst_node)
+
+    def get_all_declarations(self) -> Generator[Declaration, None, None]:
+        for node in self:
+            if isinstance(node, Declaration):
+                yield node
+
+    def find_declaration(self, var_name: str) -> Optional[Declaration]:
+        return next(filter(lambda n: n is not None and n.var_name == var_name, self.get_all_declarations()), None)
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)

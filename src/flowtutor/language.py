@@ -12,6 +12,10 @@ class Language:
         ]
 
     @staticmethod
+    def has_var_declaration() -> bool:
+        return True
+
+    @staticmethod
     def has_pointers() -> bool:
         return True
 

@@ -37,6 +37,8 @@ class GUI:
     # The size of the GUI parent
     parent_size: Tuple[int, int] = (0, 0)
 
+    declared_variables: list[Declaration] = []
+
     mouse_position: Optional[Tuple[int, int]] = None
 
     mouse_position_on_canvas: Optional[Tuple[int, int]] = None
@@ -85,11 +87,32 @@ class GUI:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_assignment', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Assignment')
-                    with dpg.group(horizontal=True):
-                        dpg.add_text('Name')
-                        dpg.add_input_text(tag='selected_assignment_name', indent=50, width=-1, no_spaces=True,
-                                           callback=lambda _, data: (self.selected_node.__setattr__('var_name', data),
-                                                                     self.redraw_all()))
+                    if Language.has_var_declaration():
+                        with dpg.group(horizontal=True):
+                            dpg.add_text('Name')
+                            dpg.add_combo([],
+                                          tag='selected_assignment_name', indent=50, width=-1,
+                                          callback=lambda _, data: (self.selected_node.__setattr__('var_name',
+                                                                                                   data),
+                                                                    self.on_select_node(self.selected_node),
+                                                                    self.redraw_all()))
+                    else:
+                        with dpg.group(horizontal=True):
+                            dpg.add_text('Name')
+                            dpg.add_input_text(tag='selected_assignment_name', indent=50, width=-1, no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('var_name',
+                                                                                                        data),
+                                                                         self.redraw_all()))
+                    if Language.has_arrays():
+                        with dpg.group(horizontal=True, tag='selected_assignment_offset_group', show=False):
+                            dpg.add_text('Index')
+                            dpg.add_input_text(tag='selected_assignment_offset',
+                                               indent=50,
+                                               width=-1,
+                                               no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('var_offset',
+                                                                                                        data),
+                                                                         self.redraw_all()))
                     with dpg.group(horizontal=True):
                         dpg.add_text('Value')
                         dpg.add_input_text(tag='selected_assignment_value', indent=50, width=-1,
@@ -208,6 +231,7 @@ class GUI:
                     dpg.mvKey_Delete, callback=self.on_delete_press)
 
     def on_select_node(self, node: Optional[Node]):
+
         self.selected_node = node
         dpg.hide_item('selected_any')
         dpg.hide_item('selected_assignment')
@@ -217,7 +241,19 @@ class GUI:
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         if isinstance(self.selected_node, Assignment):
+            self.declared_variables = list(self.flowchart.get_all_declarations())
+            if Language.has_var_declaration():
+                dpg.configure_item('selected_assignment_name',
+                                   items=list(map(lambda d: d.var_name, self.declared_variables)))
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
+            dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
+            if Language.has_arrays():
+                declaration = self.flowchart.find_declaration(self.selected_node.var_name)
+                if declaration is not None and declaration.is_array:
+                    dpg.show_item('selected_assignment_offset_group')
+                else:
+                    self.selected_node.var_offset = ''
+                    dpg.hide_item('selected_assignment_offset_group')
             dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
             dpg.show_item('selected_assignment')
         elif isinstance(self.selected_node, Declaration):
@@ -376,12 +412,12 @@ class GUI:
 
         for node in self.flowchart:
             (_, _, max_x, max_y) = node.bounds
-            if max_x + 16 > width:
-                width = max_x + 16
-            if max_y + 16 > height:
-                height = max_y + 16
-        dpg.set_item_height(FLOWCHART_TAG, height-16)
-        dpg.set_item_width(FLOWCHART_TAG, width-16)
+            if max_x > width:
+                width = max_x + 20
+            if max_y > height:
+                height = max_y + 20
+        dpg.set_item_height(FLOWCHART_TAG, height - 20)
+        dpg.set_item_width(FLOWCHART_TAG, width - 20)
 
     def get_point_on_canvas(self, point_on_screen: Tuple[int, int]):
         '''Maps the point in screen coordinates to canvas coordinates.'''

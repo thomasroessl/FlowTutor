@@ -6,6 +6,7 @@ class Assignment(Node):
     def __init__(self):
         super().__init__()
         self._var_name = ''
+        self._var_offset = ''
         self._var_value = ''
 
     @property
@@ -41,7 +42,7 @@ class Assignment(Node):
     @property
     def label(self) -> str:
         if self.var_name and self.var_value:
-            return f'{self.var_name} = {self.var_value}'
+            return f'{self.var_name}{f"[{self.var_offset}]" if len(self.var_offset) > 0 else ""} = {self.var_value}'
         else:
             return self.__class__.__name__
 
@@ -52,6 +53,14 @@ class Assignment(Node):
     @var_name.setter
     def var_name(self, var_name: str):
         self._var_name = var_name
+
+    @property
+    def var_offset(self) -> str:
+        return self._var_offset
+
+    @var_offset.setter
+    def var_offset(self, var_offset: str):
+        self._var_offset = var_offset
 
     @property
     def var_value(self) -> str:
