@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'
+SOURCE_CODE_TAG = 'source_code'
 
 
 class GUI:
@@ -224,7 +225,7 @@ class GUI:
         dpg.show_viewport()
         dpg.set_primary_window('main_window', True)
 
-        with dpg.child_window(tag='flowchart_container', parent='main_group', horizontal_scrollbar=True):
+        with dpg.child_window(tag='flowchart_container', parent='main_group', width=-357, horizontal_scrollbar=True):
             dpg.add_drawlist(tag=FLOWCHART_TAG,
                              width=self.width,
                              height=self.height)
@@ -240,6 +241,9 @@ class GUI:
                 dpg.add_mouse_release_handler(callback=self.on_mouse_release)
                 dpg.add_key_press_handler(
                     dpg.mvKey_Delete, callback=self.on_delete_press)
+        with dpg.child_window(tag='code_window', parent='main_group', width=350):
+            dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True,
+                               default_value='int main() {\n  return 0;\n}', width=-1, height=-1)
 
     def on_select_node(self, node: Optional[Node]):
 
