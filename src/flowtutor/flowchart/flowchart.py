@@ -35,7 +35,7 @@ class Flowchart:
         self._lang = lang
 
     def __iter__(self):
-        return self.deduplicate(self.get_all_nodes(self.root))
+        return self.deduplicate(self.get_all_nodes(self.root, False))
 
     def __len__(self):
         return len(list(self.__iter__()))
@@ -47,16 +47,18 @@ class Flowchart:
                 yield node
                 seen.add(node)
 
-    def get_all_nodes(self, node: Node) -> Generator[Node, None, None]:
+    def get_all_nodes(self, node: Node, ignore_span: bool) -> Generator[Node, None, None]:
         yield node
-        for connection in node.connections:
-            if connection.dst_node.tag not in node.scope and node != connection.dst_node:
-                yield from self.get_all_nodes(connection.dst_node)
+        for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
+            if ((connection.span or ignore_span) and
+                    connection.dst_node.tag not in node.scope and node != connection.dst_node):
+                yield from self.get_all_nodes(connection.dst_node, ignore_span)
 
-    def get_all_children(self, node: Node) -> Generator[Node, None, None]:
-        for connection in node.connections:
-            if connection.dst_node.tag not in node.scope and node != connection.dst_node:
-                yield from self.get_all_nodes(connection.dst_node)
+    def get_all_children(self, node: Node, ignore_span: bool) -> Generator[Node, None, None]:
+        for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
+            if ((connection.span or ignore_span) and
+                    connection.dst_node.tag not in node.scope and node != connection.dst_node):
+                yield from self.get_all_nodes(connection.dst_node, ignore_span)
 
     def get_all_declarations(self) -> Generator[Declaration, None, None]:
         for node in self:
@@ -99,26 +101,27 @@ class Flowchart:
         self.set_start_position(child, parent, src_ind)
         if isinstance(child, Connector):
             # A connector node always has two connections to its parent
-            parent.connections.append(Connection(child, 0))
-            parent.connections.append(Connection(child, 1))
+            parent.connections.append(Connection(child, 0, True))
+            parent.connections.append(Connection(child, 1, False))
         else:
             existing_connection = parent.find_connection(src_ind)
             if existing_connection is None:
-                parent.connections.append(Connection(child, src_ind))
+                parent.connections.append(Connection(child, src_ind, True))
             else:
                 parent.connections.remove(existing_connection)
-                parent.connections.append(Connection(child, src_ind))
+                parent.connections.append(Connection(child, src_ind, True))
                 if not isinstance(child, Conditional):
-                    child.connections.append(Connection(existing_connection.dst_node, 0))
+                    child.connections.append(Connection(existing_connection.dst_node, 0, existing_connection.span))
 
             if isinstance(child, Conditional):
                 connector_node = Connector()
                 self.add_node(child, connector_node)
                 if existing_connection is not None:
-                    connector_node.connections.append(Connection(existing_connection.dst_node, 0))
+                    connector_node.connections.append(
+                        Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
             elif isinstance(child, Loop):
-                child.connections.append(Connection(child, 1))
+                child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 
     def set_start_position(self, node: Node, parent: Node, src_ind: int):  # pragma: no cover
@@ -151,16 +154,19 @@ class Flowchart:
         if parent is None:
             return
         successor = self.find_successor(node)
-        old_connection = next(filter(lambda c: c is not None and c.dst_node == node, parent.connections), None)
-        if old_connection is None:
+        old_src_connection = next(filter(lambda c: c is not None and c.dst_node == node, parent.connections), None)
+        if old_src_connection is None:
             return
-        parent.connections.remove(old_connection)
+        parent.connections.remove(old_src_connection)
         if successor is None:
             return
-        parent.connections.append(Connection(successor, old_connection.src_ind))
+        old_dst_connection = next(filter(lambda c: c is not None and c.dst_node == successor, node.connections), None)
+        if old_dst_connection is None:
+            return
+        parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
 
     def move_below(self, parent: Node):  # pragma: no cover
-        for i, child in enumerate(self.deduplicate(self.get_all_children(parent))):
+        for i, child in enumerate(self.deduplicate(self.get_all_children(parent, True))):
             if child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, int(pos_y + parent.shape_height + 50))

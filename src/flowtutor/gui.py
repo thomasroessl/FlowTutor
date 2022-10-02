@@ -16,6 +16,7 @@ from flowtutor.language import Language
 from flowtutor.settings import Settings
 from flowtutor.themes import create_theme_dark, create_theme_light
 from flowtutor.modals import Modals
+from flowtutor.codegenerator import CodeGenerator
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -48,6 +49,7 @@ class GUI:
         self.width = width
         self.height = height
         self.flowchart = Flowchart()
+        self.code_generator = CodeGenerator()
 
         dpg.create_context()
 
@@ -242,8 +244,7 @@ class GUI:
                 dpg.add_key_press_handler(
                     dpg.mvKey_Delete, callback=self.on_delete_press)
         with dpg.child_window(tag='code_window', parent='main_group', width=350):
-            dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True,
-                               default_value='int main() {\n  return 0;\n}', width=-1, height=-1)
+            dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, width=-1, height=-1, readonly=True)
 
     def on_select_node(self, node: Optional[Node]):
 
@@ -402,6 +403,8 @@ class GUI:
             node.redraw(self.mouse_position_on_canvas, self.selected_node)
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
+        dpg.configure_item(SOURCE_CODE_TAG, default_value='\n'.join(
+            self.code_generator.generate_code(self.flowchart.root)))
         self.resize()
 
     def draw_add_button(self, node: Node):

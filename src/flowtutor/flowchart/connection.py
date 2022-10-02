@@ -15,9 +15,10 @@ FLOWCHART_TAG = 'flowchart'
 
 class Connection:
 
-    def __init__(self, dst_node: Node, src_ind: int):
+    def __init__(self, dst_node: Node, src_ind: int, span: bool):
         self._dst_node = dst_node
         self._src_ind = src_ind
+        self._span = span
 
     @property
     def dst_node(self) -> Node:
@@ -26,6 +27,10 @@ class Connection:
     @property
     def src_ind(self) -> int:
         return self._src_ind
+
+    @property
+    def span(self) -> bool:
+        return self._span
 
     def draw(self, parent: Node):  # pragma: no cover
 
