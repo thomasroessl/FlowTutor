@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional, Tuple
+from typing import TYPE_CHECKING, Generator, Optional, Tuple, Union
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -60,12 +60,14 @@ class Flowchart:
                     connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self.get_all_nodes(connection.dst_node, ignore_span)
 
-    def get_all_declarations(self) -> Generator[Declaration, None, None]:
+    def get_all_declarations(self) -> Generator[Union[Declaration, Loop], None, None]:
         for node in self:
             if isinstance(node, Declaration):
                 yield node
+            elif isinstance(node, Loop) and node.loop_type == 'for':
+                yield node
 
-    def find_declaration(self, var_name: str) -> Optional[Declaration]:
+    def find_declaration(self, var_name: str) -> Union[Declaration, Loop, None]:
         return next(filter(lambda n: n is not None and n.var_name == var_name, self.get_all_declarations()), None)
 
     def find_node(self, tag: str) -> Optional[Node]:

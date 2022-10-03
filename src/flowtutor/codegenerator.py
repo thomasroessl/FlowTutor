@@ -37,7 +37,10 @@ class CodeGenerator:
                 yield f'{indent}int {node.name} () {{'
                 indent += '  '
         elif isinstance(node, Loop):
-            yield f'{indent}while ({node.condition}) {{'
+            if node.loop_type == 'for':
+                yield f'{indent}for (int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{'
+            else:
+                yield f'{indent}while ({node.condition}) {{'
             indent += '  '
         elif isinstance(node, Input):
             yield f'{indent}scanf("%s", {node.var_name});'

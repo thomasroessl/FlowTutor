@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -39,7 +39,7 @@ class GUI:
     # The size of the GUI parent
     parent_size: Tuple[int, int] = (0, 0)
 
-    declared_variables: list[Declaration] = []
+    declared_variables: list[Union[Declaration, Loop]] = []
 
     mouse_position: Optional[Tuple[int, int]] = None
 
@@ -174,11 +174,38 @@ class GUI:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_loop', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Loop')
+                    if Language.has_for_loops():
+                        with dpg.group(horizontal=True):
+                            dpg.add_text('Type')
+                            dpg.add_combo(Language.get_loop_types(),
+                                          tag='selected_loop_type', indent=50, width=-1,
+                                          callback=lambda _, data: (self.selected_node.__setattr__('loop_type', data),
+                                                                    self.on_select_node(self.selected_node),
+                                                                    self.redraw_all()))
+                        with dpg.group(tag='selected_for_loop_group_1'):
+                            dpg.add_text('Counter Variable Name')
+                            dpg.add_input_text(tag='selected_loop_var_name', width=-1, no_spaces=True,
+                                                   callback=lambda _, data: (self.selected_node.__setattr__('var_name',
+                                                                                                            data),
+                                                                             self.redraw_all()))
+                            dpg.add_text('Start Value')
+                            dpg.add_input_text(tag='selected_loop_start_value', width=-1, no_spaces=True,
+                                                   callback=lambda _, data: (
+                                                       self.selected_node.__setattr__('start_value', data),
+                                                       self.redraw_all())
+                                               )
                     with dpg.group():
                         dpg.add_text('Condition')
                         dpg.add_input_text(tag='selected_loop_condition', width=-1,
                                            callback=lambda _, data: (self.selected_node.__setattr__('condition', data),
                                                                      self.redraw_all()))
+                    if Language.has_for_loops():
+                        with dpg.group(horizontal=True, tag='selected_for_loop_group_2'):
+                            dpg.add_text('Update')
+                            dpg.add_input_text(tag='selected_loop_update', width=-1, no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('update',
+                                                                                                        data),
+                                                                         self.redraw_all()))
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, tag='selected_input', show=False):
                     with dpg.menu_bar():
                         dpg.add_text('Input')
@@ -265,7 +292,7 @@ class GUI:
             dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
             if Language.has_arrays():
                 declaration = self.flowchart.find_declaration(self.selected_node.var_name)
-                if declaration is not None and declaration.is_array:
+                if declaration is not None and not isinstance(declaration, Loop) and declaration.is_array:
                     dpg.show_item('selected_assignment_offset_group')
                 else:
                     self.selected_node.var_offset = ''
@@ -287,7 +314,18 @@ class GUI:
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_conditional')
         elif isinstance(self.selected_node, Loop):
+            dpg.configure_item('selected_loop_type', default_value=self.selected_node.loop_type)
             dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)
+            if Language.has_for_loops():
+                dpg.configure_item('selected_loop_var_name', default_value=self.selected_node.var_name)
+                dpg.configure_item('selected_loop_start_value', default_value=self.selected_node.start_value)
+                dpg.configure_item('selected_loop_update', default_value=self.selected_node.update)
+                if self.selected_node.loop_type == 'for':
+                    dpg.show_item('selected_for_loop_group_1')
+                    dpg.show_item('selected_for_loop_group_2')
+                else:
+                    dpg.hide_item('selected_for_loop_group_1')
+                    dpg.hide_item('selected_for_loop_group_2')
             dpg.show_item('selected_loop')
         elif isinstance(self.selected_node, Input):
             self.declared_variables = list(self.flowchart.get_all_declarations())
