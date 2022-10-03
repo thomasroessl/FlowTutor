@@ -27,7 +27,7 @@ class Input(Node):
 
     @property
     def color(self):
-        return (147, 171, 255)
+        return (147, 171, 255) if self.is_initialized else (255, 0, 0)
 
     @property
     def var_name(self) -> str:
@@ -53,3 +53,7 @@ class Input(Node):
             return f'{self.var_name} = Input'
         else:
             return self.__class__.__name__
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.var_name) > 0

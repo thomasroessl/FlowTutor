@@ -27,7 +27,7 @@ class Assignment(Node):
 
     @property
     def color(self):
-        return (255, 255, 170)
+        return (255, 255, 170) if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self):
@@ -69,3 +69,7 @@ class Assignment(Node):
     @var_value.setter
     def var_value(self, var_value: str):
         self._var_value = var_value
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.var_name) > 0 and len(self.var_value) > 0

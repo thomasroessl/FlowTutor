@@ -403,8 +403,11 @@ class GUI:
             node.redraw(self.mouse_position_on_canvas, self.selected_node)
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
-        dpg.configure_item(SOURCE_CODE_TAG, default_value='\n'.join(
-            self.code_generator.generate_code(self.flowchart.root)))
+        if self.flowchart.is_initialized():
+            dpg.configure_item(SOURCE_CODE_TAG, default_value='\n'.join(
+                self.code_generator.generate_code(self.flowchart.root)))
+        else:
+            dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
         self.resize()
 
     def draw_add_button(self, node: Node):

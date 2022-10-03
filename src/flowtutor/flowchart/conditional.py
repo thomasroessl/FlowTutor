@@ -32,7 +32,7 @@ class Conditional(Node):
 
     @property
     def color(self):
-        return (255, 170, 170)
+        return (255, 170, 170) if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self):
@@ -92,3 +92,7 @@ class Conditional(Node):
 
     def has_nested_nodes(self):
         return True
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.condition) > 0

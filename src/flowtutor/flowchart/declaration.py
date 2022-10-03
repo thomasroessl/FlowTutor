@@ -33,7 +33,7 @@ class Declaration(Node):
 
     @property
     def color(self):
-        return (255, 255, 170)
+        return (255, 255, 170) if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self):
@@ -123,3 +123,10 @@ class Declaration(Node):
         tag = self.tag+"$"
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
+
+    @property
+    def is_initialized(self) -> bool:
+        is_initialized = True
+        if self.is_array:
+            is_initialized = len(self.array_size) > 0
+        return is_initialized and len(self.var_name) > 0

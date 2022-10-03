@@ -78,3 +78,7 @@ class Function(Node):
     @property
     def label(self):
         return self.name
+
+    @property
+    def is_initialized(self) -> bool:
+        return True

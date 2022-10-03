@@ -90,8 +90,10 @@ class Flowchart:
     def find_hovered_node(self, mouse_position: Tuple[int, int]):
         return next(filter(lambda n: n.is_hovered(mouse_position), self), None)
 
-    def add_node(self, parent: Node, child: Node, src_ind: int = 0):
+    def is_initialized(self):
+        return all(map(lambda n: n.is_initialized, self))
 
+    def add_node(self, parent: Node, child: Node, src_ind: int = 0):
         child.scope = parent.scope.copy()
         if isinstance(parent, Conditional) or isinstance(parent, Loop) and src_ind == 1:
             child.scope.append(parent.tag)

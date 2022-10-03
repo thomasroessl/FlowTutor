@@ -29,7 +29,7 @@ class Loop(Node):
 
     @property
     def color(self):
-        return (255, 208, 147)
+        return (255, 208, 147) if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self):
@@ -90,3 +90,7 @@ class Loop(Node):
 
     def has_nested_nodes(self):
         return True
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.condition) > 0

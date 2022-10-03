@@ -132,6 +132,11 @@ class Node(ABC):
     def connections(self, connections: list[Connection]):
         self._connections = connections
 
+    @property
+    @abstractmethod
+    def is_initialized(self) -> bool:
+        pass
+
     def get_left_x(self):
         return self.shape_width//2 - self.width//2
 

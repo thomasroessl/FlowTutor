@@ -25,7 +25,7 @@ class Output(Node):
 
     @property
     def color(self):
-        return (147, 255, 149)
+        return (147, 255, 149) if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self):
@@ -51,3 +51,7 @@ class Output(Node):
             return f'Output:\n{self.expression}'
         else:
             return self.__class__.__name__
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.expression) > 0

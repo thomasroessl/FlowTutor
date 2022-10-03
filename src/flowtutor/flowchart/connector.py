@@ -34,3 +34,7 @@ class Connector(Node):
     @property
     def label(self):
         return ''
+
+    @property
+    def is_initialized(self) -> bool:
+        return True
