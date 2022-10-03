@@ -23,7 +23,7 @@ class Flowchart:
         self.add_node(root, end)
 
     @property
-    def root(self) -> Node:
+    def root(self) -> Function:
         return self._root
 
     @property

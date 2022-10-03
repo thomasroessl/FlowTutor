@@ -255,13 +255,18 @@ class GUI:
         dpg.set_primary_window('main_window', True)
 
         with dpg.child_window(tag='flowchart_container', parent='main_group', width=-357, horizontal_scrollbar=True):
+            with dpg.tab_bar():
+                dpg.add_tab(label=self.flowchart.root.name)
+                dpg.add_tab(label='fun1')
+                dpg.add_tab(label='fun2')
+                dpg.add_tab(label='fun3')
             dpg.add_drawlist(tag=FLOWCHART_TAG,
                              width=self.width,
                              height=self.height)
             if self.flowchart.lang == 'c':
-                dpg.add_image('c_image', pos=(10, 10))
+                dpg.add_image('c_image', pos=(10, 40))
             elif self.flowchart.lang == 'python':
-                dpg.add_image('python_image', pos=(10, 10))
+                dpg.add_image('python_image', pos=(10, 40))
 
             with dpg.handler_registry():
                 dpg.add_mouse_move_handler(callback=self.on_hover)
@@ -356,7 +361,8 @@ class GUI:
         Settings.set_setting('theme', 'dark')
 
     def on_window_resize(self):
-        self.parent_size = dpg.get_item_rect_size('flowchart_container')
+        (width, height) = dpg.get_item_rect_size('flowchart_container')
+        self.parent_size = (width, height - 30)
         self.resize()
         Settings.set_setting('height', dpg.get_viewport_height())
         Settings.set_setting('width', dpg.get_viewport_width())
