@@ -166,8 +166,9 @@ class Flowchart:
             return
         old_dst_connection = next(filter(lambda c: c is not None and c.dst_node == successor, node.connections), None)
         if old_dst_connection is None:
-            return
-        parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
+            parent.connections.append(Connection(successor, old_src_connection.src_ind, True))
+        else:
+            parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
 
     def move_below(self, parent: Node):  # pragma: no cover
         for i, child in enumerate(self.deduplicate(self.get_all_children(parent, True))):
