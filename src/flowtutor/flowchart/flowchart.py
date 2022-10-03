@@ -16,7 +16,7 @@ class Flowchart:
 
     def __init__(self):
         self._lang = 'c'
-        root = Function('Main')
+        root = Function('main')
         root.pos = (290, 20)
         self._root = root
         end = Function('End')

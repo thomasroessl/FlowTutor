@@ -41,7 +41,7 @@ class TestFlowchart:
 
     def test_flowchart_initialize_root(self):
         flowchart = Flowchart()
-        assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("Main" and "End")'
+        assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("main" and "End")'
         assert all(map(lambda node: isinstance(node, Function), flowchart)), ('A new flowchart should contain '
                                                                               'the root nodes')
 

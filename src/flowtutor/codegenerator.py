@@ -28,13 +28,14 @@ class CodeGenerator:
             indent = indent[:len(indent) - 2]
             yield f'{indent}}}'
         elif isinstance(node, Function):
-            if node.name == 'Main':
-                yield f'{indent}int main () {{'
-                indent += '  '
-            elif node.name == 'End':
+            if node.name == 'End':
+                yield f'{indent}return 0;'
                 indent = indent[:len(indent) - 2]
                 yield '}'
                 return
+            else:
+                yield f'{indent}int {node.name} () {{'
+                indent += '  '
         elif isinstance(node, Loop):
             yield f'{indent}while ({node.condition}) {{'
             indent += '  '
