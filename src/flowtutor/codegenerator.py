@@ -12,11 +12,19 @@ from flowtutor.flowchart.node import Node
 class CodeGenerator:
 
     def generate_code(self, node: Node, indent: str = ''):
+        if len(node.comment) > 0:
+            yield f'{indent}// {node.comment}'
         if isinstance(node, Declaration):
-            yield (f'{indent}{node.var_type}'
-                   + (' *' if node.is_pointer else ' ')
-                   + node.var_name
-                   + (f'[{node.array_size}];' if node.is_array else ';'))
+            yield ''.join([
+                indent,
+                node.var_type,
+                ' ',
+                '*' if node.is_pointer else '',
+                node.var_name,
+                f'[{node.array_size}]' if node.is_array else '',
+                f' = {node.var_value}' if len(node.var_value) > 0 else '',
+                ';'
+            ])
         elif isinstance(node, Assignment):
             yield ''.join([f'{indent}{node.var_name}',
                           f'[{node.var_offset}]' if len(node.var_offset) > 0 else '',

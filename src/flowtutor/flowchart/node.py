@@ -21,6 +21,7 @@ class Node(ABC):
         self._connections: list[Connection] = []
         self._scope: list[str] = []
         self._pos = (0, 0)
+        self.comment = ''
 
     def __repr__(self) -> str:
         return f'({self.tag})'
@@ -136,6 +137,14 @@ class Node(ABC):
     @abstractmethod
     def is_initialized(self) -> bool:
         pass
+
+    @property
+    def comment(self) -> str:
+        return self._comment
+
+    @comment.setter
+    def comment(self, comment: str):
+        self._comment = comment
 
     def get_left_x(self):
         return self.shape_width//2 - self.width//2

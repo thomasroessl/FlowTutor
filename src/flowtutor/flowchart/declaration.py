@@ -11,6 +11,7 @@ class Declaration(Node):
         super().__init__()
         self._var_name = ''
         self._var_type = Language.get_data_types()[0]
+        self._var_value = ''
         self._array_size = ''
         self._is_array = False
         self._is_pointer = False
@@ -48,9 +49,12 @@ class Declaration(Node):
     @property
     def label(self) -> str:
         if self.var_name:
-            return (f'{self.var_type} '
-                    f'{"*" if self.is_pointer else ""}'
-                    f'{self.var_name}{"[" if self.is_array else ""}{self.array_size}{"]" if self.is_array else ""}')
+            return ''.join([f'{self.var_type} ',
+                            '*' if self.is_pointer else '',
+                            self.var_name,
+                            f'[{self.array_size}]' if self.is_array else '',
+                            f' = {self.var_value}' if len(self.var_value) > 0 else '',
+                            ';'])
         else:
             return self.__class__.__name__
 
@@ -71,12 +75,24 @@ class Declaration(Node):
         self._var_type = var_type
 
     @property
+    def var_value(self) -> str:
+        return self._var_value
+
+    @var_value.setter
+    def var_value(self, var_value: str):
+        self._var_value = var_value
+
+    @property
     def is_array(self) -> bool:
         return self._is_array
 
     @is_array.setter
     def is_array(self, is_array: bool):
         self._is_array = is_array
+        if is_array:
+            self.var_value = ''
+        else:
+            self.array_size = ''
 
     @property
     def array_size(self) -> str:

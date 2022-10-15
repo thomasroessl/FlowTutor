@@ -4,11 +4,16 @@ class Language:
     def get_data_types() -> list[str]:
         return [
             'char',
+            'unsigned char',
             'short',
+            'unsigned short',
             'int',
+            'unsigned int',
             'long',
+            'unsigned long',
             'float',
-            'double'
+            'double',
+            'long double'
         ]
 
     @staticmethod
