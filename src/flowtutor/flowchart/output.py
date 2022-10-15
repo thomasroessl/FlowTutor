@@ -5,6 +5,7 @@ class Output(Node):
 
     def __init__(self):
         super().__init__()
+        self._format_string = ''
         self._expression = ''
 
     @property
@@ -46,9 +47,17 @@ class Output(Node):
         self._expression = expression
 
     @property
+    def format_string(self) -> str:
+        return self._format_string
+
+    @format_string.setter
+    def format_string(self, format_string: str):
+        self._format_string = format_string
+
+    @property
     def label(self) -> str:
-        if self.expression:
-            return f'Output:\n{self.expression}'
+        if self.format_string and self.expression:
+            return f'Output:\n{self.format_string} : {self.expression}'
         else:
             return self.__class__.__name__
 

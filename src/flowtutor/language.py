@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class Language:
 
     @staticmethod
@@ -14,6 +17,22 @@ class Language:
             'float',
             'double',
             'long double'
+        ]
+
+    @staticmethod
+    def get_format_specifiers() -> list[str]:
+        return [
+            '%c',
+            '%c',
+            '%hd',
+            '%hu',
+            '%d',
+            '%u',
+            '%ld',
+            '%lu',
+            '%f',
+            '%lf',
+            '%Lf'
         ]
 
     @staticmethod

@@ -492,7 +492,7 @@ class GUI:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.flowchart.is_initialized():
             dpg.configure_item(SOURCE_CODE_TAG, default_value='\n'.join(
-                self.code_generator.generate_code(self.flowchart.root)))
+                self.code_generator.generate_code(self.flowchart, self.flowchart.root)))
         else:
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
         self.resize()
