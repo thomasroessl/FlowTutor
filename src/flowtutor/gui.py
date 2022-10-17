@@ -1,9 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 import re
+import subprocess
 import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
+from flowtutor.debugsession import DebugSession
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
@@ -45,6 +47,10 @@ class GUI:
 
     mouse_position_on_canvas: Optional[Tuple[int, int]] = None
 
+    prev_source_code = ''
+
+    debug_session: Optional[DebugSession] = None
+
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
@@ -57,12 +63,32 @@ class GUI:
             os.path.join(os.path.dirname(__file__), '../../assets/c.png'))
         python_image_width, python_image_height, _, python_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/python.png'))
+        run_image_width, run_image_height, _, run_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/run.png'))
+        stop_image_width, stop_image_height, _, stop_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/stop.png'))
+        step_into_image_width, step_into_image_height, _, step_into_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/step_into.png'))
+        step_over_image_width, step_over_image_height, _, step_over_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/step_over.png'))
+        debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/debug.png'))
 
         with dpg.texture_registry():
             dpg.add_static_texture(width=c_image_width, height=c_image_height,
                                    default_value=c_image_data, tag="c_image")
             dpg.add_static_texture(width=python_image_width, height=python_image_height,
                                    default_value=python_image_data, tag="python_image")
+            dpg.add_static_texture(width=run_image_width, height=run_image_height,
+                                   default_value=run_image_data, tag="run_image")
+            dpg.add_static_texture(width=stop_image_width, height=stop_image_height,
+                                   default_value=stop_image_data, tag="stop_image")
+            dpg.add_static_texture(width=step_into_image_width, height=step_into_image_height,
+                                   default_value=step_into_image_data, tag="step_into_image")
+            dpg.add_static_texture(width=step_over_image_width, height=step_over_image_height,
+                                   default_value=step_over_image_data, tag="step_over_image")
+            dpg.add_static_texture(width=debug_image_width, height=debug_image_height,
+                                   default_value=debug_image_data, tag="debug_image")
 
         with dpg.font_registry():
             deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../assets/inconsolata.ttf'), 18)
@@ -304,7 +330,7 @@ class GUI:
         dpg.show_viewport()
         dpg.set_primary_window('main_window', True)
 
-        with dpg.child_window(tag='flowchart_container', parent='main_group', width=-357, horizontal_scrollbar=True):
+        with dpg.child_window(tag='flowchart_container', parent='main_group', width=-415, horizontal_scrollbar=True):
             dpg.add_drawlist(tag=FLOWCHART_TAG,
                              width=self.width,
                              height=self.height)
@@ -320,6 +346,11 @@ class GUI:
                 dpg.add_mouse_release_handler(callback=self.on_mouse_release)
                 dpg.add_key_press_handler(
                     dpg.mvKey_Delete, callback=self.on_delete_press)
+        with dpg.child_window(tag='debug_window', parent='main_group', width=48):
+            dpg.add_image_button('run_image', callback=self.on_debug_run)
+            dpg.add_image_button('step_over_image', callback=self.on_debug_step_over)
+            dpg.add_image_button('step_into_image', callback=self.on_debug_step_into)
+            dpg.add_image_button('stop_image', callback=self.on_debug_stop)
         with dpg.child_window(tag='code_window', parent='main_group', width=350):
             dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, width=-1, height=-1, readonly=True)
 
@@ -488,6 +519,26 @@ class GUI:
         else:
             callback()
 
+    def on_debug_run(self):
+        if self.debug_session is None:
+            return
+        self.debug_session.run()
+
+    def on_debug_step_over(self):
+        if self.debug_session is None:
+            return
+        self.debug_session.next()
+
+    def on_debug_step_into(self):
+        if self.debug_session is None:
+            return
+        self.debug_session.step()
+
+    def on_debug_stop(self):
+        if self.debug_session is None:
+            return
+        self.debug_session.stop()
+
     def redraw_all(self):
         self.hovered_add_button = None
         is_add_button_drawn = False
@@ -499,8 +550,16 @@ class GUI:
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.flowchart.is_initialized():
-            dpg.configure_item(SOURCE_CODE_TAG, default_value='\n'.join(
-                self.code_generator.generate_code(self.flowchart, self.flowchart.root)))
+            source_code = '\n'.join(
+                self.code_generator.generate_code(self.flowchart, self.flowchart.root))
+            if source_code != self.prev_source_code:
+                self.prev_source_code = source_code
+                dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
+                with open('flowtutor.c', 'w') as file:
+                    file.write(source_code)
+                # Build the executable
+                subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor'])
+                self.debug_session = DebugSession()
         else:
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
         self.resize()

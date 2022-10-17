@@ -63,10 +63,10 @@ class CodeGenerator:
                 var_type = 'int' if isinstance(declaration, Loop) else declaration.var_type
                 type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                 _, format_specifier = next(t for t in type_formats if t[0] == var_type)
-                yield f'{indent}scanf("{format_specifier}", {node.var_name})'
+                yield f'{indent}scanf("{format_specifier}", {node.var_name});'
 
         elif isinstance(node, Output):
-            yield f'{indent}printf("{node.format_string}", {node.expression})'
+            yield f'{indent}printf("{node.format_string}", {node.expression});'
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):

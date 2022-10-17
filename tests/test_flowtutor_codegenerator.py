@@ -275,7 +275,7 @@ class TestCodeGenerator:
             '',
             'int main() {',
             f'  {data_type} x;',
-            f'  scanf("{format_specifier}", x)',
+            f'  scanf("{format_specifier}", x);',
             '  return 0;',
             '}'])
         print(code)
@@ -322,7 +322,7 @@ class TestCodeGenerator:
             '#include <stdio.h>',
             '',
             'int main() {',
-            '  printf("This is the output: %d", 5)',
+            '  printf("This is the output: %d", 5);',
             '  return 0;',
             '}'])
         print(code)
