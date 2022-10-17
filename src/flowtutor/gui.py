@@ -264,6 +264,13 @@ class GUI:
                     with dpg.group(tag='selected_output', show=False):
                         dpg.add_text('Output')
                         with dpg.group():
+                            dpg.add_text('Format String')
+                            dpg.add_input_text(tag='selected_output_format_string',
+                                               width=-1,
+                                               callback=lambda _, data: (self.selected_node.__setattr__(
+                                                   'format_string', data),
+                                                   self.redraw_all()))
+                        with dpg.group():
                             dpg.add_text('Expression')
                             dpg.add_input_text(tag='selected_output_expression',
                                                width=-1,
@@ -385,6 +392,7 @@ class GUI:
             dpg.show_item('selected_input')
         elif isinstance(self.selected_node, Output):
             dpg.configure_item('selected_output_expression', default_value=self.selected_node.expression)
+            dpg.configure_item('selected_output_format_string', default_value=self.selected_node.format_string)
             dpg.show_item('selected_output')
         else:
             dpg.show_item('selected_any')

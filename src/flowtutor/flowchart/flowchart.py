@@ -6,6 +6,8 @@ from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.input import Input
+from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.function import Function
 
 if TYPE_CHECKING:
@@ -94,6 +96,9 @@ class Flowchart:
 
     def is_initialized(self):
         return all(map(lambda n: n.is_initialized, self))
+
+    def contains_io(self):
+        return any(map(lambda n: isinstance(n, Input) or isinstance(n, Output), self))
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):
         child.scope = parent.scope.copy()

@@ -271,6 +271,8 @@ class TestCodeGenerator:
         code_generator = CodeGenerator()
         code = '\n'.join(code_generator.generate_code(flowchart, flowchart.root))
         expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
             'int main() {',
             f'  {data_type} x;',
             f'  scanf("{format_specifier}", x)',
@@ -293,6 +295,8 @@ class TestCodeGenerator:
         code_generator = CodeGenerator()
         code = '\n'.join(code_generator.generate_code(flowchart, flowchart.root))
         expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
             'int main() {',
             '  // x is not declared!',
             '  return 0;',
@@ -315,6 +319,8 @@ class TestCodeGenerator:
         code_generator = CodeGenerator()
         code = '\n'.join(code_generator.generate_code(flowchart, flowchart.root))
         expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
             'int main() {',
             '  printf("This is the output: %d", 5)',
             '  return 0;',

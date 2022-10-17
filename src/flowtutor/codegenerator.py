@@ -44,6 +44,9 @@ class CodeGenerator:
                 yield '}'
                 return
             else:
+                if flowchart.contains_io():
+                    yield f'{indent}#include <stdio.h>'
+                    yield ''
                 yield f'{indent}int {node.name}() {{'
                 indent += '  '
         elif isinstance(node, Loop):
