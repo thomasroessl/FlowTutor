@@ -311,8 +311,31 @@ class TestCodeGenerator:
         flowchart = Flowchart()
 
         output = Output()
+        output.format_string = 'This is the output.'
+
+        flowchart.add_node(flowchart.root, output)
+
+        code_generator = CodeGenerator()
+        code = '\n'.join(code_generator.generate_code(flowchart, flowchart.root))
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  printf("This is the output.");',
+            '  return 0;',
+            '}'])
+        print(code)
+        print(expected)
+        print(repr(code))
+        print(repr(expected))
+        assert code == expected, 'Output.'
+
+    def test_code_from_output_with_arguments(self):
+        flowchart = Flowchart()
+
+        output = Output()
         output.format_string = 'This is the output: %d'
-        output.expression = '5'
+        output.arguments = '5'
 
         flowchart.add_node(flowchart.root, output)
 
@@ -329,4 +352,4 @@ class TestCodeGenerator:
         print(expected)
         print(repr(code))
         print(repr(expected))
-        assert code == expected, 'Output.'
+        assert code == expected, 'Output with arguments.'

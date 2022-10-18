@@ -66,7 +66,10 @@ class CodeGenerator:
                 yield f'{indent}scanf("{format_specifier}", {node.var_name});'
 
         elif isinstance(node, Output):
-            yield f'{indent}printf("{node.format_string}", {node.expression});'
+            if len(node.arguments) > 0:
+                yield f'{indent}printf("{node.format_string}", {node.arguments});'
+            else:
+                yield f'{indent}printf("{node.format_string}");'
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):

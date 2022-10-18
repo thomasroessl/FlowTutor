@@ -6,7 +6,7 @@ class Output(Node):
     def __init__(self):
         super().__init__()
         self._format_string = ''
-        self._expression = ''
+        self._arguments = ''
 
     @property
     def shape_width(self):
@@ -39,12 +39,12 @@ class Output(Node):
         ]
 
     @property
-    def expression(self) -> str:
-        return self._expression
+    def arguments(self) -> str:
+        return self._arguments
 
-    @expression.setter
-    def expression(self, expression: str):
-        self._expression = expression
+    @arguments.setter
+    def arguments(self, arguments: str):
+        self._arguments = arguments
 
     @property
     def format_string(self) -> str:
@@ -56,11 +56,11 @@ class Output(Node):
 
     @property
     def label(self) -> str:
-        if self.format_string and self.expression:
-            return f'Output:\n{self.format_string} : {self.expression}'
+        if self.format_string and self.arguments:
+            return f'Output:\n{self.format_string}: {self.arguments}'
         else:
             return self.__class__.__name__
 
     @property
     def is_initialized(self) -> bool:
-        return len(self.expression) > 0
+        return len(self.format_string) > 0

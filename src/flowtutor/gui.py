@@ -51,6 +51,8 @@ class GUI:
 
     debug_session: Optional[DebugSession] = None
 
+    is_code_built: bool = False
+
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
@@ -73,6 +75,8 @@ class GUI:
             os.path.join(os.path.dirname(__file__), '../../assets/step_over.png'))
         debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/debug.png'))
+        hammer_image_width, hammer_image_height, _, hammer_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/hammer.png'))
 
         with dpg.texture_registry():
             dpg.add_static_texture(width=c_image_width, height=c_image_height,
@@ -89,6 +93,8 @@ class GUI:
                                    default_value=step_over_image_data, tag="step_over_image")
             dpg.add_static_texture(width=debug_image_width, height=debug_image_height,
                                    default_value=debug_image_data, tag="debug_image")
+            dpg.add_static_texture(width=hammer_image_width, height=hammer_image_height,
+                                   default_value=hammer_image_data, tag="hammer_image")
 
         with dpg.font_registry():
             deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../assets/inconsolata.ttf'), 18)
@@ -290,18 +296,17 @@ class GUI:
                     with dpg.group(tag='selected_output', show=False):
                         dpg.add_text('Output')
                         with dpg.group():
-                            dpg.add_text('Format String')
                             dpg.add_input_text(tag='selected_output_format_string',
                                                width=-1,
                                                callback=lambda _, data: (self.selected_node.__setattr__(
                                                    'format_string', data),
                                                    self.redraw_all()))
                         with dpg.group():
-                            dpg.add_text('Expression')
-                            dpg.add_input_text(tag='selected_output_expression',
+                            dpg.add_text('Arguments')
+                            dpg.add_input_text(tag='selected_output_arguments',
                                                width=-1,
                                                callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'expression', data),
+                                                   'arguments', data),
                                                    self.redraw_all()))
                     with dpg.group(tag='selected_node_comment_group', show=False):
                         dpg.add_text('Comment')
@@ -347,10 +352,13 @@ class GUI:
                 dpg.add_key_press_handler(
                     dpg.mvKey_Delete, callback=self.on_delete_press)
         with dpg.child_window(tag='debug_window', parent='main_group', width=48):
-            dpg.add_image_button('run_image', callback=self.on_debug_run)
-            dpg.add_image_button('step_over_image', callback=self.on_debug_step_over)
-            dpg.add_image_button('step_into_image', callback=self.on_debug_step_into)
-            dpg.add_image_button('stop_image', callback=self.on_debug_stop)
+            dpg.add_image_button('hammer_image', callback=self.on_build)
+            dpg.add_spacer(height=5)
+            with dpg.group(tag='debug_control_group'):
+                dpg.add_image_button('run_image', tag='debug_run_button', callback=self.on_debug_run)
+                dpg.add_image_button('step_over_image', tag='debug_step_over_button', callback=self.on_debug_step_over)
+                dpg.add_image_button('step_into_image', tag='debug_step_into_button', callback=self.on_debug_step_into)
+                dpg.add_image_button('stop_image', tag='debug_stop_button', callback=self.on_debug_stop)
         with dpg.child_window(tag='code_window', parent='main_group', width=350):
             dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, width=-1, height=-1, readonly=True)
 
@@ -422,7 +430,7 @@ class GUI:
             dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
             dpg.show_item('selected_input')
         elif isinstance(self.selected_node, Output):
-            dpg.configure_item('selected_output_expression', default_value=self.selected_node.expression)
+            dpg.configure_item('selected_output_arguments', default_value=self.selected_node.arguments)
             dpg.configure_item('selected_output_format_string', default_value=self.selected_node.format_string)
             dpg.show_item('selected_output')
         else:
@@ -524,6 +532,13 @@ class GUI:
             return
         self.debug_session.run()
 
+    def on_build(self):
+        # Build the executable
+        subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
+        # Start debugger
+        self.debug_session = DebugSession()
+        self.is_code_built = True
+
     def on_debug_step_over(self):
         if self.debug_session is None:
             return
@@ -553,13 +568,11 @@ class GUI:
             source_code = '\n'.join(
                 self.code_generator.generate_code(self.flowchart, self.flowchart.root))
             if source_code != self.prev_source_code:
+                self.is_code_built = False
                 self.prev_source_code = source_code
                 dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
                 with open('flowtutor.c', 'w') as file:
                     file.write(source_code)
-                # Build the executable
-                subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor'])
-                self.debug_session = DebugSession()
         else:
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
         self.resize()

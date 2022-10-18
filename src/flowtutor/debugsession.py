@@ -59,9 +59,10 @@ class DebugSession:
             elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
                 pass
             elif not re.search(r'\[New Thread .+\]', line)\
-                    and not re.search(r'\[Inferior .+\]', line)\
                     and not re.search(r'Starting program: .+', line):
-                print(line, end='')
+                clean_line = re.sub(r'\[Inferior .+\]\n?', '', line)
+                if len(clean_line) > 0:
+                    print(clean_line, end='')
                 pass
 
     def run(self):
