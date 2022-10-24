@@ -10,9 +10,9 @@ class DebugSession:
         # and kill the process (bug workaround)
         gdb_init_process = subprocess.Popen(['gdb',
                                              '-q',
-                                             'flowtutor'],
+                                             'flowtutor.exe'],
                                             stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT,
                                             stdin=subprocess.PIPE,
                                             text=True,
                                             bufsize=1)
@@ -29,9 +29,9 @@ class DebugSession:
 
         self._gdb_process = subprocess.Popen(['gdb',
                                               '-q',
-                                              'flowtutor'],
+                                              'flowtutor.exe'],
                                              stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE,
+                                             stderr=subprocess.STDOUT,
                                              stdin=subprocess.PIPE,
                                              text=True,
                                              bufsize=1)

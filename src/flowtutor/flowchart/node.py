@@ -21,7 +21,8 @@ class Node(ABC):
         self._connections: list[Connection] = []
         self._scope: list[str] = []
         self._pos = (0, 0)
-        self.comment = ''
+        self._comment = ''
+        self._break_point = False
 
     def __repr__(self) -> str:
         return f'({self.tag})'
@@ -145,6 +146,14 @@ class Node(ABC):
     @comment.setter
     def comment(self, comment: str):
         self._comment = comment
+
+    @property
+    def break_point(self) -> bool:
+        return self._break_point
+
+    @break_point.setter
+    def break_point(self, break_point: bool):
+        self._break_point = break_point
 
     def get_left_x(self):
         return self.shape_width//2 - self.width//2
