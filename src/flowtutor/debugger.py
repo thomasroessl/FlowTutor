@@ -37,9 +37,15 @@ class Debugger:
                                      tag='debug_stop_button',
                                      callback=self.on_debug_stop,
                                      enabled=False)
-            dpg.add_checkbox(label="Auto-scroll", default_value=True,
-                             callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
-            dpg.add_button(label="Clear", callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
+            with dpg.group(horizontal=True) as g1:
+                dpg.add_checkbox(label="Auto-scroll", default_value=True, pos=(205, 3),
+                                 callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
+                dpg.add_button(label="Clear",
+                               callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
+                with dpg.theme() as item_theme:
+                    with dpg.theme_component(dpg.mvGroup):
+                        dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0.0, category=dpg.mvThemeCat_Core)
+                dpg.bind_item_theme(g1, item_theme)
 
         self.child_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, autosize_y=True)
         self.filter_id = dpg.add_filter_set(parent=self.child_id)
