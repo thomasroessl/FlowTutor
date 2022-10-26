@@ -78,13 +78,13 @@ def create_theme_dark() -> int:
             set_theme_color(dpg.mvPlotCol_LegendText, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_TitleText, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_InlayText, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
-            set_theme_color(dpg.mvPlotCol_XAxis, (255, 255, 1.00 * 255, 255), category=dpg.mvThemeCat_Plots)
+            set_theme_color(dpg.mvPlotCol_XAxis, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_XAxisGrid, (255, 255, 255, 0.25 * 255), category=dpg.mvThemeCat_Plots)
-            set_theme_color(dpg.mvPlotCol_YAxis, (255, 255, 1.00 * 255, 255), category=dpg.mvThemeCat_Plots)
+            set_theme_color(dpg.mvPlotCol_YAxis, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_YAxisGrid, (255, 255, 255, 0.25 * 255), category=dpg.mvThemeCat_Plots)
-            set_theme_color(dpg.mvPlotCol_YAxis2, (255, 255, 1.00 * 255, 255), category=dpg.mvThemeCat_Plots)
+            set_theme_color(dpg.mvPlotCol_YAxis2, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_YAxisGrid2, (255, 255, 255, 0.25 * 255), category=dpg.mvThemeCat_Plots)
-            set_theme_color(dpg.mvPlotCol_YAxis3, (255, 255, 1.00 * 255, 255), category=dpg.mvThemeCat_Plots)
+            set_theme_color(dpg.mvPlotCol_YAxis3, (255, 255, 255, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_YAxisGrid3, (255, 255, 255, 0.25 * 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_Selection, (255, 0.60 * 255, 0, 255), category=dpg.mvThemeCat_Plots)
             set_theme_color(dpg.mvPlotCol_Query, (0, 255, 0.44 * 255, 255), category=dpg.mvThemeCat_Plots)
@@ -105,6 +105,16 @@ def create_theme_dark() -> int:
             set_theme_color(dpg.mvNodeCol_BoxSelectorOutline, (61, 133, 224, 150), category=dpg.mvThemeCat_Nodes)
             set_theme_color(dpg.mvNodeCol_GridBackground, (40, 40, 50, 200), category=dpg.mvThemeCat_Nodes)
             set_theme_color(dpg.mvNodeCol_GridLine, (200, 200, 200, 40), category=dpg.mvThemeCat_Nodes)
+
+        with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
+            set_theme_color(dpg.mvThemeCol_Button, (50, 50, 50, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonHovered, (50, 50, 50, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonActive, (50, 50, 50, 255))
+
+        with dpg.theme_component(dpg.mvButton, enabled_state=False):
+            set_theme_color(dpg.mvThemeCol_Button, (50, 50, 50, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonHovered, (50, 50, 50, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonActive, (50, 50, 50, 255))
     return int(theme_id)
 
 
@@ -204,4 +214,14 @@ def create_theme_light() -> int:
             set_theme_color(dpg.mvNodeCol_BoxSelectorOutline, (90, 170, 250, 150), category=dpg.mvThemeCat_Nodes)
             set_theme_color(dpg.mvNodeCol_GridBackground, (225, 225, 225, 255), category=dpg.mvThemeCat_Nodes)
             set_theme_color(dpg.mvNodeCol_GridLine, (180, 180, 180, 100), category=dpg.mvThemeCat_Nodes)
+
+        with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
+            set_theme_color(dpg.mvThemeCol_Button, (220, 220, 220, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonHovered, (220, 220, 220, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonActive, (220, 220, 220, 255))
+
+        with dpg.theme_component(dpg.mvButton, enabled_state=False):
+            set_theme_color(dpg.mvThemeCol_Button, (220, 220, 220, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonHovered, (220, 220, 220, 255))
+            set_theme_color(dpg.mvThemeCol_ButtonActive, (220, 220, 220, 255))
     return int(theme_id)
