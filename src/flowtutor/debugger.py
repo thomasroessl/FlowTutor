@@ -1,8 +1,10 @@
 import subprocess
-from typing import Optional
+from typing import Optional, Union
 import dearpygui.dearpygui as dpg
 
 from flowtutor.debugsession import DebugSession
+
+LOADING_INDICATOR_TAG = 'loading_indicator'
 
 
 class Debugger:
@@ -18,8 +20,8 @@ class Debugger:
         self.count = 0
         self.flush_count = 1000
 
-        with dpg.group(horizontal=True, parent=self.window_id):
-            dpg.add_image_button('hammer_image', callback=self.on_build)
+        with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
+            self.build_button = dpg.add_image_button('hammer_image', callback=self.on_build)
             with dpg.group(horizontal=True):
                 dpg.add_image_button('run_image',
                                      tag='debug_run_button',
@@ -38,9 +40,9 @@ class Debugger:
                                      callback=self.on_debug_stop,
                                      enabled=False)
             with dpg.group(horizontal=True) as g1:
-                dpg.add_checkbox(label="Auto-scroll", default_value=True, pos=(205, 3),
+                dpg.add_checkbox(label='Auto-scroll', default_value=True, pos=(205, 3),
                                  callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
-                dpg.add_button(label="Clear",
+                dpg.add_button(label='Clear',
                                callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvGroup):
@@ -54,17 +56,45 @@ class Debugger:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (64, 128, 255, 255))
 
+        with dpg.theme() as self.info_theme:
+            with dpg.theme_component(0):
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (64, 128, 255, 255))
+
         with dpg.theme() as self.warning_theme:
             with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 255, 0, 255))
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 191, 0, 255))
 
         with dpg.theme() as self.error_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
 
-        with dpg.theme() as self.critical_theme:
-            with dpg.theme_component(0):
-                dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
+    def disable_all(self):
+        self.disable_children(self.controls_group)
+
+    def enable_build_only(self):
+        self.disable_all()
+        dpg.enable_item(self.build_button)
+
+    def enable_all(self):
+        self.enable_children(self.controls_group)
+
+    def disable_children(self, item: Union[int, str]):
+        slots = dpg.get_item_children(item)
+        for slot in slots.values():
+            for child in slot:
+                if dpg.get_item_info(child).get('type') == 'mvAppItemType::mvGroup':
+                    self.disable_children(child)
+                else:
+                    dpg.disable_item(child)
+
+    def enable_children(self, item: Union[int, str]):
+        slots = dpg.get_item_children(item)
+        for slot in slots.values():
+            for child in slot:
+                if dpg.get_item_info(child).get('type') == 'mvAppItemType::mvGroup':
+                    self.enable_children(child)
+                else:
+                    dpg.enable_item(child)
 
     def auto_scroll(self, value):
         self._auto_scroll = value
@@ -84,19 +114,17 @@ class Debugger:
         if level == 0:
             message = message
         elif level == 1:
-            message = "[DEBUG]\t\t" + message
+            message = '[DEBUG]  \t' + message
             theme = self.debug_theme
         elif level == 2:
-            message = "[INFO]\t\t" + message
+            message = '[INFO]   \t' + message
+            theme = self.info_theme
         elif level == 3:
-            message = "[WARNING]\t\t" + message
+            message = '[WARNING]\t' + message
             theme = self.warning_theme
         elif level == 4:
-            message = "[ERROR]\t\t" + message
+            message = '[ERROR]  \t' + message
             theme = self.error_theme
-        elif level == 5:
-            message = "[CRITICAL]\t\t" + message
-            theme = self.critical_theme
 
         new_log = dpg.add_text(message, parent=self.filter_id, filter_key=message)
         if theme is not None:
@@ -119,25 +147,35 @@ class Debugger:
     def log_error(self, message):
         self._log(message, 4)
 
-    def log_critical(self, message):
-        self._log(message, 5)
-
     def clear_log(self):
         dpg.delete_item(self.filter_id, children_only=True)
         self.count = 0
 
+    def load_start(self):
+        dpg.add_loading_indicator(tag=LOADING_INDICATOR_TAG, parent=self.filter_id)
+        if self._auto_scroll:
+            dpg.set_y_scroll(self.child_id, -1.0)
+
+    def load_end(self):
+        dpg.delete_item(LOADING_INDICATOR_TAG)
+
     def on_debug_run(self):
         if self.debug_session is None:
             return
-        self.debug_session.run()
+        if self.debug_session.run():
+            self.log_info('Program ended.')
 
     def on_build(self):
+        self.disable_all()
+        self.load_start()
         # Build the executable
         subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
         # Start debugger
         self.debug_session = DebugSession(self)
         self.is_code_built = True
+        self.load_end()
         self.log_info('Code built!')
+        self.enable_all()
 
     def on_debug_step_over(self):
         if self.debug_session is None:

@@ -48,9 +48,7 @@ class GUI:
 
     prev_source_code = ''
 
-    logger: Optional[Debugger] = None
-
-    is_code_built: bool = False
+    debugger: Optional[Debugger] = None
 
     def __init__(self, width: int, height: int):
         self.width = width
@@ -361,7 +359,7 @@ class GUI:
                     with dpg.group(width=400):
                         dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, height=-1, readonly=True)
             with dpg.child_window(width=-1, border=False, height=250) as debugger_window:
-                self.logger = Debugger(debugger_window)
+                self.debugger = Debugger(debugger_window)
 
         self.code_generator = CodeGenerator()
 
@@ -546,12 +544,15 @@ class GUI:
         if self.flowchart.is_initialized():
             source_code = self.code_generator.generate_code(self.flowchart)
             if source_code != self.prev_source_code:
-                self.is_code_built = False
+                if self.debugger is not None:
+                    self.debugger.enable_build_only()
                 self.prev_source_code = source_code
                 dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
                 with open('flowtutor.c', 'w') as file:
                     file.write(source_code)
         else:
+            if self.debugger is not None:
+                self.debugger.disable_all()
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
         self.resize()
 

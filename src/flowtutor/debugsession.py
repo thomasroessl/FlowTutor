@@ -55,10 +55,11 @@ class DebugSession:
     def process(self) -> subprocess.Popen[str]:
         return self._gdb_process
 
-    def execute(self, command: str):
+    def execute(self, command: str) -> bool:
         if not self.process.stdin or not self.process.stdout:
-            return
+            return True
         self.process.stdin.write(f'{command}\n')
+        finished = False
         for line in self.process.stdout:
             if (line == '(gdb)\n'):
                 break
@@ -67,13 +68,18 @@ class DebugSession:
             elif not re.search(r'\[New Thread .+\]', line)\
                     and not re.search(r'Starting program: .+', line)\
                     and not re.search(r'warning: unhandled dyld version .*', line):
-                clean_line = re.sub(r'\[Inferior .+\]\n?', '', line)
-                if len(clean_line) > 0:
-                    self.debugger.log(clean_line)
+                match = re.match(r'(.*)\[Inferior .+\]\n?', line)
+                if match is not None:
+                    finished = True
+                    if len(match.group(1)) > 0:
+                        self.debugger.log(match.group(1))
+                else:
+                    self.debugger.log(line)
                 pass
+        return finished
 
-    def run(self):
-        self.execute('run')
+    def run(self) -> bool:
+        return self.execute('run')
 
     def stop(self):
         if self.process.stdout is None or self.process.stdin is None:
@@ -89,11 +95,11 @@ class DebugSession:
             else:
                 self.debugger.log(line)
 
-    def step(self):
-        self.execute('step')
+    def step(self) -> bool:
+        return self.execute('step')
 
-    def next(self):
-        self.execute('next')
+    def next(self) -> bool:
+        return self.execute('next')
 
     def get_variable_assignments(self):
         if self.process.stdout is None or self.process.stdin is None:
