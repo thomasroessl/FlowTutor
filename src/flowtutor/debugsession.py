@@ -1,11 +1,17 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import re
 import subprocess
+
+if TYPE_CHECKING:
+    from flowtutor.debugger import Debugger
 
 
 class DebugSession:
 
-    def __init__(self):
+    def __init__(self, debugger: Debugger):
+        self.debugger = debugger
+
         # Start GDB, try to run the executable
         # and kill the process (bug workaround)
         gdb_init_process = subprocess.Popen(['gdb',
@@ -59,10 +65,11 @@ class DebugSession:
             elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
                 pass
             elif not re.search(r'\[New Thread .+\]', line)\
-                    and not re.search(r'Starting program: .+', line):
+                    and not re.search(r'Starting program: .+', line)\
+                    and not re.search(r'warning: unhandled dyld version .*', line):
                 clean_line = re.sub(r'\[Inferior .+\]\n?', '', line)
                 if len(clean_line) > 0:
-                    print(clean_line, end='')
+                    self.debugger.log(clean_line)
                 pass
 
     def run(self):
@@ -78,9 +85,9 @@ class DebugSession:
             elif re.search(r'Kill the program', line):
                 self.process.stdin.write('y\n')
             elif re.search(r'\[Inferior .+\]', line):
-                print(line, end='')
+                self.debugger.log(line)
             else:
-                print(line, end='')
+                self.debugger.log(line)
 
     def step(self):
         self.execute('step')
@@ -96,9 +103,9 @@ class DebugSession:
             if (line == '(gdb)\n'):
                 break
             elif re.search(r'.+ = .+', line):
-                print('VAR', line, end='')
+                self.debugger.log_debug(line)
             else:
-                print(line, end='')
+                self.debugger.log(line)
                 pass
 
     def set_break_point(self, line):
@@ -109,5 +116,5 @@ class DebugSession:
             if (line == '(gdb)\n'):
                 break
             else:
-                print(line, end='')
+                self.debugger.log_debug(line)
                 pass
