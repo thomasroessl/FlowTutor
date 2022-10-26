@@ -1,3 +1,4 @@
+from typing import Generator
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
@@ -13,7 +14,10 @@ from flowtutor.language import Language
 
 class CodeGenerator:
 
-    def generate_code(self, flowchart: Flowchart, node: Node, indent: str = ''):
+    def generate_code(self, flowchart: Flowchart) -> str:
+        return '\n'.join(self._generate_code(flowchart, flowchart.root))
+
+    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '') -> Generator[str, None, None]:
         if len(node.comment) > 0:
             yield f'{indent}// {node.comment}'
         if isinstance(node, Declaration):
@@ -80,4 +84,4 @@ class CodeGenerator:
                     indent = indent[:len(indent) - 2]
                     yield f'{indent}}}'
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
-                yield from self.generate_code(flowchart, connection.dst_node, indent)
+                yield from self._generate_code(flowchart, connection.dst_node, indent)
