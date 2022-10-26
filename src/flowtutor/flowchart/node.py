@@ -179,6 +179,20 @@ class Node(ABC):
             dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
                            pos_y + self.shape_height / 2 - text_height / 2),
                           self.label, color=(0, 0, 0), size=18)
+            if self.break_point:
+                break_pos = self.in_points[0]
+                break_pos_x, break_pos_y = break_pos
+                dpg.draw_polygon([
+                    (break_pos_x - 5.6, break_pos_y - 13.5),
+                    (break_pos_x + 5.6, break_pos_y - 13.5),
+                    (break_pos_x + 13.5, break_pos_y - 5.6),
+                    (break_pos_x + 13.5, break_pos_y + 5.6),
+                    (break_pos_x + 5.6, break_pos_y + 13.5),
+                    (break_pos_x - 5.6, break_pos_y + 13.5),
+                    (break_pos_x - 13.5, break_pos_y + 5.6),
+                    (break_pos_x - 13.5, break_pos_y - 5.6),
+                    (break_pos_x - 5.6, break_pos_y - 13.5)],
+                    color=(255, 0, 0), thickness=3)
 
         for connection in self.connections:
             connection.draw(self)
