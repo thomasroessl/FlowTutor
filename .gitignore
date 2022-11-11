@@ -160,6 +160,7 @@ cython_debug/
 
 #FlowTutor
 flowtutor_settings
+flowtutor_break_points
 flowtutor.c
 flowtutor.exe
 flowtutor.exe.dSYM/
