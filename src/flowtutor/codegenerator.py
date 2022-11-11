@@ -1,27 +1,50 @@
-from typing import Generator
-from flowtutor.flowchart.flowchart import Flowchart
+from typing import Generator, Optional, cast
+
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.function import Function
-from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.input import Input
-from flowtutor.flowchart.output import Output
+from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.output import Output
 from flowtutor.language import Language
 
 
 class CodeGenerator:
 
-    def generate_code(self, flowchart: Flowchart) -> str:
-        return '\n'.join(self._generate_code(flowchart, flowchart.root))
+    def __init__(self):
+        self.prev_source_code = ''
 
-    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '') -> Generator[str, None, None]:
+    def write_source_files(self, flowchart: Flowchart) -> Optional[str]:
+        source_code, break_points = self.generate_code(flowchart)
+        if source_code != self.prev_source_code:
+            self.prev_source_code = source_code
+            with open('flowtutor.c', 'w') as file:
+                file.write(source_code)
+            with open('flowtutor_break_points', 'w') as file:
+                file.write(break_points)
+            return source_code
+        else:
+            return None
+
+    def generate_code(self, flowchart: Flowchart) -> tuple[str, str]:
+        code_lines, break_points = map(list, zip(*self._generate_code(flowchart, flowchart.root)))
+        source_code = '\n'.join(cast(list[str], code_lines))
+        break_point_definitions = '\n'.join(
+            map(lambda e: f'break flowtutor.c:{e[0] + 1}',
+                filter(lambda e: e[1],
+                       enumerate(break_points))))
+        return (source_code, break_point_definitions)
+
+    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '') -> \
+            Generator[tuple[str, bool], None, None]:
         if len(node.comment) > 0:
-            yield f'{indent}// {node.comment}'
+            yield (f'{indent}// {node.comment}', False)
         if isinstance(node, Declaration):
-            yield ''.join([
+            yield (''.join([
                 indent,
                 node.var_type,
                 ' ',
@@ -30,58 +53,59 @@ class CodeGenerator:
                 f'[{node.array_size}]' if node.is_array else '',
                 f' = {node.var_value}' if len(node.var_value) > 0 else '',
                 ';'
-            ])
+            ]), node.break_point)
         elif isinstance(node, Assignment):
-            yield ''.join([f'{indent}{node.var_name}',
-                          f'[{node.var_offset}]' if len(node.var_offset) > 0 else '',
-                           f' = {node.var_value};'])
+            yield (''.join([f'{indent}{node.var_name}',
+                            f'[{node.var_offset}]' if len(node.var_offset) > 0 else '',
+                           f' = {node.var_value};']), node.break_point)
         elif isinstance(node, Conditional):
-            yield f'{indent}if({node.condition}) {{'
+            yield (f'{indent}if({node.condition}) {{', node.break_point)
             indent += '  '
         elif isinstance(node, Connector):
             indent = indent[:len(indent) - 2]
-            yield f'{indent}}}'
+            yield (f'{indent}}}', False)
         elif isinstance(node, Function):
             if node.name == 'End':
-                yield f'{indent}return 0;'
+                yield (f'{indent}return 0;', node.break_point)
                 indent = indent[:len(indent) - 2]
-                yield '}'
+                yield ('}', False)
                 return
             else:
                 if flowchart.contains_io():
-                    yield f'{indent}#include <stdio.h>'
-                    yield ''
-                yield f'{indent}int {node.name}() {{'
+                    yield (f'{indent}#include <stdio.h>', False)
+                    yield ('', False)
+                yield (f'{indent}int {node.name}() {{', node.break_point)
                 indent += '  '
         elif isinstance(node, Loop):
             if node.loop_type == 'for':
-                yield f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{'
+                yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
+                       node.break_point)
             else:
-                yield f'{indent}while({node.condition}) {{'
+                yield (f'{indent}while({node.condition}) {{', node.break_point)
             indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
             if declaration is None:
-                yield f'{indent}// {node.var_name} is not declared!'
+                yield (f'{indent}// {node.var_name} is not declared!', False)
             else:
                 var_type = 'int' if isinstance(declaration, Loop) else declaration.var_type
                 type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                 _, format_specifier = next(t for t in type_formats if t[0] == var_type)
-                yield f'{indent}scanf("{format_specifier}", {node.var_name});'
+                yield (f'{indent}scanf("{format_specifier}", {node.var_name});', node.break_point)
 
         elif isinstance(node, Output):
             if len(node.arguments) > 0:
-                yield f'{indent}printf("{node.format_string}", {node.arguments});'
+                yield (f'{indent}printf("{node.format_string}", {node.arguments});', node.break_point)
             else:
-                yield f'{indent}printf("{node.format_string}");'
+                yield (f'{indent}printf("{node.format_string}");', node.break_point)
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):
                 if connection.src_ind == 0 and not isinstance(connection.dst_node, Connector):
-                    yield f'{indent[:len(indent) - 2]}}} else {{'
+                    yield (f'{indent[:len(indent) - 2]}}} else {{', False)
             elif isinstance(node, Loop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
-                    yield f'{indent}}}'
+                    yield (f'{indent}}}', False)
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self._generate_code(flowchart, connection.dst_node, indent)

@@ -542,14 +542,11 @@ class GUI:
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.flowchart.is_initialized():
-            source_code = self.code_generator.generate_code(self.flowchart)
-            if source_code != self.prev_source_code:
+            source_code = self.code_generator.write_source_files(self.flowchart)
+            if source_code is not None:
+                dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
                 if self.debugger is not None:
                     self.debugger.enable_build_only()
-                self.prev_source_code = source_code
-                dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
-                with open('flowtutor.c', 'w') as file:
-                    file.write(source_code)
         else:
             if self.debugger is not None:
                 self.debugger.disable_all()
