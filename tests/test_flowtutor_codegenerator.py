@@ -20,7 +20,7 @@ class TestCodeGenerator:
     def test_code_from_empty_flowchart(self):
         flowchart = Flowchart()
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -38,7 +38,7 @@ class TestCodeGenerator:
         declaration.var_value = '3'
         flowchart.add_node(flowchart.root, declaration)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -57,7 +57,7 @@ class TestCodeGenerator:
         declaration.is_pointer = True
         flowchart.add_node(flowchart.root, declaration)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -74,7 +74,7 @@ class TestCodeGenerator:
         assignment.var_value = '3'
         flowchart.add_node(flowchart.root, assignment)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -92,7 +92,7 @@ class TestCodeGenerator:
         assignment.comment = 'This is a comment'
         flowchart.add_node(flowchart.root, assignment)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -111,7 +111,7 @@ class TestCodeGenerator:
         assignment.var_value = '3'
         flowchart.add_node(flowchart.root, assignment)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(code)
         expected = '\n'.join([
             'int main() {',
@@ -127,7 +127,7 @@ class TestCodeGenerator:
         conditional.condition = 'x > 5'
         flowchart.add_node(flowchart.root, conditional)
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         print(repr(code))
         expected = '\n'.join([
             'int main() {',
@@ -150,7 +150,7 @@ class TestCodeGenerator:
         flowchart.add_node(conditional, assignment, 1)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             'int main() {',
             '  if(x > 5) {',
@@ -181,7 +181,7 @@ class TestCodeGenerator:
         flowchart.add_node(conditional, assignment2, 0)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             'int main() {',
             '  if(x > 5) {',
@@ -209,7 +209,7 @@ class TestCodeGenerator:
         flowchart.add_node(loop, assignment, 1)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             'int main() {',
             '  while(x > 5) {',
@@ -239,7 +239,7 @@ class TestCodeGenerator:
         flowchart.add_node(loop, assignment, 1)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             'int main() {',
             '  for(int i = 0; i < 10; i++) {',
@@ -269,7 +269,7 @@ class TestCodeGenerator:
         flowchart.add_node(declaration, input)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
@@ -293,7 +293,7 @@ class TestCodeGenerator:
         flowchart.add_node(flowchart.root, input)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
@@ -316,7 +316,7 @@ class TestCodeGenerator:
         flowchart.add_node(flowchart.root, output)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
@@ -340,7 +340,7 @@ class TestCodeGenerator:
         flowchart.add_node(flowchart.root, output)
 
         code_generator = CodeGenerator()
-        code = code_generator.generate_code(flowchart)
+        code, _ = code_generator.generate_code(flowchart)
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
