@@ -180,7 +180,8 @@ class Debugger:
     def on_debug_step_over(self):
         if self.debug_session is None:
             return
-        self.debug_session.next()
+        if self.debug_session.next():
+            self.log_info('Program ended.')
 
     def on_debug_step_into(self):
         if self.debug_session is None:
@@ -190,4 +191,5 @@ class Debugger:
     def on_debug_stop(self):
         if self.debug_session is None:
             return
-        self.debug_session.stop()
+        if self.debug_session.stop():
+            self.log_info('Program killed.')

@@ -4,6 +4,7 @@ import re
 import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
+from blinker import signal
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
@@ -54,6 +55,9 @@ class GUI:
         self.width = width
         self.height = height
         self.flowchart = Flowchart()
+
+        signal('hit-line').connect(self.on_hit_line)
+        signal('program-finished').connect(self.on_program_finished)
 
         dpg.create_context()
 
@@ -362,6 +366,17 @@ class GUI:
                 self.debugger = Debugger(debugger_window)
 
         self.code_generator = CodeGenerator()
+
+    def on_hit_line(self, sender, **kw):
+        line = kw['line']
+        for node in self.flowchart:
+            node.has_debug_cursor = line in node.lines
+        self.redraw_all()
+
+    def on_program_finished(self, sender, **kw):
+        for node in self.flowchart:
+            node.has_debug_cursor = False
+        self.redraw_all()
 
     def on_select_node(self, node: Optional[Node]):
         if node is None:

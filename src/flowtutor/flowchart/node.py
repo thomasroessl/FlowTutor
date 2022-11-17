@@ -23,6 +23,8 @@ class Node(ABC):
         self._pos = (0, 0)
         self._comment = ''
         self._break_point = False
+        self._lines = []
+        self._has_debug_cursor = False
 
     def __repr__(self) -> str:
         return f'({self.tag})'
@@ -112,6 +114,22 @@ class Node(ABC):
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_out_points))
 
     @property
+    def lines(self) -> list[int]:
+        return self._lines
+
+    @lines.setter
+    def lines(self, lines: list[int]):
+        self._lines = lines
+
+    @property
+    def has_debug_cursor(self) -> bool:
+        return self._has_debug_cursor
+
+    @has_debug_cursor.setter
+    def has_debug_cursor(self, has_debug_cursor: bool):
+        self._has_debug_cursor = has_debug_cursor
+
+    @property
     @abstractmethod
     def color(self):
         pass
@@ -174,25 +192,42 @@ class Node(ABC):
             thickness = 3 if is_selected else 2 if self.is_hovered(
                 mouse_pos) else 1
             dpg.draw_polygon(list(self.shape.exterior.coords), fill=color)
-            dpg.draw_polygon(list(self.shape.exterior.coords), color=text_color, thickness=thickness)
+            if self.break_point:
+                dpg.draw_polygon(list(self.shape.exterior.coords),
+                                 color=(255, 0, 0), thickness=6)
+            dpg.draw_polygon(list(self.shape.exterior.coords),
+                             color=text_color, thickness=thickness)
+
             text_width, text_height = dpg.get_text_size(self.label)
             dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
                            pos_y + self.shape_height / 2 - text_height / 2),
                           self.label, color=(0, 0, 0), size=18)
-            if self.break_point:
-                break_pos = self.in_points[0]
-                break_pos_x, break_pos_y = break_pos
+
+            if self.has_debug_cursor:
+                cursor_pos = self.pos
+                cursor_pos_x, cursor_pos_y = cursor_pos
                 dpg.draw_polygon([
-                    (break_pos_x - 5.6, break_pos_y - 13.5),
-                    (break_pos_x + 5.6, break_pos_y - 13.5),
-                    (break_pos_x + 13.5, break_pos_y - 5.6),
-                    (break_pos_x + 13.5, break_pos_y + 5.6),
-                    (break_pos_x + 5.6, break_pos_y + 13.5),
-                    (break_pos_x - 5.6, break_pos_y + 13.5),
-                    (break_pos_x - 13.5, break_pos_y + 5.6),
-                    (break_pos_x - 13.5, break_pos_y - 5.6),
-                    (break_pos_x - 5.6, break_pos_y - 13.5)],
-                    color=(255, 0, 0), thickness=3)
+                    cursor_pos,
+                    (cursor_pos_x - 15, cursor_pos_y + 15),
+                    (cursor_pos_x - 15, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 15),
+                    cursor_pos
+                ],
+                    fill=(0, 255, 0))
+                dpg.draw_polygon([
+                    cursor_pos,
+                    (cursor_pos_x - 15, cursor_pos_y + 15),
+                    (cursor_pos_x - 15, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 15),
+                    cursor_pos
+                ],
+                    color=text_color)
 
         for connection in self.connections:
             connection.draw(self)

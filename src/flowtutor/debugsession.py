@@ -1,4 +1,5 @@
 from __future__ import annotations
+from blinker import signal
 from typing import TYPE_CHECKING
 import re
 import subprocess
@@ -60,40 +61,42 @@ class DebugSession:
             return True
         self.process.stdin.write(f'{command}\n')
         finished = False
+        hit_end = False
         for line in self.process.stdout:
+            print(line.__repr__())
             if (line == '(gdb)\n'):
                 break
-            elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
+            if (line == 'Continuing.\n') or\
+                    re.search(r'\[New Thread .+\]', line) or\
+                    re.search(r'Starting program: .+', line) or\
+                    re.search(r'Kill the program being debugged\?.*', line) or\
+                    re.search(r'warning: unhandled dyld version .*', line) or\
+                    re.search(r'Thread \d+ hit Breakpoint \d+', line) or\
+                    re.search(r'0x[A-Za-z0-9]+ in \?\? \(\)', line):
                 pass
-            elif not re.search(r'\[New Thread .+\]', line)\
-                    and not re.search(r'Starting program: .+', line)\
-                    and not re.search(r'warning: unhandled dyld version .*', line):
-                match = re.match(r'(.*)\[Inferior .+\]\n?', line)
-                if match is not None:
-                    finished = True
-                    if len(match.group(1)) > 0:
-                        self.debugger.log(match.group(1))
-                else:
-                    self.debugger.log(line)
-                pass
-        return finished
+            elif (match := re.match(r'(\d+)\t.*', line)) is not None:
+                if len(match.group(1)) > 0:
+                    signal('hit-line').send(self, line=int(match.group(1)))
+            elif re.search(r'Cannot find bounds of current function', line):
+                hit_end = True
+            elif (match := re.match(r'(.*)\[Inferior .+\]\n?', line)) is not None:
+                finished = True
+                if len(match.group(1)) > 0:
+                    self.debugger.log(match.group(1))
+            elif not line.isspace():
+                self.debugger.log(line)
+        if hit_end:
+            return self.execute('continue')
+        else:
+            if finished:
+                signal('program-finished').send(self)
+            return finished
 
     def run(self) -> bool:
         return self.execute('run')
 
     def stop(self):
-        if self.process.stdout is None or self.process.stdin is None:
-            return
-        self.process.stdin.write('kill\n')
-        for line in self.process.stdout:
-            if (line == '(gdb)\n'):
-                break
-            elif re.search(r'Kill the program', line):
-                self.process.stdin.write('y\n')
-            elif re.search(r'\[Inferior .+\]', line):
-                self.debugger.log(line)
-            else:
-                self.debugger.log(line)
+        return self.execute('kill')
 
     def step(self) -> bool:
         return self.execute('step')
