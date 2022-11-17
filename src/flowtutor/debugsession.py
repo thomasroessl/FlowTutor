@@ -86,7 +86,7 @@ class DebugSession:
             elif not line.isspace():
                 self.debugger.log(line)
         if hit_end:
-            return self.execute('continue')
+            return self.cont()
         else:
             if finished:
                 signal('program-finished').send(self)
@@ -94,6 +94,9 @@ class DebugSession:
 
     def run(self) -> bool:
         return self.execute('run')
+
+    def cont(self) -> bool:
+        return self.execute('continue')
 
     def stop(self):
         return self.execute('kill')

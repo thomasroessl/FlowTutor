@@ -369,6 +369,8 @@ class GUI:
 
     def on_hit_line(self, sender, **kw):
         line = kw['line']
+        if self.debugger is not None:
+            self.debugger.enable_all()
         for node in self.flowchart:
             node.has_debug_cursor = line in node.lines
         self.redraw_all()
@@ -376,6 +378,8 @@ class GUI:
     def on_program_finished(self, sender, **kw):
         for node in self.flowchart:
             node.has_debug_cursor = False
+        if self.debugger is not None:
+            self.debugger.enable_build_and_run()
         self.redraw_all()
 
     def on_select_node(self, node: Optional[Node]):

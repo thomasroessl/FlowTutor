@@ -23,10 +23,10 @@ class Debugger:
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
             self.build_button = dpg.add_image_button('hammer_image', callback=self.on_build)
             with dpg.group(horizontal=True):
-                dpg.add_image_button('run_image',
-                                     tag='debug_run_button',
-                                     callback=self.on_debug_run,
-                                     enabled=False)
+                self.run_button = dpg.add_image_button('run_image',
+                                                       tag='debug_run_button',
+                                                       callback=self.on_debug_run,
+                                                       enabled=False)
                 dpg.add_image_button('step_over_image',
                                      tag='debug_step_over_button',
                                      callback=self.on_debug_step_over,
@@ -74,6 +74,11 @@ class Debugger:
     def enable_build_only(self):
         self.disable_all()
         dpg.enable_item(self.build_button)
+
+    def enable_build_and_run(self):
+        self.disable_all()
+        dpg.enable_item(self.build_button)
+        dpg.enable_item(self.run_button)
 
     def enable_all(self):
         self.enable_children(self.controls_group)
@@ -161,27 +166,32 @@ class Debugger:
 
     def on_debug_run(self):
         if self.debug_session is None:
-            return
-        if self.debug_session.run():
-            self.log_info('Program ended.')
+            # Start debugger
+            self.debug_session = DebugSession(self)
+            if self.debug_session.run():
+                self.log_info('Program ended.')
+                self.debug_session = None
+        else:
+            if self.debug_session.cont():
+                self.log_info('Program ended.')
+                self.debug_session = None
 
     def on_build(self):
         self.disable_all()
         self.load_start()
         # Build the executable
         subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
-        # Start debugger
-        self.debug_session = DebugSession(self)
         self.is_code_built = True
         self.load_end()
         self.log_info('Code built!')
-        self.enable_all()
+        self.enable_build_and_run()
 
     def on_debug_step_over(self):
         if self.debug_session is None:
             return
         if self.debug_session.next():
             self.log_info('Program ended.')
+            self.debug_session = None
 
     def on_debug_step_into(self):
         if self.debug_session is None:
@@ -193,3 +203,4 @@ class Debugger:
             return
         if self.debug_session.stop():
             self.log_info('Program killed.')
+            self.debug_session = None
