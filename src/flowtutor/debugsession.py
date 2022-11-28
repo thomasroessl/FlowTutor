@@ -1,6 +1,6 @@
 from __future__ import annotations
 from blinker import signal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 import re
 import subprocess
 
@@ -56,71 +56,77 @@ class DebugSession:
     def process(self) -> subprocess.Popen[str]:
         return self._gdb_process
 
-    def execute(self, command: str) -> bool:
+    def execute(self, command: str) -> None:
         if not self.process.stdin or not self.process.stdout:
-            return True
+            return
         self.process.stdin.write(f'{command}\n')
-        finished = False
         hit_end = False
+        hit_break_point = command == 'next' or command == 'step'
         for line in self.process.stdout:
-            print(line.__repr__())
+            print(f'execute ({command}): {line.__repr__()}')
             if (line == '(gdb)\n'):
+                if hit_break_point and not hit_end:
+                    self.get_variable_assignments()
                 break
-            if (line == 'Continuing.\n') or\
+            elif (match := re.match(r'(\d+)\t.*', line)) is not None and len(match.group(1)) > 0:
+                signal('hit-line').send(self, line=int(match.group(1)))
+            elif (line == 'Continuing.\n') or\
                     re.search(r'\[New Thread .+\]', line) or\
                     re.search(r'Starting program: .+', line) or\
                     re.search(r'Kill the program being debugged\?.*', line) or\
-                    re.search(r'warning: unhandled dyld version .*', line) or\
-                    re.search(r'Thread \d+ hit Breakpoint \d+', line) or\
-                    re.search(r'0x[A-Za-z0-9]+ in \?\? \(\)', line):
+                    re.search(r'warning: unhandled dyld version .*', line):
                 pass
-            elif (match := re.match(r'(\d+)\t.*', line)) is not None:
-                if len(match.group(1)) > 0:
-                    signal('hit-line').send(self, line=int(match.group(1)))
-            elif re.search(r'Cannot find bounds of current function', line):
+            elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
+                hit_break_point = True
+            elif re.search(r'Cannot find bounds of current function', line) or\
+                    re.search(r'0x[0-9a-f]+ in \?\? \(\)', line):
                 hit_end = True
             elif (match := re.match(r'(.*)\[Inferior .+\]\n?', line)) is not None:
-                finished = True
                 if len(match.group(1)) > 0:
                     self.debugger.log(match.group(1))
+                signal('program-finished').send(self)
             elif not line.isspace():
                 self.debugger.log(line)
         if hit_end:
-            return self.cont()
-        else:
-            if finished:
-                signal('program-finished').send(self)
-            return finished
+            self.cont()
 
-    def run(self) -> bool:
-        return self.execute('run')
+    def run(self) -> None:
+        self.execute('run')
 
-    def cont(self) -> bool:
-        return self.execute('continue')
+    def cont(self) -> None:
+        self.execute('continue')
 
     def stop(self):
-        return self.execute('kill')
+        self.execute('kill')
 
-    def step(self) -> bool:
-        return self.execute('step')
+    def step(self) -> None:
+        self.execute('step')
 
-    def next(self) -> bool:
-        return self.execute('next')
+    def next(self) -> None:
+        self.execute('next')
 
-    def get_variable_assignments(self):
+    def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:
             return
+        variables: Dict[str, str] = {}
         self.process.stdin.write('info locals\n')
         for line in self.process.stdout:
+            print(f'get_variable_assignments: {line.__repr__()}')
             if (line == '(gdb)\n'):
+                signal('variables').send(self, variables=variables)
                 break
-            elif re.search(r'.+ = .+', line):
-                self.debugger.log_debug(line)
+            elif re.search(r'No locals\.', line):
+                pass
+            elif re.search(r'No symbol table info available\.', line):
+                self.execute('continue')
+                break
+            elif match := re.search(r'(.+) = (.+)', line):
+                variables[match.group(1)] = match.group(2)
             else:
                 self.debugger.log(line)
                 pass
 
-    def set_break_point(self, line):
+    def set_break_point(self, line) -> None:
         if self.process.stdout is None or self.process.stdin is None:
             return
         self.process.stdin.write(f'break test.c:{line}\n')

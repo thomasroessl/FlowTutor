@@ -1,6 +1,7 @@
 import subprocess
 from typing import Optional, Union
 import dearpygui.dearpygui as dpg
+from blinker import signal
 
 from flowtutor.debugsession import DebugSession
 
@@ -19,6 +20,9 @@ class Debugger:
         self.window_id = parent
         self.count = 0
         self.flush_count = 1000
+
+        signal('program-finished').connect(self.on_program_finished)
+        signal('program-kiled').connect(self.on_program_killed)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
             self.build_button = dpg.add_image_button('hammer_image', callback=self.on_build)
@@ -40,10 +44,12 @@ class Debugger:
                                      callback=self.on_debug_stop,
                                      enabled=False)
             with dpg.group(horizontal=True) as g1:
-                dpg.add_checkbox(label='Auto-scroll', default_value=True, pos=(205, 3),
-                                 callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
-                dpg.add_button(label='Clear',
-                               callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
+                self.auto_scroll_cb = dpg.add_checkbox(label='Auto-scroll',
+                                                       default_value=True,
+                                                       pos=(205, 3),
+                                                       callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
+                self.clear_button = dpg.add_button(label='Clear',
+                                                   callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvGroup):
                         dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0.0, category=dpg.mvThemeCat_Core)
@@ -70,6 +76,8 @@ class Debugger:
 
     def disable_all(self):
         self.disable_children(self.controls_group)
+        dpg.enable_item(self.auto_scroll_cb)
+        dpg.enable_item(self.clear_button)
 
     def enable_build_only(self):
         self.disable_all()
@@ -168,19 +176,15 @@ class Debugger:
         if self.debug_session is None:
             # Start debugger
             self.debug_session = DebugSession(self)
-            if self.debug_session.run():
-                self.log_info('Program ended.')
-                self.debug_session = None
+            self.debug_session.run()
         else:
-            if self.debug_session.cont():
-                self.log_info('Program ended.')
-                self.debug_session = None
+            self.debug_session.cont()
 
     def on_build(self):
         self.disable_all()
         self.load_start()
         # Build the executable
-        subprocess.run(['gcc', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
+        subprocess.run(['gcc-12', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
         self.is_code_built = True
         self.load_end()
         self.log_info('Code built!')
@@ -189,9 +193,7 @@ class Debugger:
     def on_debug_step_over(self):
         if self.debug_session is None:
             return
-        if self.debug_session.next():
-            self.log_info('Program ended.')
-            self.debug_session = None
+        self.debug_session.next()
 
     def on_debug_step_into(self):
         if self.debug_session is None:
@@ -201,6 +203,12 @@ class Debugger:
     def on_debug_stop(self):
         if self.debug_session is None:
             return
-        if self.debug_session.stop():
-            self.log_info('Program killed.')
-            self.debug_session = None
+        self.debug_session.stop()
+
+    def on_program_finished(self, sender, **kw):
+        self.log_info('Program ended.')
+        self.debug_session = None
+
+    def on_program_killed(self, sender, **kw):
+        self.log_info('Program killed.')
+        self.debug_session = None

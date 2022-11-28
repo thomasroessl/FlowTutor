@@ -51,6 +51,8 @@ class GUI:
 
     debugger: Optional[Debugger] = None
 
+    current_table_id: Optional[int] = None
+
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
@@ -58,6 +60,7 @@ class GUI:
 
         signal('hit-line').connect(self.on_hit_line)
         signal('program-finished').connect(self.on_program_finished)
+        signal('variables').connect(self.on_variables)
 
         dpg.create_context()
 
@@ -362,8 +365,18 @@ class GUI:
                                     dpg.mvKey_Delete, callback=self.on_delete_press)
                     with dpg.group(width=400):
                         dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, height=-1, readonly=True)
-            with dpg.child_window(width=-1, border=False, height=250) as debugger_window:
-                self.debugger = Debugger(debugger_window)
+            with dpg.group(horizontal=True):
+                with dpg.child_window(width=-410, border=False, height=250) as debugger_window:
+                    self.debugger = Debugger(debugger_window)
+                with dpg.child_window(width=400, border=False, height=250):
+                    dpg.add_spacer(height=30)
+                    dpg.add_text('Variables')
+                    with dpg.table(header_row=True, row_background=True,
+                                   borders_innerH=True, borders_outerH=True, borders_innerV=True,
+                                   borders_outerV=True, delay_search=True) as table_id:
+                        self.current_table_id = table_id
+                        dpg.add_table_column(label="Name")
+                        dpg.add_table_column(label="Value")
 
         self.code_generator = CodeGenerator()
 
@@ -373,6 +386,18 @@ class GUI:
             self.debugger.enable_all()
         for node in self.flowchart:
             node.has_debug_cursor = line in node.lines
+        self.redraw_all()
+
+    def on_variables(self, sender, **kw):
+        variables = kw['variables']
+        if self.debugger is not None:
+            for row_id in dpg.get_item_children(self.current_table_id)[1]:
+                dpg.delete_item(row_id)
+            if len(variables) > 0:
+                for variable in variables:
+                    with dpg.table_row(parent=self.current_table_id):
+                        dpg.add_text(variable)
+                        dpg.add_text(variables[variable])
         self.redraw_all()
 
     def on_program_finished(self, sender, **kw):
