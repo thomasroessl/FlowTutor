@@ -74,6 +74,8 @@ class DebugSession:
                     re.search(r'\[New Thread .+\]', line) or\
                     re.search(r'Starting program: .+', line) or\
                     re.search(r'Kill the program being debugged\?.*', line) or\
+                    re.search(r'Delete all breakpoints\?.*', line) or\
+                    re.search(r'Breakpoint \d at 0x[0-9a-f]+', line) or\
                     re.search(r'warning: unhandled dyld version .*', line):
                 pass
             elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
@@ -94,6 +96,7 @@ class DebugSession:
         self.execute('run')
 
     def cont(self) -> None:
+        self.refresh_break_points()
         self.execute('continue')
 
     def stop(self):
@@ -104,6 +107,10 @@ class DebugSession:
 
     def next(self) -> None:
         self.execute('next')
+
+    def refresh_break_points(self) -> None:
+        self.execute('delete')
+        self.execute('source flowtutor_break_points')
 
     def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:
