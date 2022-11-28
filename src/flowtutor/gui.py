@@ -51,7 +51,7 @@ class GUI:
 
     debugger: Optional[Debugger] = None
 
-    current_table_id: Optional[int] = None
+    variable_table_id: Optional[int] = None
 
     def __init__(self, width: int, height: int):
         self.width = width
@@ -374,7 +374,7 @@ class GUI:
                     with dpg.table(header_row=True, row_background=True,
                                    borders_innerH=True, borders_outerH=True, borders_innerV=True,
                                    borders_outerV=True, delay_search=True) as table_id:
-                        self.current_table_id = table_id
+                        self.variable_table_id = table_id
                         dpg.add_table_column(label="Name")
                         dpg.add_table_column(label="Value")
 
@@ -391,11 +391,11 @@ class GUI:
     def on_variables(self, sender, **kw):
         variables = kw['variables']
         if self.debugger is not None:
-            for row_id in dpg.get_item_children(self.current_table_id)[1]:
+            for row_id in dpg.get_item_children(self.variable_table_id)[1]:
                 dpg.delete_item(row_id)
             if len(variables) > 0:
                 for variable in variables:
-                    with dpg.table_row(parent=self.current_table_id):
+                    with dpg.table_row(parent=self.variable_table_id):
                         dpg.add_text(variable)
                         dpg.add_text(variables[variable])
         self.redraw_all()
