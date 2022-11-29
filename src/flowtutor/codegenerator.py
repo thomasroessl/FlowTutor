@@ -37,7 +37,9 @@ class CodeGenerator:
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
             with open('flowtutor.c', 'w') as file:
-                file.write(source_code)
+                # Add a function to the source code, that turns off stdout buffering
+                # Otherwise output will not be displayed until after the program has finished.
+                file.write(source_code + '\nvoid fix_debug(void) { setvbuf(stdout, NULL, _IONBF, 0); }')
             return source_code
         else:
             return None

@@ -66,6 +66,8 @@ class DebugSession:
             print(f'execute ({command}): {line.__repr__()}')
             if (line == '(gdb)\n'):
                 if hit_break_point and not hit_end:
+                    # Turn off stdout buffering
+                    self.execute('call fix_debug()')
                     self.get_variable_assignments()
                 break
             elif (match := re.match(r'(\d+)\t.*', line)) is not None and len(match.group(1)) > 0:
