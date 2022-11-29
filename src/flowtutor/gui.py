@@ -443,6 +443,7 @@ class GUI:
         elif isinstance(self.selected_node, Declaration):
             dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)
+            dpg.configure_item('selected_declaration_var_value', default_value=self.selected_node.var_value)
             dpg.configure_item('selected_declaration_is_array', default_value=self.selected_node.is_array)
             if self.selected_node.is_array:
                 dpg.show_item('selected_declaration_array_size_group')
