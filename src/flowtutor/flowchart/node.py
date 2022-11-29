@@ -21,6 +21,10 @@ class Node(ABC):
         self._connections: list[Connection] = []
         self._scope: list[str] = []
         self._pos = (0, 0)
+        self._comment = ''
+        self._break_point = False
+        self._lines = []
+        self._has_debug_cursor = False
 
     def __repr__(self) -> str:
         return f'({self.tag})'
@@ -110,6 +114,22 @@ class Node(ABC):
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_out_points))
 
     @property
+    def lines(self) -> list[int]:
+        return self._lines
+
+    @lines.setter
+    def lines(self, lines: list[int]):
+        self._lines = lines
+
+    @property
+    def has_debug_cursor(self) -> bool:
+        return self._has_debug_cursor
+
+    @has_debug_cursor.setter
+    def has_debug_cursor(self, has_debug_cursor: bool):
+        self._has_debug_cursor = has_debug_cursor
+
+    @property
     @abstractmethod
     def color(self):
         pass
@@ -137,6 +157,22 @@ class Node(ABC):
     def is_initialized(self) -> bool:
         pass
 
+    @property
+    def comment(self) -> str:
+        return self._comment
+
+    @comment.setter
+    def comment(self, comment: str):
+        self._comment = comment
+
+    @property
+    def break_point(self) -> bool:
+        return self._break_point
+
+    @break_point.setter
+    def break_point(self, break_point: bool):
+        self._break_point = break_point
+
     def get_left_x(self):
         return self.shape_width//2 - self.width//2
 
@@ -156,11 +192,42 @@ class Node(ABC):
             thickness = 3 if is_selected else 2 if self.is_hovered(
                 mouse_pos) else 1
             dpg.draw_polygon(list(self.shape.exterior.coords), fill=color)
-            dpg.draw_polygon(list(self.shape.exterior.coords), color=text_color, thickness=thickness)
+            if self.break_point:
+                dpg.draw_polygon(list(self.shape.exterior.coords),
+                                 color=(255, 0, 0), thickness=6)
+            dpg.draw_polygon(list(self.shape.exterior.coords),
+                             color=text_color, thickness=thickness)
+
             text_width, text_height = dpg.get_text_size(self.label)
             dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
                            pos_y + self.shape_height / 2 - text_height / 2),
                           self.label, color=(0, 0, 0), size=18)
+
+            if self.has_debug_cursor:
+                cursor_pos = self.pos
+                cursor_pos_x, cursor_pos_y = cursor_pos
+                dpg.draw_polygon([
+                    cursor_pos,
+                    (cursor_pos_x - 15, cursor_pos_y + 15),
+                    (cursor_pos_x - 15, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 15),
+                    cursor_pos
+                ],
+                    fill=(0, 255, 0))
+                dpg.draw_polygon([
+                    cursor_pos,
+                    (cursor_pos_x - 15, cursor_pos_y + 15),
+                    (cursor_pos_x - 15, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y + 5),
+                    (cursor_pos_x - 30, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 5),
+                    (cursor_pos_x - 15, cursor_pos_y - 15),
+                    cursor_pos
+                ],
+                    color=text_color)
 
         for connection in self.connections:
             connection.draw(self)

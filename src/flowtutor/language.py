@@ -1,14 +1,38 @@
+from __future__ import annotations
+
+
 class Language:
 
     @staticmethod
     def get_data_types() -> list[str]:
         return [
             'char',
+            'unsigned char',
             'short',
+            'unsigned short',
             'int',
+            'unsigned int',
             'long',
+            'unsigned long',
             'float',
-            'double'
+            'double',
+            'long double'
+        ]
+
+    @staticmethod
+    def get_format_specifiers() -> list[str]:
+        return [
+            '%c',
+            '%c',
+            '%hd',
+            '%hu',
+            '%d',
+            '%u',
+            '%ld',
+            '%lu',
+            '%f',
+            '%lf',
+            '%Lf'
         ]
 
     @staticmethod

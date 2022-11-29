@@ -12,3 +12,4 @@ omit =
     */flowtutor/main.py 
     */flowtutor/gui.py 
     */flowtutor/themes.py
+    */flowtutor/debugsession.py
