@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Tuple, Union, cast
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 FLOWCHART_TAG = 'flowchart'
 SOURCE_CODE_TAG = 'source_code'
+TAB_BAR_TAG = 'func_tab_bar'
 
 
 class GUI:
@@ -53,10 +54,18 @@ class GUI:
 
     variable_table_id: Optional[int] = None
 
+    selected_flowchart_tag: str = 'main'
+
+    @property
+    def selected_flowchart(self) -> Flowchart:
+        return self.flowcharts[self.selected_flowchart_tag]
+
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
-        self.flowchart = Flowchart()
+        self.flowcharts = {
+            'main': Flowchart('main')
+        }
 
         signal('hit-line').connect(self.on_hit_line)
         signal('program-finished').connect(self.on_program_finished)
@@ -66,8 +75,6 @@ class GUI:
 
         c_image_width, c_image_height, _, c_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/c.png'))
-        python_image_width, python_image_height, _, python_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/python.png'))
         run_image_width, run_image_height, _, run_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/run.png'))
         stop_image_width, stop_image_height, _, stop_image_data = dpg.load_image(
@@ -76,16 +83,12 @@ class GUI:
             os.path.join(os.path.dirname(__file__), '../../assets/step_into.png'))
         step_over_image_width, step_over_image_height, _, step_over_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/step_over.png'))
-        debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/debug.png'))
         hammer_image_width, hammer_image_height, _, hammer_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/hammer.png'))
 
         with dpg.texture_registry():
             dpg.add_static_texture(width=c_image_width, height=c_image_height,
                                    default_value=c_image_data, tag="c_image")
-            dpg.add_static_texture(width=python_image_width, height=python_image_height,
-                                   default_value=python_image_data, tag="python_image")
             dpg.add_static_texture(width=run_image_width, height=run_image_height,
                                    default_value=run_image_data, tag="run_image")
             dpg.add_static_texture(width=stop_image_width, height=stop_image_height,
@@ -94,8 +97,6 @@ class GUI:
                                    default_value=step_into_image_data, tag="step_into_image")
             dpg.add_static_texture(width=step_over_image_width, height=step_over_image_height,
                                    default_value=step_over_image_data, tag="step_over_image")
-            dpg.add_static_texture(width=debug_image_width, height=debug_image_height,
-                                   default_value=debug_image_data, tag="debug_image")
             dpg.add_static_texture(width=hammer_image_width, height=hammer_image_height,
                                    default_value=hammer_image_data, tag="hammer_image")
 
@@ -348,18 +349,17 @@ class GUI:
                 with dpg.group(horizontal=True):
                     with dpg.group(width=-410):
                         with dpg.child_window(tag='flowchart_container', horizontal_scrollbar=True):
-                            with dpg.tab_bar():
-                                dpg.add_tab(label=self.flowchart.root.name)
-                                dpg.add_tab(label='fun1')
-                                dpg.add_tab(label='fun2')
-                                dpg.add_tab(label='fun3')
+                            with dpg.tab_bar(
+                                    tag=TAB_BAR_TAG,
+                                    reorderable=True,
+                                    callback=self.on_selected_tab_changed):
+                                for func in self.flowcharts.keys():
+                                    dpg.add_tab(label=func, tag=func)
+                                dpg.add_tab_button(label='+', no_reorder=True)
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
                                              height=self.height)
-                            if self.flowchart.lang == 'c':
-                                dpg.add_image('c_image', pos=(10, 10))
-                            elif self.flowchart.lang == 'python':
-                                dpg.add_image('python_image', pos=(10, 10))
+                            dpg.add_image('c_image', pos=(10, 40))
 
                             with dpg.handler_registry():
                                 dpg.add_mouse_move_handler(callback=self.on_hover)
@@ -385,12 +385,20 @@ class GUI:
 
         self.code_generator = CodeGenerator()
 
+    def on_selected_tab_changed(self, sender, tab):
+        self.clear_flowchart()
+        self.selected_flowchart_tag = tab
+        self.selected_node = self.selected_flowchart.root
+        self.on_select_node(self.selected_flowchart.root)
+        self.redraw_all()
+
     def on_hit_line(self, sender, **kw):
         line = kw['line']
         if self.debugger is not None:
             self.debugger.enable_all()
-        for node in self.flowchart:
-            node.has_debug_cursor = line in node.lines
+        for func in self.flowcharts.values():
+            for node in func:
+                node.has_debug_cursor = line in node.lines
         self.redraw_all()
 
     def on_variables(self, sender, **kw):
@@ -406,8 +414,9 @@ class GUI:
         self.redraw_all()
 
     def on_program_finished(self, sender, **kw):
-        for node in self.flowchart:
-            node.has_debug_cursor = False
+        for flowchart in self.flowcharts.values():
+            for node in flowchart:
+                node.has_debug_cursor = False
         if self.debugger is not None:
             self.debugger.enable_build_and_run()
         self.redraw_all()
@@ -430,14 +439,14 @@ class GUI:
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         if isinstance(self.selected_node, Assignment):
-            self.declared_variables = list(self.flowchart.get_all_declarations())
+            self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
                 dpg.configure_item('selected_assignment_name',
                                    items=list(map(lambda d: d.var_name, self.declared_variables)))
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
             if Language.has_arrays():
-                declaration = self.flowchart.find_declaration(self.selected_node.var_name)
+                declaration = self.selected_flowchart.find_declaration(self.selected_node.var_name)
                 if declaration is not None and not isinstance(declaration, Loop) and declaration.is_array:
                     dpg.show_item('selected_assignment_offset_group')
                 else:
@@ -477,7 +486,7 @@ class GUI:
                     dpg.hide_item('selected_for_loop_group_2')
             dpg.show_item('selected_loop')
         elif isinstance(self.selected_node, Input):
-            self.declared_variables = list(self.flowchart.get_all_declarations())
+            self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
                 dpg.configure_item('selected_input_name',
                                    items=list(map(lambda d: d.var_name, self.declared_variables)))
@@ -536,17 +545,17 @@ class GUI:
         if self.mouse_position_on_canvas is None:
             return
         prev_selected_node = self.selected_node
-        self.on_select_node(self.flowchart.find_hovered_node(self.mouse_position_on_canvas))
+        self.on_select_node(self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas))
         if self.hovered_add_button is not None:
             m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
             if m is not None:
                 parent_tag = m.group(1)
                 src_index = m.group(2)
-                parent = self.flowchart.find_node(parent_tag)
+                parent = self.selected_flowchart.find_node(parent_tag)
 
             def callback(node):
                 if parent is not None:
-                    self.flowchart.add_node(parent, node, int(src_index))
+                    self.selected_flowchart.add_node(parent, node, int(src_index))
                     self.redraw_all()
             Modals.show_node_type_modal(callback, self.mouse_position)
         elif self.selected_node is not None:
@@ -569,8 +578,8 @@ class GUI:
 
         def callback():
             if self.selected_node is not None:
-                self.flowchart.clear()
-                self.flowchart.remove_node(self.selected_node)
+                self.selected_flowchart.clear()
+                self.selected_flowchart.remove_node(self.selected_node)
                 self.on_select_node(None)
                 self.redraw_all()
 
@@ -582,18 +591,42 @@ class GUI:
         else:
             callback()
 
+    def clear_flowchart(self):
+        self.selected_node = None
+        self.on_select_node(None)
+        self.dragging_node = None
+        for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
+            dpg.delete_item(item)
+
+    def get_ordered_flowcharts(self) -> list[Flowchart]:
+        '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
+           (workaround for missing feature in dearpygui)'''
+        tabs = list(map(lambda i: cast(str, dpg.get_item_label(i)), dpg.get_item_children(TAB_BAR_TAG)[1]))
+        filtered_tabs = list(filter(lambda tab: tab != '+', tabs))
+        # Put the tabs in a dictionary with their x-position as key
+        converter = {}
+        for tab in filtered_tabs:
+            converter[dpg.get_item_rect_min(tab)[0]] = tab
+        # Before initialization all tabs habe position (0, 0)
+        # In this case, don't use the position for ordering
+        if len(converter) != len(self.flowcharts):
+            return list(self.flowcharts.values())
+        pos = [dpg.get_item_rect_min(tab)[0] for tab in filtered_tabs]
+        sortedPos = sorted(pos, key=lambda pos: cast(int, pos))
+        return list(map(lambda x: self.flowcharts[converter[x]], sortedPos))
+
     def redraw_all(self):
         self.hovered_add_button = None
         is_add_button_drawn = False
-        for node in self.flowchart:
+        for node in self.selected_flowchart:
             # The currently draggingis skipped. It gets redrawn in on_drag.
             if node == self.dragging_node:
                 continue
             node.redraw(self.mouse_position_on_canvas, self.selected_node)
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
-        if self.flowchart.is_initialized():
-            source_code = self.code_generator.write_source_files(self.flowchart)
+        if self.selected_flowchart.is_initialized():
+            source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
             if source_code is not None:
                 dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
                 if self.debugger is not None:
@@ -629,7 +662,7 @@ class GUI:
         '''Sets the size of the drawing area.'''
         width, height = self.parent_size
 
-        for node in self.flowchart:
+        for node in self.selected_flowchart:
             (_, _, max_x, max_y) = node.bounds
             if max_x > width:
                 width = max_x + 20

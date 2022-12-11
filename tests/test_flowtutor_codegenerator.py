@@ -18,7 +18,7 @@ from flowtutor.flowchart.node import dpg as node_dpg
 class TestCodeGenerator:
 
     def test_code_from_empty_flowchart(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         code_generator = CodeGenerator()
         code, _ = code_generator.generate_code(flowchart)
         print(code)
@@ -31,7 +31,7 @@ class TestCodeGenerator:
 
     @pytest.mark.parametrize('data_type', Language.get_data_types())
     def test_code_from_declaration(self, data_type):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         declaration = Declaration()
         declaration.var_name = 'x'
         declaration.var_type = data_type
@@ -50,7 +50,7 @@ class TestCodeGenerator:
 
     @pytest.mark.parametrize('data_type', Language.get_data_types())
     def test_code_from_pointer_declaration(self, data_type):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         declaration = Declaration()
         declaration.var_name = 'x'
         declaration.var_type = data_type
@@ -68,7 +68,7 @@ class TestCodeGenerator:
         assert code == expected, 'Pointer declaration.'
 
     def test_code_from_assignment(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_value = '3'
@@ -85,7 +85,7 @@ class TestCodeGenerator:
         assert code == expected, 'Assignment.'
 
     def test_code_from_assignment_with_comment(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_value = '3'
@@ -104,7 +104,7 @@ class TestCodeGenerator:
         assert code == expected, 'Assignment.'
 
     def test_code_from_array_assignment(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_offset = '0'
@@ -122,7 +122,7 @@ class TestCodeGenerator:
         assert code == expected, 'Assignment.'
 
     def test_code_from_conditional(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
         flowchart.add_node(flowchart.root, conditional)
@@ -139,7 +139,7 @@ class TestCodeGenerator:
         assert code == expected, 'Conditional.'
 
     def test_code_from_conditional_with_one_branch(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
         flowchart.add_node(flowchart.root, conditional)
@@ -165,7 +165,7 @@ class TestCodeGenerator:
         assert code == expected, 'Conditional.'
 
     def test_code_from_conditional_with_two_branches(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
         flowchart.add_node(flowchart.root, conditional)
@@ -198,7 +198,7 @@ class TestCodeGenerator:
         assert code == expected, 'Conditional.'
 
     def test_code_from_while_loop(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         loop = Loop()
         loop.condition = 'x > 5'
         flowchart.add_node(flowchart.root, loop)
@@ -224,7 +224,7 @@ class TestCodeGenerator:
         assert code == expected, 'While-Loop.'
 
     def test_code_from_for_loop(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         loop = Loop()
         loop.loop_type = 'for'
         loop.var_name = 'i'
@@ -256,7 +256,7 @@ class TestCodeGenerator:
     @pytest.mark.parametrize('data_type_format', list(zip(Language.get_data_types(), Language.get_format_specifiers())))
     def test_code_from_input(self, data_type_format):
         data_type, format_specifier = data_type_format
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         declaration = Declaration()
         declaration.var_name = 'x'
@@ -285,7 +285,7 @@ class TestCodeGenerator:
         assert code == expected, 'Input.'
 
     def test_code_from_input_undeclared(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         input = Input()
         input.var_name = 'x'
@@ -308,7 +308,7 @@ class TestCodeGenerator:
         assert code == expected, 'Input undeclared.'
 
     def test_code_from_output(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         output = Output()
         output.format_string = 'This is the output.'
@@ -331,7 +331,7 @@ class TestCodeGenerator:
         assert code == expected, 'Output.'
 
     def test_code_from_output_with_arguments(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         output = Output()
         output.format_string = 'This is the output: %d'

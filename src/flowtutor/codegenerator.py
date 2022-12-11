@@ -28,8 +28,8 @@ class CodeGenerator:
         except FileNotFoundError:
             pass
 
-    def write_source_files(self, flowchart: Flowchart) -> Optional[str]:
-        source_code, break_points = self.generate_code(flowchart)
+    def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
+        source_code, break_points = self.generate_code(flowcharts)
         if break_points != self.prev_break_points:
             self.prev_break_points = break_points
             with open('flowtutor_break_points', 'w') as file:
@@ -44,20 +44,29 @@ class CodeGenerator:
         else:
             return None
 
-    def generate_code(self, flowchart: Flowchart) -> tuple[str, str]:
-        code_lines, break_points, nodes = map(list, zip(*self._generate_code(flowchart, flowchart.root)))
+    def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
+        source: list[tuple[str, bool, Optional[Node]]] = [('#include <stdio.h>', False, None)]
 
-        for node in flowchart:
-            node.lines = []
+        for flowchart in flowcharts:
+            source.append(('', False, None))
+            source.extend(self._generate_code(flowchart, flowchart.root))
+
+        code_lines, break_points, nodes = map(list, zip(*source))
+
+        for flowchart in flowcharts:
+            for node in flowchart:
+                node.lines = []
 
         for i, node in enumerate(nodes):
-            cast(Node, node).lines.append(i + 1)
+            if node is not None:
+                cast(Node, node).lines.append(i + 1)
 
         source_code = '\n'.join(cast(list[str], code_lines))
         break_point_definitions = '\n'.join(
             map(lambda e: f'break flowtutor.c:{e[0] + 1}',
                 filter(lambda e: e[1],
                        enumerate(break_points))))
+
         return (source_code, break_point_definitions)
 
     def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '') -> \
@@ -92,9 +101,6 @@ class CodeGenerator:
                 yield ('}', False, node)
                 return
             else:
-                if flowchart.contains_io():
-                    yield (f'{indent}#include <stdio.h>', False, node)
-                    yield ('', False, node)
                 yield (f'{indent}int {node.name}() {{', node.break_point, node)
                 indent += '  '
         elif isinstance(node, Loop):

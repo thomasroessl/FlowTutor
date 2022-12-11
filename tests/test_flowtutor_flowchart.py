@@ -40,14 +40,14 @@ class TestFlowchart:
         assert node.tag
 
     def test_flowchart_initialize_root(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("main" and "End")'
         assert all(map(lambda node: isinstance(node, Function), flowchart)), ('A new flowchart should contain '
                                                                               'the root nodes')
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_nodes(self, node_class):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         node1 = node_class()
         node2 = node_class()
         flowchart.add_node(flowchart.root, node1)
@@ -61,7 +61,7 @@ class TestFlowchart:
         assert node1_connection_0.dst_node == node2, 'There should be a connection from node1 to node2'
 
     def test_flowchart_add_loop(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         loop1 = Loop()
         flowchart.add_node(flowchart.root, loop1)
         assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
@@ -73,7 +73,7 @@ class TestFlowchart:
         assert loop1_connection_1.dst_node == loop1, 'There should be a connection from the loop to itself'
 
     def test_flowchart_add_conditional(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         node1 = Conditional()
         flowchart.add_node(flowchart.root, node1)
         assert len(flowchart) == 4, ('After adding a conditional, there should be 4 nodes in the flowchart'
@@ -94,7 +94,7 @@ class TestFlowchart:
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_and_remove_node(self, node_class):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         node1 = node_class()
         flowchart.add_node(flowchart.root, node1)
         assert len(flowchart) == 3, 'After adding a node, there should be 3 nodes in the flowchart'
@@ -103,7 +103,7 @@ class TestFlowchart:
         assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
 
     def test_flowchart_add_and_remove_conditional(self):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         conditional1 = Conditional()
         flowchart.add_node(flowchart.root, conditional1)
         assert len(flowchart) == 4, 'After adding a conditional, there should be 4 nodes in the flowchart'
@@ -113,7 +113,7 @@ class TestFlowchart:
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_node_in_loop_body(self, node_class):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
         loop1 = Loop()
         node1 = node_class()
         flowchart.add_node(flowchart.root, loop1)
@@ -130,7 +130,7 @@ class TestFlowchart:
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_and_remove_nested_conditional(self, node_class):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         conditional1 = Conditional()
         flowchart.add_node(flowchart.root, conditional1)
@@ -167,7 +167,7 @@ class TestFlowchart:
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_and_remove_nested_loops(self, node_class):
-        flowchart = Flowchart()
+        flowchart = Flowchart('main')
 
         loop1 = Loop()
         flowchart.add_node(flowchart.root, loop1)
