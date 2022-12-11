@@ -375,3 +375,33 @@ class TestCodeGenerator:
         print(repr(code))
         print(repr(expected))
         assert code == expected, 'Output with arguments.'
+
+    def test_code_from_multiple_empty_functions(self):
+        flowchart1 = Flowchart('main')
+
+        flowchart2 = Flowchart('func1')
+
+        flowchart3 = Flowchart('func2')
+
+        code_generator = CodeGenerator()
+        code, _ = code_generator.generate_code([flowchart1, flowchart2, flowchart3])
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  return 0;',
+            '}',
+            '',
+            'int func1() {',
+            '  return 0;',
+            '}',
+            '',
+            'int func2() {',
+            '  return 0;',
+            '}'
+        ])
+        print(code)
+        print(expected)
+        print(repr(code))
+        print(repr(expected))
+        assert code == expected, 'Output with arguments.'
