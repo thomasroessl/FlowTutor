@@ -62,7 +62,7 @@ class Conditional(Node):
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             return
         # Draw labels for the branches
@@ -71,14 +71,14 @@ class Conditional(Node):
                 parent=FLOWCHART_TAG):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
-            text_false = "False"
+            text_false = 'False'
             text_false_width, text_false_height = dpg.get_text_size(
                 text_false)
             dpg.draw_text((pos_x - text_false_width - 5 + self.get_left_x(),
                            pos_y + self.shape_height/2 - text_false_height - 5),
                           text_false, color=text_color, size=18)
 
-            text_true = "True"
+            text_true = 'True'
             _, text_true_height = dpg.get_text_size(text_true)
             dpg.draw_text((pos_x + 5 + self.get_right_x(),
                            pos_y + self.shape_height/2 - text_true_height - 5),
@@ -86,7 +86,7 @@ class Conditional(Node):
 
     def delete(self):  # pragma: no cover
         super().delete()
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
 

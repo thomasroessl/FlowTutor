@@ -58,7 +58,7 @@ class Call(Node):
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             return
         # Draw extra lines for the declaration node
@@ -80,7 +80,7 @@ class Call(Node):
 
     def delete(self):  # pragma: no cover
         super().delete()
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
 

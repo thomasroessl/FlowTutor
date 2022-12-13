@@ -233,7 +233,7 @@ class Node(ABC):
             connection.draw(self)
 
     def redraw(self, mouse_pos: Optional[Tuple[int, int]], selected_node):
-        """Deletes the node and draws a new version of it."""
+        '''Deletes the node and draws a new version of it.'''
         self.delete()
         self.draw(mouse_pos, selected_node == self)
 

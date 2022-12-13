@@ -89,17 +89,17 @@ class GUI:
 
         with dpg.texture_registry():
             dpg.add_static_texture(width=c_image_width, height=c_image_height,
-                                   default_value=c_image_data, tag="c_image")
+                                   default_value=c_image_data, tag='c_image')
             dpg.add_static_texture(width=run_image_width, height=run_image_height,
-                                   default_value=run_image_data, tag="run_image")
+                                   default_value=run_image_data, tag='run_image')
             dpg.add_static_texture(width=stop_image_width, height=stop_image_height,
-                                   default_value=stop_image_data, tag="stop_image")
+                                   default_value=stop_image_data, tag='stop_image')
             dpg.add_static_texture(width=step_into_image_width, height=step_into_image_height,
-                                   default_value=step_into_image_data, tag="step_into_image")
+                                   default_value=step_into_image_data, tag='step_into_image')
             dpg.add_static_texture(width=step_over_image_width, height=step_over_image_height,
-                                   default_value=step_over_image_data, tag="step_over_image")
+                                   default_value=step_over_image_data, tag='step_over_image')
             dpg.add_static_texture(width=hammer_image_width, height=hammer_image_height,
-                                   default_value=hammer_image_data, tag="hammer_image")
+                                   default_value=hammer_image_data, tag='hammer_image')
 
         with dpg.font_registry():
             deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../assets/inconsolata.ttf'), 18)
@@ -389,8 +389,8 @@ class GUI:
                                    borders_innerH=True, borders_outerH=True, borders_innerV=True,
                                    borders_outerV=True, delay_search=True) as table_id:
                         self.variable_table_id = table_id
-                        dpg.add_table_column(label="Name")
-                        dpg.add_table_column(label="Value")
+                        dpg.add_table_column(label='Name')
+                        dpg.add_table_column(label='Value')
 
         self.code_generator = CodeGenerator()
 

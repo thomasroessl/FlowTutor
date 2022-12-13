@@ -103,7 +103,7 @@ class Loop(Node):
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             return
         with dpg.draw_node(
@@ -111,14 +111,14 @@ class Loop(Node):
                 parent=FLOWCHART_TAG):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
-            text_false = "False"
+            text_false = 'False'
             text_false_width, _ = dpg.get_text_size(
                 text_false)
             dpg.draw_text((pos_x - 10,
                            pos_y + self.shape_height + 5),
                           text_false, color=text_color, size=18)
 
-            text_true = "True"
+            text_true = 'True'
             _, text_true_height = dpg.get_text_size(text_true)
             dpg.draw_text((pos_x + 5 + self.get_right_x(),
                            pos_y + self.shape_height/2 - text_true_height - 5),
@@ -126,7 +126,7 @@ class Loop(Node):
 
     def delete(self):  # pragma: no cover
         super().delete()
-        tag = self.tag+"$"
+        tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
 

@@ -16,78 +16,78 @@ class Modals:
         with dpg.window(
                 label=label,
                 modal=True,
-                tag="approval_modal",
+                tag='approval_modal',
                 autosize=True,
                 pos=(250, 100),
-                on_close=lambda: dpg.delete_item("approval_modal")):
+                on_close=lambda: dpg.delete_item('approval_modal')):
             dpg.add_text(message)
             with dpg.group(horizontal=True):
                 dpg.add_button(
-                    label="OK",
+                    label='OK',
                     width=75,
-                    callback=lambda: (callback(), dpg.delete_item("approval_modal")))
+                    callback=lambda: (callback(), dpg.delete_item('approval_modal')))
                 dpg.add_button(
-                    label="Cancel",
+                    label='Cancel',
                     width=75,
-                    callback=lambda: dpg.delete_item("approval_modal"))
+                    callback=lambda: dpg.delete_item('approval_modal'))
 
     @staticmethod
     def show_input_text_modal(label, message, default_value, callback):
         with dpg.window(
                 label=label,
                 modal=True,
-                tag="input_text_modal",
+                tag='input_text_modal',
                 autosize=True,
                 pos=(250, 100),
-                on_close=lambda: dpg.delete_item("input_text_modal")):
+                on_close=lambda: dpg.delete_item('input_text_modal')):
             dpg.add_text(message)
-            dpg.add_input_text(tag="input_text", default_value=default_value)
+            dpg.add_input_text(tag='input_text', default_value=default_value)
             with dpg.group(horizontal=True):
                 dpg.add_button(
-                    label="OK",
+                    label='OK',
                     width=75,
-                    callback=lambda: (callback(dpg.get_value("input_text")), dpg.delete_item("input_text_modal")))
+                    callback=lambda: (callback(dpg.get_value('input_text')), dpg.delete_item('input_text_modal')))
                 dpg.add_button(
-                    label="Cancel",
+                    label='Cancel',
                     width=75,
-                    callback=lambda: dpg.delete_item("input_text_modal"))
+                    callback=lambda: dpg.delete_item('input_text_modal'))
 
     @staticmethod
     def show_node_type_modal(callback, pos):
         with dpg.window(
-                label="Add Node",
+                label='Add Node',
                 pos=pos,
                 modal=True,
-                tag="node_type_modal",
+                tag='node_type_modal',
                 width=150,
                 no_resize=True,
-                on_close=lambda: dpg.delete_item("node_type_modal")):
+                on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
                 dpg.add_button(
-                    label="Assignment",
+                    label='Assignment',
                     width=-1,
-                    callback=lambda: (callback(Assignment()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Assignment()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Call",
+                    label='Call',
                     width=-1,
-                    callback=lambda: (callback(Call()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Call()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Declaration",
+                    label='Declaration',
                     width=-1,
-                    callback=lambda: (callback(Declaration()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Declaration()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Conditional",
+                    label='Conditional',
                     width=-1,
-                    callback=lambda: (callback(Conditional()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Conditional()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Loop",
+                    label='Loop',
                     width=-1,
-                    callback=lambda: (callback(Loop()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Loop()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Input",
+                    label='Input',
                     width=-1,
-                    callback=lambda: (callback(Input()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Input()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label="Output",
+                    label='Output',
                     width=-1,
-                    callback=lambda: (callback(Output()), dpg.delete_item("node_type_modal")))
+                    callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
