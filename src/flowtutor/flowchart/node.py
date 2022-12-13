@@ -191,12 +191,12 @@ class Node(ABC):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
             thickness = 3 if is_selected else 2 if self.is_hovered(
                 mouse_pos) else 1
-            dpg.draw_polygon(list(self.shape.exterior.coords), fill=color)
-            if self.break_point:
-                dpg.draw_polygon(list(self.shape.exterior.coords),
-                                 color=(255, 0, 0), thickness=6)
+
             dpg.draw_polygon(list(self.shape.exterior.coords),
-                             color=text_color, thickness=thickness)
+                             fill=color)
+            dpg.draw_polygon(list(self.shape.exterior.coords),
+                             color=(255, 0, 0) if self.break_point else text_color,
+                             thickness=thickness)
 
             text_width, text_height = dpg.get_text_size(self.label)
             dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
