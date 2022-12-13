@@ -51,6 +51,9 @@ class Flowchart:
                     connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self.get_all_nodes(connection.dst_node, ignore_span)
 
+    def get_function_declaration(self) -> str:
+        return f'int {self.root.name}();'
+
     def get_all_declarations(self) -> Generator[Union[Declaration, Loop], None, None]:
         for node in self:
             if isinstance(node, Declaration):

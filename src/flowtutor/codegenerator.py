@@ -46,9 +46,18 @@ class CodeGenerator:
             return None
 
     def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
-        source: list[tuple[str, bool, Optional[Node]]] = [('#include <stdio.h>', False, None)]
+        source: list[tuple[str, bool, Optional[Node]]] = [
+            ('#include <stdio.h>', False, None)
+        ]
+
+        if len(flowcharts) > 1:
+            source.append(('', False, None))
 
         for flowchart in flowcharts:
+            if flowchart.root.name != 'main':
+                source.append((flowchart.get_function_declaration(), False, None))
+
+        for i, flowchart in enumerate(flowcharts):
             source.append(('', False, None))
             source.extend(self._generate_code(flowchart, flowchart.root))
 

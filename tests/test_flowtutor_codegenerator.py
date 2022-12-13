@@ -388,6 +388,9 @@ class TestCodeGenerator:
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
+            'int func1();',
+            'int func2();',
+            '',
             'int main() {',
             '  return 0;',
             '}',
@@ -404,4 +407,4 @@ class TestCodeGenerator:
         print(expected)
         print(repr(code))
         print(repr(expected))
-        assert code == expected, 'Output with arguments.'
+        assert code == expected, 'Declaration of multiple empty functions.'
