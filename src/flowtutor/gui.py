@@ -415,6 +415,9 @@ class GUI:
         for func in self.flowcharts.values():
             for node in func:
                 node.has_debug_cursor = line in node.lines
+                # Switches to the flowcharts, where the break point is hit
+                if node.has_debug_cursor:
+                    dpg.set_value(TAB_BAR_TAG, func.root.name)
         self.redraw_all()
 
     def on_variables(self, sender, **kw):
