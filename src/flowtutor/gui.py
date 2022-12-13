@@ -8,6 +8,7 @@ from blinker import signal
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.input import Input
@@ -165,6 +166,16 @@ class GUI:
                                                callback=lambda _, data: (self.selected_node.__setattr__(
                                                    'var_value', data),
                                                    self.redraw_all()))
+                    with dpg.group(tag='selected_call', show=False):
+                        dpg.add_text('Call')
+                        with dpg.group():
+                            dpg.add_text('Expression')
+                            dpg.add_input_text(tag='selected_call_expression',
+                                               width=-1,
+                                               no_spaces=True,
+                                               callback=lambda _, data: (self.selected_node.__setattr__('expression',
+                                                                                                        data),
+                                                                         self.redraw_all()))
                     with dpg.group(tag='selected_declaration', show=False):
                         dpg.add_text('Declaration')
                         with dpg.group(horizontal=True):
@@ -353,9 +364,7 @@ class GUI:
                                     tag=TAB_BAR_TAG,
                                     reorderable=True,
                                     callback=self.on_selected_tab_changed):
-                                for func in self.flowcharts.keys():
-                                    dpg.add_tab(label=func, tag=func)
-                                dpg.add_tab_button(label='+', no_reorder=True)
+                                self.refresh_function_tabs()
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
                                              height=self.height)
@@ -384,6 +393,13 @@ class GUI:
                         dpg.add_table_column(label="Value")
 
         self.code_generator = CodeGenerator()
+
+    def refresh_function_tabs(self):
+        for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
+            dpg.delete_item(tab)
+        for func in self.flowcharts.keys():
+            dpg.add_tab(label=func, tag=func, parent=TAB_BAR_TAG)
+        dpg.add_tab_button(label='+', callback=self.on_add_function, parent=TAB_BAR_TAG)
 
     def on_selected_tab_changed(self, sender, tab):
         self.clear_flowchart()
@@ -421,6 +437,21 @@ class GUI:
             self.debugger.enable_build_and_run()
         self.redraw_all()
 
+    def on_add_function(self):
+        def callback(name: str):
+            self.flowcharts[name] = Flowchart(name)
+            self.refresh_function_tabs()
+        i = len(self.flowcharts.values())
+        new_name = f'fun_{i}'
+        while new_name in self.flowcharts.values():
+            i += 1
+            new_name = f'fun_{i}'
+        Modals.show_input_text_modal(
+            'New Function',
+            'Name',
+            new_name,
+            callback)
+
     def on_select_node(self, node: Optional[Node]):
         if node is None:
             dpg.hide_item('selected_node_comment_group')
@@ -433,6 +464,7 @@ class GUI:
         self.selected_node = node
         dpg.hide_item('selected_any')
         dpg.hide_item('selected_assignment')
+        dpg.hide_item('selected_call')
         dpg.hide_item('selected_declaration')
         dpg.hide_item('selected_conditional')
         dpg.hide_item('selected_loop')
@@ -454,6 +486,9 @@ class GUI:
                     dpg.hide_item('selected_assignment_offset_group')
             dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
             dpg.show_item('selected_assignment')
+        elif isinstance(self.selected_node, Call):
+            dpg.configure_item('selected_call_expression', default_value=self.selected_node.expression)
+            dpg.show_item('selected_call')
         elif isinstance(self.selected_node, Declaration):
             dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)

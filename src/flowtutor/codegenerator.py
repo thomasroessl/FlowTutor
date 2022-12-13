@@ -2,6 +2,7 @@ from typing import Generator, Optional, cast
 from os import remove
 
 from flowtutor.flowchart.assignment import Assignment
+from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
@@ -82,6 +83,12 @@ class CodeGenerator:
                 node.var_name,
                 f'[{node.array_size}]' if node.is_array else '',
                 f' = {node.var_value}' if len(node.var_value) > 0 else '',
+                ';'
+            ]), node.break_point, node)
+        elif isinstance(node, Call):
+            yield (''.join([
+                indent,
+                node.expression,
                 ';'
             ]), node.break_point, node)
         elif isinstance(node, Assignment):
