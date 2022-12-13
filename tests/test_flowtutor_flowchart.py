@@ -8,7 +8,8 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
-from flowtutor.flowchart.function import Function
+from flowtutor.flowchart.functionstart import FunctionStart
+from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.connector import Connector
 
 from flowtutor.flowchart.node import dpg as node_dpg
@@ -27,7 +28,7 @@ ALL_NODES = [
     Input,
     Loop,
     Output,
-    Function
+    FunctionStart
 ]
 
 
@@ -39,11 +40,17 @@ class TestFlowchart:
         node = node_class()
         assert node.tag
 
+    def check_roots(self, flowchart):
+        for i, node in enumerate(flowchart):
+            if i == 0:
+                assert isinstance(node, FunctionStart), 'The first node must be the function start'
+            elif i == 1:
+                assert isinstance(node, FunctionEnd), 'The last node must be the function end'
+
     def test_flowchart_initialize_root(self):
         flowchart = Flowchart('main')
         assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("main" and "End")'
-        assert all(map(lambda node: isinstance(node, Function), flowchart)), ('A new flowchart should contain '
-                                                                              'the root nodes')
+        self.check_roots(flowchart)
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_nodes(self, node_class):
@@ -100,7 +107,7 @@ class TestFlowchart:
         assert len(flowchart) == 3, 'After adding a node, there should be 3 nodes in the flowchart'
         flowchart.remove_node(node1)
         assert len(flowchart) == 2, 'After removing the node, there should be 2 node in the flowchart'
-        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
+        self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     def test_flowchart_add_and_remove_conditional(self):
         flowchart = Flowchart('main')
@@ -109,7 +116,7 @@ class TestFlowchart:
         assert len(flowchart) == 4, 'After adding a conditional, there should be 4 nodes in the flowchart'
         flowchart.remove_node(conditional1)
         assert len(flowchart) == 2, 'After removing the conditional, there should be 2 nodes in the flowchart'
-        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
+        self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_node_in_loop_body(self, node_class):
@@ -163,7 +170,7 @@ class TestFlowchart:
 
         flowchart.remove_node(conditional1)
         assert len(flowchart) == 2, 'After removing the outer conditional, there should be 2 nodes in the flowchart'
-        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
+        self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_add_and_remove_nested_loops(self, node_class):
@@ -194,4 +201,4 @@ class TestFlowchart:
 
         flowchart.remove_node(loop1)
         assert len(flowchart) == 2, 'After removing the outer loop, there should be 1 node in the flowchart'
-        assert all(map(lambda node: isinstance(node, Function), flowchart)), 'The remaining nodes should be the roots'
+        self.check_roots(flowchart)  # The remaining nodes should be the roots

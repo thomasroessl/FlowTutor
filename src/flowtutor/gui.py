@@ -11,6 +11,8 @@ from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.conditional import Conditional
+from flowtutor.flowchart.functionstart import FunctionStart
+from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
@@ -166,16 +168,37 @@ class GUI:
                                                callback=lambda _, data: (self.selected_node.__setattr__(
                                                    'var_value', data),
                                                    self.redraw_all()))
+                    with dpg.group(tag='selected_function_start', show=False):
+                        dpg.add_text('Function')
+                        with dpg.group(tag='selected_function_return_type_group'):
+                            dpg.add_text('Return Type')
+                            dpg.add_combo(Language.get_data_types(),
+                                          tag='selected_function_return_type',
+                                          width=-1,
+                                          callback=lambda _, data: (self.selected_node.__setattr__('return_type', data),
+                                                                    self.redraw_all()))
+                    with dpg.group(tag='selected_function_end', show=False):
+                        dpg.add_text('Function')
+                        with dpg.group():
+                            dpg.add_text('Return Value')
+                            dpg.add_input_text(tag='selected_function_return_value',
+                                               width=-1,
+                                               no_spaces=True,
+                                               callback=lambda _, data: (
+                                                   self.selected_node.__setattr__('return_value', data),
+                                                   self.redraw_all()))
                     with dpg.group(tag='selected_call', show=False):
                         dpg.add_text('Call')
                         with dpg.group():
                             dpg.add_text('Expression')
-                            dpg.add_input_text(tag='selected_call_expression',
-                                               width=-1,
-                                               no_spaces=True,
-                                               callback=lambda _, data: (self.selected_node.__setattr__('expression',
-                                                                                                        data),
-                                                                         self.redraw_all()))
+                            with dpg.group(horizontal=True):
+                                dpg.add_input_text(tag='selected_call_expression',
+                                                   width=-44,
+                                                   no_spaces=True,
+                                                   callback=lambda _, data: (
+                                                       self.selected_node.__setattr__('expression', data),
+                                                       self.redraw_all()))
+                                dpg.add_button(label='...')
                     with dpg.group(tag='selected_declaration', show=False):
                         dpg.add_text('Declaration')
                         with dpg.group(horizontal=True):
@@ -470,6 +493,8 @@ class GUI:
         dpg.hide_item('selected_call')
         dpg.hide_item('selected_declaration')
         dpg.hide_item('selected_conditional')
+        dpg.hide_item('selected_function_start')
+        dpg.hide_item('selected_function_end')
         dpg.hide_item('selected_loop')
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
@@ -509,6 +534,17 @@ class GUI:
         elif isinstance(self.selected_node, Conditional):
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_conditional')
+        elif isinstance(self.selected_node, FunctionStart):
+            dpg.configure_item('selected_function_return_type', default_value=self.selected_node.return_type)
+            dpg.show_item('selected_function_start')
+            # hide return type selection for 'main', because it has to always return int
+            if self.selected_node.name == 'main':
+                dpg.hide_item('selected_function_return_type_group')
+            else:
+                dpg.show_item('selected_function_return_type_group')
+        elif isinstance(self.selected_node, FunctionEnd):
+            dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
+            dpg.show_item('selected_function_end')
         elif isinstance(self.selected_node, Loop):
             dpg.configure_item('selected_loop_type', default_value=self.selected_node.loop_type)
             dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)

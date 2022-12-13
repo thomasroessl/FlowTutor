@@ -6,7 +6,8 @@ from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.loop import Loop
-from flowtutor.flowchart.function import Function
+from flowtutor.flowchart.functionstart import FunctionStart
+from flowtutor.flowchart.functionend import FunctionEnd
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -15,14 +16,14 @@ if TYPE_CHECKING:
 class Flowchart:
 
     def __init__(self, name: str):
-        root = Function(name)
+        root = FunctionStart(name)
         root.pos = (290, 20)
         self._root = root
-        end = Function('End')
+        end = FunctionEnd(name)
         self.add_node(root, end)
 
     @property
-    def root(self) -> Function:
+    def root(self) -> FunctionStart:
         return self._root
 
     def __iter__(self):
@@ -146,7 +147,7 @@ class Flowchart:
         node.pos = pos
 
     def remove_node(self, node: Node):
-        if isinstance(node, Connector) or isinstance(node, Function):
+        if isinstance(node, Connector) or isinstance(node, FunctionStart) or isinstance(node, FunctionEnd):
             return
         parent = self.find_parent(node)
         if parent is None:

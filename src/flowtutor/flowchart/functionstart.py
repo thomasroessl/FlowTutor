@@ -1,11 +1,12 @@
 from flowtutor.flowchart.node import Node
 
 
-class Function(Node):
+class FunctionStart(Node):
 
     def __init__(self, name: str = ''):
         super().__init__()
         self._name = name
+        self._return_type = 'int'
 
     @property
     def shape_width(self):
@@ -74,6 +75,14 @@ class Function(Node):
     @name.setter
     def name(self, name: str):
         self._name = name
+
+    @property
+    def return_type(self) -> str:
+        return self._return_type
+
+    @return_type.setter
+    def return_type(self, return_type: str):
+        self._return_type = return_type
 
     @property
     def label(self):

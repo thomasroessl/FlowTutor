@@ -2,7 +2,6 @@ from typing import Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
-from flowtutor.language import Language
 
 
 class Declaration(Node):
@@ -10,7 +9,7 @@ class Declaration(Node):
     def __init__(self):
         super().__init__()
         self._var_name = ''
-        self._var_type = Language.get_data_types()[0]
+        self._var_type = 'int'
         self._var_value = ''
         self._array_size = ''
         self._is_array = False

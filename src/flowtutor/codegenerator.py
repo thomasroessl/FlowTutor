@@ -7,7 +7,8 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.flowchart import Flowchart
-from flowtutor.flowchart.function import Function
+from flowtutor.flowchart.functionstart import FunctionStart
+from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
@@ -110,15 +111,14 @@ class CodeGenerator:
         elif isinstance(node, Connector):
             indent = indent[:len(indent) - 2]
             yield (f'{indent}}}', False, node)
-        elif isinstance(node, Function):
-            if node.name == 'End':
-                yield (f'{indent}return 0;', node.break_point, node)
-                indent = indent[:len(indent) - 2]
-                yield ('}', False, node)
-                return
-            else:
-                yield (f'{indent}int {node.name}() {{', node.break_point, node)
-                indent += '  '
+        elif isinstance(node, FunctionStart):
+            yield (f'{indent}{node.return_type} {node.name}() {{', node.break_point, node)
+            indent += '  '
+        elif isinstance(node, FunctionEnd):
+            yield (f'{indent}return {node.return_value};', node.break_point, node)
+            indent = indent[:len(indent) - 2]
+            yield ('}', False, node)
+            return
         elif isinstance(node, Loop):
             if node.loop_type == 'for':
                 yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
