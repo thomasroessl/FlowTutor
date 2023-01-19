@@ -1,8 +1,10 @@
 import subprocess
+import sys
 from typing import Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
 
+from flowtutor.utils import get_gcc_exe, get_exe_path, get_c_source_path
 from flowtutor.debugsession import DebugSession
 
 LOADING_INDICATOR_TAG = 'loading_indicator'
@@ -25,23 +27,23 @@ class Debugger:
         signal('program-kiled').connect(self.on_program_killed)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
-            self.build_button = dpg.add_image_button('hammer_image', callback=self.on_build)
+            self.build_button = dpg.add_image_button('hammer_image', callback=lambda: self.on_build(self))
             with dpg.group(horizontal=True):
                 self.run_button = dpg.add_image_button('run_image',
                                                        tag='debug_run_button',
-                                                       callback=self.on_debug_run,
+                                                       callback=lambda: self.on_debug_run(self),
                                                        enabled=False)
                 dpg.add_image_button('step_over_image',
                                      tag='debug_step_over_button',
-                                     callback=self.on_debug_step_over,
+                                     callback=lambda: self.on_debug_step_over(self),
                                      enabled=False)
                 dpg.add_image_button('step_into_image',
                                      tag='debug_step_into_button',
-                                     callback=self.on_debug_step_into,
+                                     callback=lambda: self.on_debug_step_into(self),
                                      enabled=False)
                 dpg.add_image_button('stop_image',
                                      tag='debug_stop_button',
-                                     callback=self.on_debug_stop,
+                                     callback=lambda: self.on_debug_stop(self),
                                      enabled=False)
             with dpg.group(horizontal=True) as g1:
                 self.auto_scroll_cb = dpg.add_checkbox(label='Auto-scroll',
@@ -172,6 +174,7 @@ class Debugger:
     def load_end(self):
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
+    @staticmethod
     def on_debug_run(self):
         if self.debug_session is None:
             # Start debugger
@@ -180,35 +183,48 @@ class Debugger:
         else:
             self.debug_session.cont()
 
+    @staticmethod
     def on_build(self):
         self.disable_all()
         self.load_start()
+
+        gcc_exe = get_gcc_exe()
+        print(gcc_exe, file=sys.stderr)
+
         # Build the executable
-        subprocess.run(['gcc-12', 'flowtutor.c', '-g', '-o', 'flowtutor.exe'])
+        subprocess.run([
+            gcc_exe,
+            get_c_source_path(),
+            '-g',
+            '-o',
+            get_exe_path()])
         self.is_code_built = True
         self.load_end()
         self.log_info('Code built!')
         self.enable_build_and_run()
 
+    @staticmethod
     def on_debug_step_over(self):
         if self.debug_session is None:
             return
         self.debug_session.next()
 
+    @staticmethod
     def on_debug_step_into(self):
         if self.debug_session is None:
             return
         self.debug_session.step()
 
+    @staticmethod
     def on_debug_stop(self):
         if self.debug_session is None:
             return
         self.debug_session.stop()
 
-    def on_program_finished(self, sender, **kw):
+    def on_program_finished(self, _, **kw):
         self.log_info('Program ended.')
         self.debug_session = None
 
-    def on_program_killed(self, sender, **kw):
+    def on_program_killed(self, _, **kw):
         self.log_info('Program killed.')
         self.debug_session = None

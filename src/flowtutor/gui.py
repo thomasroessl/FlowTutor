@@ -115,8 +115,8 @@ class GUI:
                 dpg.add_menu_item(label='Save As...')
             with dpg.menu(label='View'):
                 with dpg.menu(label='Theme'):
-                    dpg.add_menu_item(label='Light', callback=self.on_light_theme_menu_item_click)
-                    dpg.add_menu_item(label='Dark', callback=self.on_dark_theme_menu_item_click)
+                    dpg.add_menu_item(label='Light', callback=lambda: self.on_light_theme_menu_item_click(self))
+                    dpg.add_menu_item(label='Dark', callback=lambda: self.on_dark_theme_menu_item_click(self))
             with dpg.menu(label='Help'):
                 dpg.add_menu_item(label='About')
 
@@ -359,7 +359,7 @@ class GUI:
                                                                    self.redraw_all()))
 
         with dpg.item_handler_registry(tag='window_handler'):
-            dpg.add_item_resize_handler(callback=self.on_window_resize)
+            dpg.add_item_resize_handler(callback=lambda: self.on_window_resize(self))
         dpg.bind_item_handler_registry('main_window', 'window_handler')
 
         dpg.configure_app()
@@ -386,7 +386,7 @@ class GUI:
                             with dpg.tab_bar(
                                     tag=TAB_BAR_TAG,
                                     reorderable=True,
-                                    callback=self.on_selected_tab_changed):
+                                    callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab)):
                                 self.refresh_function_tabs()
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
@@ -394,12 +394,12 @@ class GUI:
                             dpg.add_image('c_image', pos=(10, 40))
 
                             with dpg.handler_registry():
-                                dpg.add_mouse_move_handler(callback=self.on_hover)
-                                dpg.add_mouse_drag_handler(callback=self.on_drag)
-                                dpg.add_mouse_click_handler(callback=self.on_mouse_click)
-                                dpg.add_mouse_release_handler(callback=self.on_mouse_release)
+                                dpg.add_mouse_move_handler(callback=lambda _, data: self.on_hover(self, _, data))
+                                dpg.add_mouse_drag_handler(callback=lambda: self.on_drag(self))
+                                dpg.add_mouse_click_handler(callback=lambda: self.on_mouse_click(self))
+                                dpg.add_mouse_release_handler(callback=lambda: self.on_mouse_release(self))
                                 dpg.add_key_press_handler(
-                                    dpg.mvKey_Delete, callback=self.on_delete_press)
+                                    dpg.mvKey_Delete, callback=lambda: self.on_delete_press(self))
                     with dpg.group(width=400):
                         dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, height=-1, readonly=True)
             with dpg.group(horizontal=True):
@@ -422,16 +422,17 @@ class GUI:
             dpg.delete_item(tab)
         for func in self.flowcharts.keys():
             dpg.add_tab(label=func, tag=func, parent=TAB_BAR_TAG)
-        dpg.add_tab_button(label='+', callback=self.on_add_function, parent=TAB_BAR_TAG)
+        dpg.add_tab_button(label='+', callback=lambda: self.on_add_function(self), parent=TAB_BAR_TAG)
 
-    def on_selected_tab_changed(self, sender, tab):
+    @staticmethod
+    def on_selected_tab_changed(self, _, tab):
         self.clear_flowchart()
         self.selected_flowchart_tag = tab
         self.selected_node = self.selected_flowchart.root
         self.on_select_node(self.selected_flowchart.root)
         self.redraw_all()
 
-    def on_hit_line(self, sender, **kw):
+    def on_hit_line(self, _, **kw):
         line = kw['line']
         if self.debugger is not None:
             self.debugger.enable_all()
@@ -443,7 +444,7 @@ class GUI:
                     dpg.set_value(TAB_BAR_TAG, func.root.name)
         self.redraw_all()
 
-    def on_variables(self, sender, **kw):
+    def on_variables(self, _, **kw):
         variables = kw['variables']
         if self.debugger is not None:
             for row_id in dpg.get_item_children(self.variable_table_id)[1]:
@@ -455,7 +456,7 @@ class GUI:
                         dpg.add_text(variables[variable])
         self.redraw_all()
 
-    def on_program_finished(self, sender, **kw):
+    def on_program_finished(self, _, **kw):
         for flowchart in self.flowcharts.values():
             for node in flowchart:
                 node.has_debug_cursor = False
@@ -463,6 +464,7 @@ class GUI:
             self.debugger.enable_build_and_run()
         self.redraw_all()
 
+    @staticmethod
     def on_add_function(self):
         def callback(name: str):
             self.flowcharts[name] = Flowchart(name)
@@ -578,16 +580,19 @@ class GUI:
                 selected_name = 'None'
             dpg.configure_item('selected_any_name', default_value=selected_name)
 
+    @staticmethod
     def on_light_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_light())
         self.redraw_all()
         Settings.set_setting('theme', 'light')
 
+    @staticmethod
     def on_dark_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_dark())
         self.redraw_all()
         Settings.set_setting('theme', 'dark')
 
+    @staticmethod
     def on_window_resize(self):
         (width, height) = dpg.get_item_rect_size('flowchart_container')
         self.parent_size = (width, height - 30)
@@ -596,6 +601,7 @@ class GUI:
         Settings.set_setting('width', dpg.get_viewport_width())
         pass
 
+    @staticmethod
     def on_hover(self, _, data: Tuple[int, int]):
         '''Sets the mouse poition variable and redraws all objects.'''
         self.mouse_position = data
@@ -605,6 +611,7 @@ class GUI:
         self.mouse_position_on_canvas = self.get_point_on_canvas(data)
         self.redraw_all()
 
+    @staticmethod
     def on_drag(self):
         '''Redraws the currently dragging node to its new position.'''
         if self.mouse_position_on_canvas is None or self.dragging_node is None:
@@ -614,6 +621,7 @@ class GUI:
         self.dragging_node.pos = (cX - oX, cY - oY)
         self.dragging_node.redraw(self.mouse_position_on_canvas, self.selected_node)
 
+    @staticmethod
     def on_mouse_click(self):
         '''Handles pressing down of the mouse button.'''
         if self.mouse_position_on_canvas is None:
@@ -642,10 +650,12 @@ class GUI:
         if prev_selected_node is not None:
             prev_selected_node.redraw(self.mouse_position_on_canvas, self.selected_node)
 
+    @staticmethod
     def on_mouse_release(self):
         self.dragging_node = None
         self.resize()
 
+    @staticmethod
     def on_delete_press(self):
         if self.selected_node is None:
             return

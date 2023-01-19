@@ -1,8 +1,16 @@
 from __future__ import annotations
+import sys
 from blinker import signal
 from typing import TYPE_CHECKING, Dict
 import re
 import subprocess
+from flowtutor.utils import get_gdb_commands_path
+
+from flowtutor.utils import (
+    get_gdb_exe,
+    get_break_points_path,
+    get_exe_path
+)
 
 if TYPE_CHECKING:
     from flowtutor.debugger import Debugger
@@ -10,14 +18,20 @@ if TYPE_CHECKING:
 
 class DebugSession:
 
+    gdb_args = [get_gdb_exe(),
+                '-q',
+                '-x',
+                get_gdb_commands_path(),
+                get_exe_path()]
+
     def __init__(self, debugger: Debugger):
         self.debugger = debugger
 
+        print(self.gdb_args, file=sys.stderr)
+
         # Start GDB, try to run the executable
         # and kill the process (bug workaround)
-        gdb_init_process = subprocess.Popen(['gdb',
-                                             '-q',
-                                             'flowtutor.exe'],
+        gdb_init_process = subprocess.Popen(self.gdb_args,
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.STDOUT,
                                             stdin=subprocess.PIPE,
@@ -34,9 +48,7 @@ class DebugSession:
                 gdb_init_process.kill()
                 break
 
-        self._gdb_process = subprocess.Popen(['gdb',
-                                              '-q',
-                                              'flowtutor.exe'],
+        self._gdb_process = subprocess.Popen(self.gdb_args,
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.STDOUT,
                                              stdin=subprocess.PIPE,
@@ -74,6 +86,7 @@ class DebugSession:
                 signal('hit-line').send(self, line=int(match.group(1)))
             elif (line == 'Continuing.\n') or\
                     re.search(r'\[New Thread .+\]', line) or\
+                    re.search(r'\[Thread .+\ exited with code .+]', line) or\
                     re.search(r'Starting program: .+', line) or\
                     re.search(r'Kill the program being debugged\?.*', line) or\
                     re.search(r'Delete all breakpoints\?.*', line) or\
@@ -83,7 +96,8 @@ class DebugSession:
             elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
                 hit_break_point = True
             elif re.search(r'Cannot find bounds of current function', line) or\
-                    re.search(r'0x[0-9a-f]+ in \?\? \(\)', line):
+                    re.search(r'0x[0-9a-f]+ in \?\? \(\)', line) or\
+                    re.search(r'0x[0-9a-f]+ in __tmainCRTStartup \(\)', line):
                 hit_end = True
             elif (match := re.match(r'(.*)\[Inferior .+\]\n?', line)) is not None:
                 if len(match.group(1)) > 0:
@@ -112,7 +126,7 @@ class DebugSession:
 
     def refresh_break_points(self) -> None:
         self.execute('delete')
-        self.execute('source flowtutor_break_points')
+        self.execute(f'source {get_break_points_path()}')
 
     def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:

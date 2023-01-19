@@ -1,6 +1,7 @@
 import dearpygui.dearpygui as dpg
 
 from flowtutor.gui import GUI
+from flowtutor.utils import cleanup_temp
 
 
 def main():
@@ -11,6 +12,7 @@ def main():
         gui.redraw_all()
     dpg.start_dearpygui()
     dpg.destroy_context()
+    cleanup_temp()
 
 
 if __name__ == '__main__':
