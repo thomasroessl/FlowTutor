@@ -164,3 +164,4 @@ flowtutor_break_points
 flowtutor.c
 flowtutor.exe
 flowtutor.exe.dSYM/
+mingw64/
