@@ -1,25 +1,22 @@
-from ast import literal_eval
-import os.path
-from typing import Dict, Union
+import dbm
+from os import path
+from appdirs import user_config_dir
+from typing import Optional, Any
+from pathlib import Path
 
 
 class Settings:
 
-    settings: Dict[str, Union[str, int, float, bool]] = {}
+    @staticmethod
+    def set_setting(key: str, value: str):
+        with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
+            db[key] = str(value)
 
     @staticmethod
-    def set_setting(key: str, value: Union[str, int, float, bool]):
-        Settings.settings[key] = value
-        with open('flowtutor_settings', 'w+') as file:
-            file.write(str(Settings.settings))
-
-    @staticmethod
-    def get_setting(key: str, default: Union[str, int, float, bool]) -> Union[str, int, float, bool]:
-        if len(Settings.settings) == 0:
-            if not os.path.isfile('flowtutor_settings'):
-                return default
-            with open('flowtutor_settings', 'r') as file:
-                content = file.read()
-                if len(content) > 0:
-                    Settings.settings = literal_eval(content)
-        return Settings.settings.get(key, default)
+    def get_setting(key: str, default: Any) -> Optional[str]:
+        Path(user_config_dir('flowtutor')).mkdir(parents=True, exist_ok=True)
+        with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
+            if key not in db:
+                return str(default)
+            else:
+                return db[key].decode()

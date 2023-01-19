@@ -1,3 +1,4 @@
 blinker==1.5
 dearpygui==1.8.0
 Shapely==2.0.0
+appdirs==1.4.4
