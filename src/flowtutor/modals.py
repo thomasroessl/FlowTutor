@@ -1,4 +1,7 @@
 import dearpygui.dearpygui as dpg
+from multiprocessing import Process, Queue
+import wx
+from typing import Any
 
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
@@ -91,3 +94,49 @@ class Modals:
                     label='Output',
                     width=-1,
                     callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
+
+    @staticmethod
+    def show_open_modal(callback):
+        def open(queue):
+            app = wx.App(None)
+            style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
+            dialog = wx.FileDialog(None, 'Open', style=style)
+            if dialog.ShowModal() == wx.ID_OK:
+                path = dialog.GetPath()
+            else:
+                path = None
+            dialog.Destroy()
+            app.Destroy()
+            ret = queue.get()
+            ret['path'] = path
+            queue.put(ret)
+        queue: Any = Queue()
+        ret = {'path': None}
+        queue.put(ret)
+        process = Process(target=open, args=(queue, ))
+        process.start()
+        process.join()
+        callback(queue.get()['path'])
+
+    @staticmethod
+    def show_save_as_modal(callback):
+        def save_as(queue):
+            app = wx.App(None)
+            style = wx.FD_SAVE
+            dialog = wx.FileDialog(None, 'Save as...', style=style)
+            if dialog.ShowModal() == wx.ID_OK:
+                path = dialog.GetPath()
+            else:
+                path = None
+            dialog.Destroy()
+            app.Destroy()
+            ret = queue.get()
+            ret['path'] = path
+            queue.put(ret)
+        queue: Any = Queue()
+        ret = {'path': None}
+        queue.put(ret)
+        process = Process(target=save_as, args=(queue, ))
+        process.start()
+        process.join()
+        callback(queue.get()['path'])

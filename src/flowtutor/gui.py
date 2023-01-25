@@ -109,10 +109,10 @@ class GUI:
 
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
-                dpg.add_menu_item(label='Open...')
+                dpg.add_menu_item(label='Open...', callback=lambda: self.on_open(self))
                 dpg.add_separator()
-                dpg.add_menu_item(label='Save')
-                dpg.add_menu_item(label='Save As...')
+                dpg.add_menu_item(label='Save', callback=lambda: self.on_save(self))
+                dpg.add_menu_item(label='Save As...', callback=lambda: self.on_save_as(self))
             with dpg.menu(label='View'):
                 with dpg.menu(label='Theme'):
                     dpg.add_menu_item(label='Light', callback=lambda: self.on_light_theme_menu_item_click(self))
@@ -366,8 +366,8 @@ class GUI:
 
         dpg.create_viewport(
             title='FlowTutor',
-            width=int(Settings.get_setting('width', 1000)),
-            height=int(Settings.get_setting('height', 1000)))
+            width=int(Settings.get_setting('width', 1000) or 1000),
+            height=int(Settings.get_setting('height', 1000) or 1000))
 
         if Settings.get_setting('theme', 'light') == 'light':
             dpg.bind_theme(create_theme_light())
@@ -579,6 +579,18 @@ class GUI:
             else:
                 selected_name = 'None'
             dpg.configure_item('selected_any_name', default_value=selected_name)
+
+    @staticmethod
+    def on_open(self):
+        Modals.show_open_modal(lambda file_path: print(f'OPEN: {file_path}'))
+
+    @staticmethod
+    def on_save(self):
+        print('SAVE')
+
+    @staticmethod
+    def on_save_as(self):
+        Modals.show_save_as_modal(lambda file_path: print(f'SAVE: {file_path}'))
 
     @staticmethod
     def on_light_theme_menu_item_click(self):
