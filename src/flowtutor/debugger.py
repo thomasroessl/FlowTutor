@@ -3,8 +3,9 @@ import sys
 from typing import Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
+from dependency_injector.wiring import Provide, inject
 
-from flowtutor.utils import Utils
+from flowtutor.util_service import UtilService
 from flowtutor.debugsession import DebugSession
 
 LOADING_INDICATOR_TAG = 'loading_indicator'
@@ -14,9 +15,10 @@ class Debugger:
 
     debug_session: Optional[DebugSession] = None
 
-    def __init__(self, parent):
+    @inject
+    def __init__(self, parent, utils_service: UtilService = Provide['utils_service']):
 
-        self.utils = Utils()
+        self.utils = utils_service
 
         self.log_level = 0
         self._auto_scroll = True

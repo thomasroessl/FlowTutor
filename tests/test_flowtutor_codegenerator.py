@@ -2,6 +2,7 @@ from unittest.mock import patch
 import pytest
 
 from flowtutor.codegenerator import CodeGenerator
+from flowtutor.containers import Container
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.declaration import Declaration
@@ -17,9 +18,15 @@ from flowtutor.flowchart.node import dpg as node_dpg
 @patch.object(node_dpg, 'get_text_size', lambda _: (0, 0))
 class TestCodeGenerator:
 
-    def test_code_from_empty_flowchart(self):
+    @pytest.fixture(scope='session')
+    def code_generator(self):
+        container = Container()
+        container.init_resources()
+        container.wire(modules=['flowtutor.codegenerator'])
+        return CodeGenerator()
+
+    def test_code_from_empty_flowchart(self, code_generator):
         flowchart = Flowchart('main')
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -32,14 +39,13 @@ class TestCodeGenerator:
         assert code == expected, 'An empty flowchart should produce a main function, which returns 0.'
 
     @pytest.mark.parametrize('data_type', Language.get_data_types())
-    def test_code_from_declaration(self, data_type):
+    def test_code_from_declaration(self, data_type, code_generator):
         flowchart = Flowchart('main')
         declaration = Declaration()
         declaration.var_name = 'x'
         declaration.var_type = data_type
         declaration.var_value = '3'
         flowchart.add_node(flowchart.root, declaration)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -53,14 +59,13 @@ class TestCodeGenerator:
         assert code == expected, 'Declaration with value.'
 
     @pytest.mark.parametrize('data_type', Language.get_data_types())
-    def test_code_from_pointer_declaration(self, data_type):
+    def test_code_from_pointer_declaration(self, data_type, code_generator):
         flowchart = Flowchart('main')
         declaration = Declaration()
         declaration.var_name = 'x'
         declaration.var_type = data_type
         declaration.is_pointer = True
         flowchart.add_node(flowchart.root, declaration)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -73,13 +78,12 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Pointer declaration.'
 
-    def test_code_from_assignment(self):
+    def test_code_from_assignment(self, code_generator):
         flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_value = '3'
         flowchart.add_node(flowchart.root, assignment)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -92,14 +96,13 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Assignment.'
 
-    def test_code_from_assignment_with_comment(self):
+    def test_code_from_assignment_with_comment(self, code_generator):
         flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_value = '3'
         assignment.comment = 'This is a comment'
         flowchart.add_node(flowchart.root, assignment)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -113,14 +116,13 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Assignment.'
 
-    def test_code_from_array_assignment(self):
+    def test_code_from_array_assignment(self, code_generator):
         flowchart = Flowchart('main')
         assignment = Assignment()
         assignment.var_name = 'x'
         assignment.var_offset = '0'
         assignment.var_value = '3'
         flowchart.add_node(flowchart.root, assignment)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([
@@ -133,12 +135,11 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Assignment.'
 
-    def test_code_from_conditional(self):
+    def test_code_from_conditional(self, code_generator):
         flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
         flowchart.add_node(flowchart.root, conditional)
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         print(repr(code))
         expected = '\n'.join([
@@ -152,7 +153,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Conditional.'
 
-    def test_code_from_conditional_with_one_branch(self):
+    def test_code_from_conditional_with_one_branch(self, code_generator):
         flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
@@ -163,7 +164,6 @@ class TestCodeGenerator:
         assignment.var_value = '3'
         flowchart.add_node(conditional, assignment, 1)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -180,7 +180,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Conditional.'
 
-    def test_code_from_conditional_with_two_branches(self):
+    def test_code_from_conditional_with_two_branches(self, code_generator):
         flowchart = Flowchart('main')
         conditional = Conditional()
         conditional.condition = 'x > 5'
@@ -196,7 +196,6 @@ class TestCodeGenerator:
         assignment2.var_value = '5'
         flowchart.add_node(conditional, assignment2, 0)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -215,7 +214,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Conditional.'
 
-    def test_code_from_while_loop(self):
+    def test_code_from_while_loop(self, code_generator):
         flowchart = Flowchart('main')
         loop = Loop()
         loop.condition = 'x > 5'
@@ -226,7 +225,6 @@ class TestCodeGenerator:
         assignment.var_value = '3'
         flowchart.add_node(loop, assignment, 1)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -243,7 +241,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'While-Loop.'
 
-    def test_code_from_for_loop(self):
+    def test_code_from_for_loop(self, code_generator):
         flowchart = Flowchart('main')
         loop = Loop()
         loop.loop_type = 'for'
@@ -258,7 +256,6 @@ class TestCodeGenerator:
         assignment.var_value = 'x + 3'
         flowchart.add_node(loop, assignment, 1)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -276,7 +273,7 @@ class TestCodeGenerator:
         assert code == expected, 'For-Loop.'
 
     @pytest.mark.parametrize('data_type_format', list(zip(Language.get_data_types(), Language.get_format_specifiers())))
-    def test_code_from_input(self, data_type_format):
+    def test_code_from_input(self, data_type_format, code_generator):
         data_type, format_specifier = data_type_format
         flowchart = Flowchart('main')
 
@@ -290,7 +287,6 @@ class TestCodeGenerator:
         flowchart.add_node(flowchart.root, declaration)
         flowchart.add_node(declaration, input)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -306,7 +302,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Input.'
 
-    def test_code_from_input_undeclared(self):
+    def test_code_from_input_undeclared(self, code_generator):
         flowchart = Flowchart('main')
 
         input = Input()
@@ -314,7 +310,6 @@ class TestCodeGenerator:
 
         flowchart.add_node(flowchart.root, input)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -329,7 +324,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Input undeclared.'
 
-    def test_code_from_output(self):
+    def test_code_from_output(self, code_generator):
         flowchart = Flowchart('main')
 
         output = Output()
@@ -337,7 +332,6 @@ class TestCodeGenerator:
 
         flowchart.add_node(flowchart.root, output)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -352,7 +346,7 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Output.'
 
-    def test_code_from_output_with_arguments(self):
+    def test_code_from_output_with_arguments(self, code_generator):
         flowchart = Flowchart('main')
 
         output = Output()
@@ -361,7 +355,6 @@ class TestCodeGenerator:
 
         flowchart.add_node(flowchart.root, output)
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart])
         expected = '\n'.join([
             '#include <stdio.h>',
@@ -376,14 +369,13 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'Output with arguments.'
 
-    def test_code_from_multiple_empty_functions(self):
+    def test_code_from_multiple_empty_functions(self, code_generator):
         flowchart1 = Flowchart('main')
 
         flowchart2 = Flowchart('func1')
 
         flowchart3 = Flowchart('func2')
 
-        code_generator = CodeGenerator()
         code, _ = code_generator.generate_code([flowchart1, flowchart2, flowchart3])
         expected = '\n'.join([
             '#include <stdio.h>',

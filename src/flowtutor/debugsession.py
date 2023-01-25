@@ -4,7 +4,9 @@ from blinker import signal
 from typing import TYPE_CHECKING, Dict
 import re
 import subprocess
-from flowtutor.utils import Utils
+from dependency_injector.wiring import Provide, inject
+
+from flowtutor.util_service import UtilService
 
 if TYPE_CHECKING:
     from flowtutor.debugger import Debugger
@@ -12,9 +14,10 @@ if TYPE_CHECKING:
 
 class DebugSession:
 
-    def __init__(self, debugger: Debugger):
+    @inject
+    def __init__(self, debugger: Debugger, utils_service: UtilService = Provide['utils_service']):
         self.debugger = debugger
-        self.utils = Utils()
+        self.utils = utils_service
         self.gdb_args = [self.utils.get_gdb_exe(),
                          '-q',
                          '-x',

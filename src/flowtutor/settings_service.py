@@ -5,15 +5,13 @@ from typing import Optional, Any
 from pathlib import Path
 
 
-class Settings:
+class SettingsService:
 
-    @staticmethod
-    def set_setting(key: str, value: str):
+    def set_setting(self, key: str, value: str):
         with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
             db[key] = str(value)
 
-    @staticmethod
-    def get_setting(key: str, default: Any) -> Optional[str]:
+    def get_setting(self, key: str, default: Any) -> Optional[str]:
         Path(user_config_dir('flowtutor')).mkdir(parents=True, exist_ok=True)
         with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
             if key not in db:

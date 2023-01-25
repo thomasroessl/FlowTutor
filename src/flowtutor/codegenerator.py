@@ -1,5 +1,8 @@
+from __future__ import annotations
 from typing import Generator, Optional, cast
 from os import remove
+from dependency_injector.wiring import Provide, inject
+
 
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
@@ -14,15 +17,16 @@ from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.output import Output
 from flowtutor.language import Language
-from flowtutor.utils import Utils
+from flowtutor.util_service import UtilService
 
 
 class CodeGenerator:
 
-    def __init__(self):
+    @inject
+    def __init__(self, utils_service: UtilService = Provide['utils_service']):
         self.prev_source_code = ''
         self.prev_break_points = ''
-        self.utils = Utils()
+        self.utils = utils_service
         try:
             remove(self.utils.get_break_points_path())
         except FileNotFoundError:

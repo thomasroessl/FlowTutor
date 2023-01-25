@@ -5,6 +5,7 @@ import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
+from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
@@ -17,9 +18,9 @@ from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
 from flowtutor.language import Language
-from flowtutor.settings import Settings
+from flowtutor.modal_service import ModalService
+from flowtutor.settings_service import SettingsService
 from flowtutor.themes import create_theme_dark, create_theme_light
-from flowtutor.modals import Modals
 from flowtutor.codegenerator import CodeGenerator
 from flowtutor.debugger import Debugger
 
@@ -63,9 +64,18 @@ class GUI:
     def selected_flowchart(self) -> Flowchart:
         return self.flowcharts[self.selected_flowchart_tag]
 
-    def __init__(self, width: int, height: int):
+    @inject
+    def __init__(self,
+                 width: int,
+                 height: int,
+                 code_generator: CodeGenerator = Provide['code_generator'],
+                 modal_service: ModalService = Provide['modal_service'],
+                 settings_service: SettingsService = Provide['settings_service']):
         self.width = width
         self.height = height
+        self.code_generator = code_generator
+        self.modal_service = modal_service
+        self.settings_service = settings_service
         self.flowcharts = {
             'main': Flowchart('main')
         }
@@ -366,10 +376,10 @@ class GUI:
 
         dpg.create_viewport(
             title='FlowTutor',
-            width=int(Settings.get_setting('width', 1000) or 1000),
-            height=int(Settings.get_setting('height', 1000) or 1000))
+            width=int(self.settings_service.get_setting('width', 1000) or 1000),
+            height=int(self.settings_service.get_setting('height', 1000) or 1000))
 
-        if Settings.get_setting('theme', 'light') == 'light':
+        if self.settings_service.get_setting('theme', 'light') == 'light':
             dpg.bind_theme(create_theme_light())
         else:
             dpg.bind_theme(create_theme_dark())
@@ -414,8 +424,6 @@ class GUI:
                         self.variable_table_id = table_id
                         dpg.add_table_column(label='Name')
                         dpg.add_table_column(label='Value')
-
-        self.code_generator = CodeGenerator()
 
     def refresh_function_tabs(self):
         for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
@@ -474,7 +482,7 @@ class GUI:
         while new_name in self.flowcharts.values():
             i += 1
             new_name = f'fun_{i}'
-        Modals.show_input_text_modal(
+        self.modal_service.show_input_text_modal(
             'New Function',
             'Name',
             new_name,
@@ -582,7 +590,7 @@ class GUI:
 
     @staticmethod
     def on_open(self):
-        Modals.show_open_modal(lambda file_path: print(f'OPEN: {file_path}'))
+        self.modal_service.show_open_modal(lambda file_path: print(f'OPEN: {file_path}'))
 
     @staticmethod
     def on_save(self):
@@ -590,27 +598,27 @@ class GUI:
 
     @staticmethod
     def on_save_as(self):
-        Modals.show_save_as_modal(lambda file_path: print(f'SAVE: {file_path}'))
+        self.modal_service.show_save_as_modal(lambda file_path: print(f'SAVE: {file_path}'))
 
     @staticmethod
     def on_light_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_light())
         self.redraw_all()
-        Settings.set_setting('theme', 'light')
+        self.settings_service.set_setting('theme', 'light')
 
     @staticmethod
     def on_dark_theme_menu_item_click(self):
         dpg.bind_theme(create_theme_dark())
         self.redraw_all()
-        Settings.set_setting('theme', 'dark')
+        self.settings_service.set_setting('theme', 'dark')
 
     @staticmethod
     def on_window_resize(self):
         (width, height) = dpg.get_item_rect_size('flowchart_container')
         self.parent_size = (width, height - 30)
         self.resize()
-        Settings.set_setting('height', dpg.get_viewport_height())
-        Settings.set_setting('width', dpg.get_viewport_width())
+        self.settings_service.set_setting('height', dpg.get_viewport_height())
+        self.settings_service.set_setting('width', dpg.get_viewport_width())
         pass
 
     @staticmethod
@@ -651,7 +659,7 @@ class GUI:
                 if parent is not None:
                     self.selected_flowchart.add_node(parent, node, int(src_index))
                     self.redraw_all()
-            Modals.show_node_type_modal(callback, self.mouse_position)
+            self.modal_service.show_node_type_modal(callback, self.mouse_position)
         elif self.selected_node is not None:
             self.dragging_node = self.selected_node
             (pX, pY) = self.dragging_node.pos
@@ -680,7 +688,7 @@ class GUI:
                 self.redraw_all()
 
         if self.selected_node.has_nested_nodes():
-            Modals.show_approval_modal(
+            self.modal_service.show_approval_modal(
                 'Delete Node',
                 'Deleting this node will also delete all nested nodes.',
                 callback)

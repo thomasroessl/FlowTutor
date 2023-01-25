@@ -12,10 +12,9 @@ from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
 
 
-class Modals:
+class ModalService:
 
-    @staticmethod
-    def show_approval_modal(label, message, callback):
+    def show_approval_modal(self, label, message, callback):
         with dpg.window(
                 label=label,
                 modal=True,
@@ -34,8 +33,7 @@ class Modals:
                     width=75,
                     callback=lambda: dpg.delete_item('approval_modal'))
 
-    @staticmethod
-    def show_input_text_modal(label, message, default_value, callback):
+    def show_input_text_modal(self, label, message, default_value, callback):
         with dpg.window(
                 label=label,
                 modal=True,
@@ -55,8 +53,7 @@ class Modals:
                     width=75,
                     callback=lambda: dpg.delete_item('input_text_modal'))
 
-    @staticmethod
-    def show_node_type_modal(callback, pos):
+    def show_node_type_modal(self, callback, pos):
         with dpg.window(
                 label='Add Node',
                 pos=pos,
@@ -95,48 +92,48 @@ class Modals:
                     width=-1,
                     callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
 
-    @staticmethod
-    def show_open_modal(callback):
-        def open(queue):
-            app = wx.App(None)
-            style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
-            dialog = wx.FileDialog(None, 'Open', style=style)
-            if dialog.ShowModal() == wx.ID_OK:
-                path = dialog.GetPath()
-            else:
-                path = None
-            dialog.Destroy()
-            app.Destroy()
-            ret = queue.get()
-            ret['path'] = path
-            queue.put(ret)
+    def open(self, queue):
+        app = wx.App(None)
+        style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
+        dialog = wx.FileDialog(None, 'Open', style=style)
+        if dialog.ShowModal() == wx.ID_OK:
+            path = dialog.GetPath()
+        else:
+            path = None
+        dialog.Destroy()
+        app.Destroy()
+        ret = queue.get()
+        ret['path'] = path
+        queue.put(ret)
+
+    def show_open_modal(self, callback):
         queue: Any = Queue()
         ret = {'path': None}
         queue.put(ret)
-        process = Process(target=open, args=(queue, ))
+        process = Process(target=self.open, args=(queue, ))
         process.start()
         process.join()
         callback(queue.get()['path'])
 
-    @staticmethod
-    def show_save_as_modal(callback):
-        def save_as(queue):
-            app = wx.App(None)
-            style = wx.FD_SAVE
-            dialog = wx.FileDialog(None, 'Save as...', style=style)
-            if dialog.ShowModal() == wx.ID_OK:
-                path = dialog.GetPath()
-            else:
-                path = None
-            dialog.Destroy()
-            app.Destroy()
-            ret = queue.get()
-            ret['path'] = path
-            queue.put(ret)
+    def save_as(self, queue):
+        app = wx.App(None)
+        style = wx.FD_SAVE
+        dialog = wx.FileDialog(None, 'Save as...', style=style)
+        if dialog.ShowModal() == wx.ID_OK:
+            path = dialog.GetPath()
+        else:
+            path = None
+        dialog.Destroy()
+        app.Destroy()
+        ret = queue.get()
+        ret['path'] = path
+        queue.put(ret)
+
+    def show_save_as_modal(self, callback):
         queue: Any = Queue()
         ret = {'path': None}
         queue.put(ret)
-        process = Process(target=save_as, args=(queue, ))
+        process = Process(target=self.save_as, args=(queue, ))
         process.start()
         process.join()
         callback(queue.get()['path'])

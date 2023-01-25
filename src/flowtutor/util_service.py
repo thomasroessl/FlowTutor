@@ -7,7 +7,7 @@ from tempfile import mkdtemp
 from os import path
 
 
-class Utils:
+class UtilService:
 
     def __init__(self):
         self.root = pathlib.Path(sys.modules['__main__'].__file__ or '').parent.resolve()
