@@ -95,7 +95,7 @@ class ModalService:
     def open(self, queue):
         app = wx.App(None)
         style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
-        dialog = wx.FileDialog(None, 'Open', style=style)
+        dialog = wx.FileDialog(None, 'Open', wildcard='*.flowtutor', style=style)
         if dialog.ShowModal() == wx.ID_OK:
             path = dialog.GetPath()
         else:
@@ -118,7 +118,7 @@ class ModalService:
     def save_as(self, queue):
         app = wx.App(None)
         style = wx.FD_SAVE
-        dialog = wx.FileDialog(None, 'Save as...', style=style)
+        dialog = wx.FileDialog(None, 'Save as...', wildcard='*.flowtutor', style=style)
         if dialog.ShowModal() == wx.ID_OK:
             path = dialog.GetPath()
         else:

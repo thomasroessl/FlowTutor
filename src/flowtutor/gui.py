@@ -5,6 +5,7 @@ import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
+from pickle import dump, load
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
@@ -433,7 +434,7 @@ class GUI:
         dpg.add_tab_button(label='+', callback=lambda: self.on_add_function(self), parent=TAB_BAR_TAG)
 
     @staticmethod
-    def on_selected_tab_changed(self, _, tab):
+    def on_selected_tab_changed(self: GUI, _, tab):
         self.clear_flowchart()
         self.selected_flowchart_tag = tab
         self.selected_node = self.selected_flowchart.root
@@ -473,7 +474,7 @@ class GUI:
         self.redraw_all()
 
     @staticmethod
-    def on_add_function(self):
+    def on_add_function(self: GUI):
         def callback(name: str):
             self.flowcharts[name] = Flowchart(name)
             self.refresh_function_tabs()
@@ -589,31 +590,41 @@ class GUI:
             dpg.configure_item('selected_any_name', default_value=selected_name)
 
     @staticmethod
-    def on_open(self):
-        self.modal_service.show_open_modal(lambda file_path: print(f'OPEN: {file_path}'))
+    def on_open(self: GUI):
+        def callback(file_path):
+            with open(file_path, 'rb') as file:
+                self.clear_flowchart()
+                self.flowcharts = load(file)
+                self.redraw_all()
+                self.refresh_function_tabs()
+        self.modal_service.show_open_modal(callback)
 
     @staticmethod
-    def on_save(self):
+    def on_save(self: GUI):
         print('SAVE')
 
     @staticmethod
-    def on_save_as(self):
-        self.modal_service.show_save_as_modal(lambda file_path: print(f'SAVE: {file_path}'))
+    def on_save_as(self: GUI):
+        def callback(file_path):
+            with open(file_path, 'wb') as file:
+                print(self.flowcharts)
+                dump(self.flowcharts, file)
+        self.modal_service.show_save_as_modal(callback)
 
     @staticmethod
-    def on_light_theme_menu_item_click(self):
+    def on_light_theme_menu_item_click(self: GUI):
         dpg.bind_theme(create_theme_light())
         self.redraw_all()
         self.settings_service.set_setting('theme', 'light')
 
     @staticmethod
-    def on_dark_theme_menu_item_click(self):
+    def on_dark_theme_menu_item_click(self: GUI):
         dpg.bind_theme(create_theme_dark())
         self.redraw_all()
         self.settings_service.set_setting('theme', 'dark')
 
     @staticmethod
-    def on_window_resize(self):
+    def on_window_resize(self: GUI):
         (width, height) = dpg.get_item_rect_size('flowchart_container')
         self.parent_size = (width, height - 30)
         self.resize()
@@ -622,7 +633,7 @@ class GUI:
         pass
 
     @staticmethod
-    def on_hover(self, _, data: Tuple[int, int]):
+    def on_hover(self: GUI, _, data: Tuple[int, int]):
         '''Sets the mouse poition variable and redraws all objects.'''
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -632,7 +643,7 @@ class GUI:
         self.redraw_all()
 
     @staticmethod
-    def on_drag(self):
+    def on_drag(self: GUI):
         '''Redraws the currently dragging node to its new position.'''
         if self.mouse_position_on_canvas is None or self.dragging_node is None:
             return
@@ -642,7 +653,7 @@ class GUI:
         self.dragging_node.redraw(self.mouse_position_on_canvas, self.selected_node)
 
     @staticmethod
-    def on_mouse_click(self):
+    def on_mouse_click(self: GUI):
         '''Handles pressing down of the mouse button.'''
         if self.mouse_position_on_canvas is None:
             return
@@ -671,12 +682,12 @@ class GUI:
             prev_selected_node.redraw(self.mouse_position_on_canvas, self.selected_node)
 
     @staticmethod
-    def on_mouse_release(self):
+    def on_mouse_release(self: GUI):
         self.dragging_node = None
         self.resize()
 
     @staticmethod
-    def on_delete_press(self):
+    def on_delete_press(self: GUI):
         if self.selected_node is None:
             return
 
