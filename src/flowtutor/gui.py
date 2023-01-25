@@ -61,6 +61,8 @@ class GUI:
 
     selected_flowchart_tag: str = 'main'
 
+    file_path: Optional[str] = None
+
     @property
     def selected_flowchart(self) -> Flowchart:
         return self.flowcharts[self.selected_flowchart_tag]
@@ -593,6 +595,8 @@ class GUI:
     def on_open(self: GUI):
         def callback(file_path):
             with open(file_path, 'rb') as file:
+                self.file_path = file_path
+                dpg.set_viewport_title(f'Flowtutor - {file_path}')
                 self.clear_flowchart()
                 self.flowcharts = load(file)
                 self.redraw_all()
@@ -601,12 +605,18 @@ class GUI:
 
     @staticmethod
     def on_save(self: GUI):
-        print('SAVE')
+        if self.file_path is not None:
+            with open(self.file_path, 'wb') as file:
+                dump(self.flowcharts, file)
+        else:
+            GUI.on_save_as(self)
 
     @staticmethod
     def on_save_as(self: GUI):
         def callback(file_path):
             with open(file_path, 'wb') as file:
+                self.file_path = file_path
+                dpg.set_viewport_title(f'Flowtutor - {file_path}')
                 print(self.flowcharts)
                 dump(self.flowcharts, file)
         self.modal_service.show_save_as_modal(callback)
