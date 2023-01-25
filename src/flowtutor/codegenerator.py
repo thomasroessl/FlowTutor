@@ -14,7 +14,7 @@ from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.output import Output
 from flowtutor.language import Language
-from flowtutor.utils import get_break_points_path, get_c_source_path
+from flowtutor.utils import Utils
 
 
 class CodeGenerator:
@@ -22,12 +22,13 @@ class CodeGenerator:
     def __init__(self):
         self.prev_source_code = ''
         self.prev_break_points = ''
+        self.utils = Utils()
         try:
-            remove(get_break_points_path())
+            remove(self.utils.get_break_points_path())
         except FileNotFoundError:
             pass
         try:
-            remove(get_c_source_path())
+            remove(self.utils.get_c_source_path())
         except FileNotFoundError:
             pass
 
@@ -35,11 +36,11 @@ class CodeGenerator:
         source_code, break_points = self.generate_code(flowcharts)
         if break_points != self.prev_break_points:
             self.prev_break_points = break_points
-            with open(get_break_points_path(), 'w') as file:
+            with open(self.utils.get_break_points_path(), 'w') as file:
                 file.write(break_points)
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
-            with open(get_c_source_path(), 'w') as file:
+            with open(self.utils.get_c_source_path(), 'w') as file:
                 # Add a function to the source code, that turns off stdout buffering
                 # Otherwise output will not be displayed until after the program has finished.
                 file.write(source_code + '\nvoid fix_debug(void) { setvbuf(stdout, NULL, _IONBF, 0); }')

@@ -4,7 +4,7 @@ from typing import Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
 
-from flowtutor.utils import get_gcc_exe, get_exe_path, get_c_source_path
+from flowtutor.utils import Utils
 from flowtutor.debugsession import DebugSession
 
 LOADING_INDICATOR_TAG = 'loading_indicator'
@@ -15,6 +15,8 @@ class Debugger:
     debug_session: Optional[DebugSession] = None
 
     def __init__(self, parent):
+
+        self.utils = Utils()
 
         self.log_level = 0
         self._auto_scroll = True
@@ -188,16 +190,16 @@ class Debugger:
         self.disable_all()
         self.load_start()
 
-        gcc_exe = get_gcc_exe()
+        gcc_exe = self.utils.get_gcc_exe()
         print(gcc_exe, file=sys.stderr)
 
         # Build the executable
         subprocess.run([
             gcc_exe,
-            get_c_source_path(),
+            self.utils.get_c_source_path(),
             '-g',
             '-o',
-            get_exe_path()])
+            self.utils.get_exe_path()])
         self.is_code_built = True
         self.load_end()
         self.log_info('Code built!')

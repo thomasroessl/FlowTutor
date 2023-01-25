@@ -4,13 +4,7 @@ from blinker import signal
 from typing import TYPE_CHECKING, Dict
 import re
 import subprocess
-from flowtutor.utils import get_gdb_commands_path
-
-from flowtutor.utils import (
-    get_gdb_exe,
-    get_break_points_path,
-    get_exe_path
-)
+from flowtutor.utils import Utils
 
 if TYPE_CHECKING:
     from flowtutor.debugger import Debugger
@@ -18,14 +12,14 @@ if TYPE_CHECKING:
 
 class DebugSession:
 
-    gdb_args = [get_gdb_exe(),
-                '-q',
-                '-x',
-                get_gdb_commands_path(),
-                get_exe_path()]
-
     def __init__(self, debugger: Debugger):
         self.debugger = debugger
+        self.utils = Utils()
+        self.gdb_args = [self.utils.get_gdb_exe(),
+                         '-q',
+                         '-x',
+                         self.utils.get_gdb_commands_path(),
+                         self.utils.get_exe_path()]
 
         print(self.gdb_args, file=sys.stderr)
 
@@ -126,7 +120,7 @@ class DebugSession:
 
     def refresh_break_points(self) -> None:
         self.execute('delete')
-        self.execute(f'source {get_break_points_path()}')
+        self.execute(f'source {self.utils.get_break_points_path()}')
 
     def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:
