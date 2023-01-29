@@ -58,6 +58,8 @@ class Output(Node):
     def label(self) -> str:
         if self.format_string and self.arguments:
             return f'Output:\n{self.format_string}: {self.arguments}'
+        elif self.format_string:
+            return f'Output:\n{self.format_string}'
         else:
             return self.__class__.__name__
 
