@@ -91,6 +91,8 @@ class GUI:
 
         c_image_width, c_image_height, _, c_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/c.png'))
+        debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
+            os.path.join(os.path.dirname(__file__), '../../assets/debug.png'))
         run_image_width, run_image_height, _, run_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../assets/run.png'))
         stop_image_width, stop_image_height, _, stop_image_data = dpg.load_image(
@@ -107,6 +109,8 @@ class GUI:
                                    default_value=c_image_data, tag='c_image')
             dpg.add_static_texture(width=run_image_width, height=run_image_height,
                                    default_value=run_image_data, tag='run_image')
+            dpg.add_static_texture(width=debug_image_width, height=debug_image_height,
+                                   default_value=debug_image_data, tag='debug_image')
             dpg.add_static_texture(width=stop_image_width, height=stop_image_height,
                                    default_value=stop_image_data, tag='stop_image')
             dpg.add_static_texture(width=step_into_image_width, height=step_into_image_height,
@@ -395,17 +399,15 @@ class GUI:
             with dpg.child_window(border=False, height=-254):
                 with dpg.group(horizontal=True):
                     with dpg.group(width=-410):
+                        with dpg.tab_bar(
+                                tag=TAB_BAR_TAG,
+                                reorderable=True,
+                                callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab)):
+                            self.refresh_function_tabs()
                         with dpg.child_window(tag='flowchart_container', horizontal_scrollbar=True):
-                            with dpg.tab_bar(
-                                    tag=TAB_BAR_TAG,
-                                    reorderable=True,
-                                    callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab)):
-                                self.refresh_function_tabs()
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
                                              height=self.height)
-                            dpg.add_image('c_image', pos=(10, 40))
-
                             with dpg.handler_registry():
                                 dpg.add_mouse_move_handler(callback=lambda _, data: self.on_hover(self, _, data))
                                 dpg.add_mouse_drag_handler(callback=lambda: self.on_drag(self))
@@ -790,11 +792,11 @@ class GUI:
         for node in self.selected_flowchart:
             (_, _, max_x, max_y) = node.bounds
             if max_x > width:
-                width = max_x + 20
+                width = max_x
             if max_y > height:
-                height = max_y + 20
-        dpg.set_item_height(FLOWCHART_TAG, height - 20)
-        dpg.set_item_width(FLOWCHART_TAG, width - 20)
+                height = max_y
+        dpg.set_item_height(FLOWCHART_TAG, height)
+        dpg.set_item_width(FLOWCHART_TAG, width)
 
     def get_point_on_canvas(self, point_on_screen: Tuple[int, int]):
         '''Maps the point in screen coordinates to canvas coordinates.'''
