@@ -1,6 +1,7 @@
 import sys
 import platform
 import pathlib
+import subprocess
 
 from shutil import which, rmtree
 from tempfile import mkdtemp
@@ -52,6 +53,12 @@ class UtilService:
         # The following command is needed for gdb to run on MacOS with System Integrity Protection
         if platform.system() == 'Darwin':
             gdb_commands += '\nset startup-with-shell off'
+
+        if platform.system() == 'Windows':
+            gdb_commands += '\nset new-console on'
+        else:
+            gdb_commands += '\ntty /dev/ttys001'
+
         gdb_commands += f'\nsource {self.get_break_points_path()}'
         with open(gdb_commands_path, 'w') as gdb_commands_file:
             gdb_commands_file.write(gdb_commands)
@@ -64,3 +71,33 @@ class UtilService:
     def get_break_points_path(self):
         '''Gets the path to the break-point file for gdb.'''
         return path.join(self.temp_dir, 'flowtutor_break_points')
+
+    def open_terminal(self):
+        '''Opens a new terminal and returns its tty file path'''
+
+        raise NotImplementedError
+
+        if platform.system() == 'Windows':  # type: ignore[unreachable]
+            raise Exception('Windows has no tty.')
+
+        terminal_process = None
+        if platform.system() == 'Darwin':
+            tmp_sh_path = path.join(self.temp_dir, 'tmp.sh')
+            tmp_sh_commands = 'tty'
+            with open(tmp_sh_path, 'w') as tmp_sh_file:
+                tmp_sh_file.write(tmp_sh_commands)
+            terminal_process = subprocess.Popen(['tty'],
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                stdin=subprocess.PIPE,
+                                                text=True,
+                                                shell=True,
+                                                bufsize=1)
+        else:
+            terminal_process = subprocess.Popen(['xterm'],
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                stdin=subprocess.PIPE,
+                                                text=True,
+                                                bufsize=1)
+        print(terminal_process)

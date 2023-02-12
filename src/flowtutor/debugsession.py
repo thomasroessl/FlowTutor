@@ -1,9 +1,10 @@
 from __future__ import annotations
-import sys
 from blinker import signal
 from typing import TYPE_CHECKING, Dict
 import re
+import platform
 import subprocess
+from pygdbmi import gdbmiparser
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.util_service import UtilService
@@ -22,28 +23,29 @@ class DebugSession:
                          '-q',
                          '-x',
                          self.utils.get_gdb_commands_path(),
+                         '--interpreter=mi',
                          self.utils.get_exe_path()]
 
-        print(self.gdb_args, file=sys.stderr)
+        if platform.system() == 'Darwin':
+            # Start GDB, try to run the executable
+            # and kill the process (bug workaround)
+            gdb_init_process = subprocess.Popen(self.gdb_args,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.STDOUT,
+                                                stdin=subprocess.PIPE,
+                                                text=True,
+                                                bufsize=1)
 
-        # Start GDB, try to run the executable
-        # and kill the process (bug workaround)
-        gdb_init_process = subprocess.Popen(self.gdb_args,
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.STDOUT,
-                                            stdin=subprocess.PIPE,
-                                            text=True,
-                                            bufsize=1)
+            if gdb_init_process.stdout is None or gdb_init_process.stdin is None:
+                return
 
-        if gdb_init_process.stdout is None or gdb_init_process.stdin is None:
-            return
-
-        for line in gdb_init_process.stdout:
-            if (line == '(gdb)\n'):
-                gdb_init_process.stdin.write('run\n')
-            elif re.search(r'^Starting program: .+', line):
-                gdb_init_process.kill()
-                break
+            for line in gdb_init_process.stdout:
+                print('INIT', line, end='')
+                if (re.search(r'\(gdb\)\s*$', line)):
+                    gdb_init_process.stdin.write('-exec-run\n')
+                elif line.startswith('~"[New Thread'):
+                    gdb_init_process.kill()
+                    break
 
         self._gdb_process = subprocess.Popen(self.gdb_args,
                                              stdout=subprocess.PIPE,
@@ -55,7 +57,8 @@ class DebugSession:
             return
 
         for line in self.process.stdout:
-            if (line == '(gdb)\n'):
+            print('INIT', line, end='')
+            if (re.search(r'\(gdb\)\s*$', line)):
                 break
 
     def __del__(self):
@@ -68,91 +71,71 @@ class DebugSession:
     def execute(self, command: str) -> None:
         if not self.process.stdin or not self.process.stdout:
             return
+        print('START EXECUTE:', command)
         self.process.stdin.write(f'{command}\n')
-        hit_end = False
-        hit_break_point = command == 'next' or command == 'step'
+
         for line in self.process.stdout:
-            print(f'execute ({command}): {line.__repr__()}')
-            if (line == '(gdb)\n'):
-                if hit_break_point and not hit_end:
-                    # Turn off stdout buffering
-                    self.execute('call fix_debug()')
-                    self.get_variable_assignments()
+            record = gdbmiparser.parse_response(line)
+            print(f'EXECUTE {command}', record)
+            if record['message'] == 'stopped':
+                reason = record['payload']['reason']
+                if reason == 'exited-normally':
+                    signal('program-finished').send(self)
+                elif reason == 'breakpoint-hit' or reason == 'end-stepping-range':
+                    frame = record['payload']['frame']
+                    if frame['func'] == '??':
+                        self.cont()
+                    else:
+                        self.get_variable_assignments()
+                        signal('hit-line').send(self, line=int(frame['line']))
                 break
-            elif (match := re.match(r'(\d+)\t.*', line)) is not None and len(match.group(1)) > 0:
-                signal('hit-line').send(self, line=int(match.group(1)))
-            elif (line == 'Continuing.\n') or\
-                    re.search(r'\[New Thread .+\]', line) or\
-                    re.search(r'\[Thread .+\ exited with code .+]', line) or\
-                    re.search(r'Starting program: .+', line) or\
-                    re.search(r'Kill the program being debugged\?.*', line) or\
-                    re.search(r'Delete all breakpoints\?.*', line) or\
-                    re.search(r'Breakpoint \d at 0x[0-9a-f]+', line) or\
-                    re.search(r'warning: unhandled dyld version .*', line):
-                pass
-            elif re.search(r'Thread \d+ hit Breakpoint \d+', line):
-                hit_break_point = True
-            elif re.search(r'Cannot find bounds of current function', line) or\
-                    re.search(r'0x[0-9a-f]+ in \?\? \(\)', line) or\
-                    re.search(r'0x[0-9a-f]+ in __tmainCRTStartup \(\)', line):
-                hit_end = True
-            elif (match := re.match(r'(.*)\[Inferior .+\]\n?', line)) is not None:
-                if len(match.group(1)) > 0:
-                    self.debugger.log(match.group(1))
-                signal('program-finished').send(self)
-            elif not line.isspace():
-                self.debugger.log(line)
-        if hit_end:
-            self.cont()
+        print('END EXECUTE:', command)
 
     def run(self) -> None:
-        self.execute('run')
+        self.execute('-exec-run\n')
 
     def cont(self) -> None:
         self.refresh_break_points()
-        self.execute('continue')
+        self.execute('-exec-continue')
 
     def stop(self):
-        self.execute('kill')
+        if not self.process.stdin:
+            return
+        self.process.stdin.write('kill\n')
+        signal('program-finished').send(self)
 
     def step(self) -> None:
-        self.execute('step')
+        self.execute('-exec-step')
 
     def next(self) -> None:
-        self.execute('next')
+        self.execute('-exec-next')
 
     def refresh_break_points(self) -> None:
-        self.execute('delete')
-        self.execute(f'source {self.utils.get_break_points_path()}')
+        if not self.process.stdin:
+            return
+        self.process.stdin.write('-break-delete\n')
+        self.process.stdin.write(f'source {self.utils.get_break_points_path()}\n')
 
     def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:
             return
         variables: Dict[str, str] = {}
-        self.process.stdin.write('info locals\n')
+        self.process.stdin.write('-stack-list-locals --simple-values\n')
         for line in self.process.stdout:
-            print(f'get_variable_assignments: {line.__repr__()}')
-            if (line == '(gdb)\n'):
-                signal('variables').send(self, variables=variables)
+            record = gdbmiparser.parse_response(line)
+            print('VARIABLE_ASSIGNMENTS', record)
+            if record['message'] == 'stopped':
                 break
-            elif re.search(r'No locals\.', line):
-                pass
-            elif re.search(r'No symbol table info available\.', line):
-                self.execute('continue')
-                break
-            elif match := re.search(r'(.+) = (.+)', line):
-                variables[match.group(1)] = match.group(2)
-            else:
-                self.debugger.log(line)
-                pass
+            elif record['type'] == 'result' and record['payload'] is not None:
+                result_locals = record['payload']['locals']
+                if result_locals is not None:
+                    for var in result_locals:
+                        variables[var['name']] = str(var['value'])
+                    print('VARIABLE_ASSIGNMENTS', variables)
+                    break
+        signal('variables').send(self, variables=variables)
 
     def set_break_point(self, line) -> None:
         if self.process.stdout is None or self.process.stdin is None:
             return
-        self.process.stdin.write(f'break test.c:{line}\n')
-        for line in self.process.stdout:
-            if (line == '(gdb)\n'):
-                break
-            else:
-                self.debugger.log_debug(line)
-                pass
+        self.process.stdin.write(f'-break-insert --source flowtutor.c --line {line}\n')

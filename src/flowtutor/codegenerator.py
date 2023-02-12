@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Generator, Optional, cast
-from os import remove
+from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
 
@@ -27,8 +27,9 @@ class CodeGenerator:
         self.prev_source_code = ''
         self.prev_break_points = ''
         self.utils = utils_service
+        self.break_point_path = self.utils.get_break_points_path()
         try:
-            remove(self.utils.get_break_points_path())
+            remove(self.break_point_path)
         except FileNotFoundError:
             pass
         try:
@@ -38,9 +39,9 @@ class CodeGenerator:
 
     def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
         source_code, break_points = self.generate_code(flowcharts)
-        if break_points != self.prev_break_points:
+        if break_points != self.prev_break_points or not path.exists(self.break_point_path):
             self.prev_break_points = break_points
-            with open(self.utils.get_break_points_path(), 'w') as file:
+            with open(self.break_point_path, 'w') as file:
                 file.write(break_points)
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
@@ -140,7 +141,7 @@ class CodeGenerator:
                 var_type = 'int' if isinstance(declaration, Loop) else declaration.var_type
                 type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                 _, format_specifier = next(t for t in type_formats if t[0] == var_type)
-                yield (f'{indent}scanf("{format_specifier}", {node.var_name});', node.break_point, node)
+                yield (f'{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
 
         elif isinstance(node, Output):
             if len(node.arguments) > 0:
