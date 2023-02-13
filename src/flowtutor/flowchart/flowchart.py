@@ -53,7 +53,8 @@ class Flowchart:
                 yield from self.get_all_nodes(connection.dst_node, ignore_span)
 
     def get_function_declaration(self) -> str:
-        return f'int {self.root.name}();'
+        parameters = ', '.join([str(p) for p in self.root.parameters])
+        return f'int {self.root.name}({parameters});'
 
     def get_all_declarations(self) -> Generator[Union[Declaration, Loop], None, None]:
         for node in self:
