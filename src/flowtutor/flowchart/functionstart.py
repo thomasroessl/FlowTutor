@@ -1,4 +1,6 @@
+from typing import List
 from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.parameter import Parameter
 
 
 class FunctionStart(Node):
@@ -7,6 +9,7 @@ class FunctionStart(Node):
         super().__init__()
         self._name = name
         self._return_type = 'int'
+        self._parameters: List[Parameter] = []
 
     @property
     def shape_width(self):
@@ -85,9 +88,13 @@ class FunctionStart(Node):
         self._return_type = return_type
 
     @property
+    def parameters(self) -> list[Parameter]:
+        return self._parameters
+
+    @property
     def label(self):
         return self.name
 
     @property
     def is_initialized(self) -> bool:
-        return True
+        return all(len(p.name) > 0 for p in self.parameters)
