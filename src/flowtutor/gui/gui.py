@@ -98,8 +98,6 @@ class GUI:
 
         dpg.create_context()
 
-        dpg.show_imgui_demo()
-
         c_image_width, c_image_height, _, c_image_data = dpg.load_image(
             os.path.join(os.path.dirname(__file__), '../../../assets/c.png'))
         debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
@@ -292,7 +290,7 @@ class GUI:
             self.refresh_function_tabs()
         i = len(self.flowcharts.values())
         new_name = f'fun_{i}'
-        while new_name in self.flowcharts.values():
+        while new_name in self.flowcharts.keys():
             i += 1
             new_name = f'fun_{i}'
         self.modal_service.show_input_text_modal(

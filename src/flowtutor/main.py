@@ -24,7 +24,7 @@ def main():
     container.wire(modules=[__name__,
                             'flowtutor.codegenerator',
                             'flowtutor.debugsession',
-                            'flowtutor.debugger',
+                            'flowtutor.gui.debugger',
                             'flowtutor.gui.gui'])
     start()
 
