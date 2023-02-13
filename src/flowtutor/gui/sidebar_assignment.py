@@ -14,6 +14,7 @@ class SidebarAssignment:
             header = dpg.add_text('Assignment')
             dpg.bind_item_font(header, 'header_font')
             dpg.add_separator()
+            dpg.add_spacer(height=5)
             if Language.has_var_declaration():
                 with dpg.group(horizontal=True):
                     dpg.add_text('Name')

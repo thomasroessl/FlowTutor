@@ -14,6 +14,7 @@ class SidebarLoop:
             header = dpg.add_text('Loop')
             dpg.bind_item_font(header, 'header_font')
             dpg.add_separator()
+            dpg.add_spacer(height=5)
             if Language.has_for_loops():
                 with dpg.group(horizontal=True):
                     dpg.add_text('Type')

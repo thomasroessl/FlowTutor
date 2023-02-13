@@ -12,6 +12,7 @@ class SidebarOutput:
             header = dpg.add_text('Output')
             dpg.bind_item_font(header, 'header_font')
             dpg.add_separator()
+            dpg.add_spacer(height=5)
             with dpg.group():
                 dpg.add_input_text(tag='selected_output_format_string',
                                    width=-1,
