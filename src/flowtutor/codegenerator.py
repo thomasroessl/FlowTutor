@@ -119,7 +119,8 @@ class CodeGenerator:
             indent = indent[:len(indent) - 2]
             yield (f'{indent}}}', False, node)
         elif isinstance(node, FunctionStart):
-            yield (f'{indent}{node.return_type} {node.name}() {{', node.break_point, node)
+            parameters = ', '.join([str(p) for p in node.parameters])
+            yield (f'{indent}{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, FunctionEnd):
             yield (f'{indent}return {node.return_value};', node.break_point, node)
