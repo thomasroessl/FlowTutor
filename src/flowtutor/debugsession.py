@@ -1,6 +1,7 @@
 from __future__ import annotations
 from blinker import signal
 from typing import TYPE_CHECKING, Dict
+from sys import stderr
 import re
 import platform
 import subprocess
@@ -40,13 +41,14 @@ class DebugSession:
                 return
 
             for line in gdb_init_process.stdout:
-                print('INIT', line, end='')
+                print('INIT', line, end='', file=stderr)
                 if (re.search(r'\(gdb\)\s*$', line)):
                     gdb_init_process.stdin.write('-exec-run\n')
                 elif line.startswith('~"[New Thread'):
                     gdb_init_process.kill()
                     break
 
+        print('GDB ARGS', self.gdb_args, file=stderr)
         self._gdb_process = subprocess.Popen(self.gdb_args,
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.STDOUT,
@@ -57,7 +59,7 @@ class DebugSession:
             return
 
         for line in self.process.stdout:
-            print('INIT', line, end='')
+            print('INIT', line, end='', file=stderr)
             if (re.search(r'\(gdb\)\s*$', line)):
                 break
 
@@ -71,12 +73,12 @@ class DebugSession:
     def execute(self, command: str) -> None:
         if not self.process.stdin or not self.process.stdout:
             return
-        print('START EXECUTE:', command)
+        print('START EXECUTE:', command, file=stderr)
         self.process.stdin.write(f'{command}\n')
 
         for line in self.process.stdout:
             record = gdbmiparser.parse_response(line)
-            print(f'EXECUTE {command}', record)
+            print(f'EXECUTE {command}', record, file=stderr)
             if record['message'] == 'stopped':
                 reason = record['payload']['reason']
                 if reason == 'exited-normally':
@@ -89,7 +91,7 @@ class DebugSession:
                         self.get_variable_assignments()
                         signal('hit-line').send(self, line=int(frame['line']))
                 break
-        print('END EXECUTE:', command)
+        print('END EXECUTE:', command, file=stderr)
 
     def run(self) -> None:
         self.execute('-exec-run\n')
@@ -123,7 +125,7 @@ class DebugSession:
         self.process.stdin.write('-stack-list-locals --simple-values\n')
         for line in self.process.stdout:
             record = gdbmiparser.parse_response(line)
-            print('VARIABLE_ASSIGNMENTS', record)
+            print('VARIABLE_ASSIGNMENTS', record, file=stderr)
             if record['message'] == 'stopped':
                 break
             elif record['type'] == 'result' and record['payload'] is not None:
@@ -131,7 +133,7 @@ class DebugSession:
                 if result_locals is not None:
                     for var in result_locals:
                         variables[var['name']] = str(var['value'])
-                    print('VARIABLE_ASSIGNMENTS', variables)
+                    print('VARIABLE_ASSIGNMENTS', variables, file=stderr)
                     break
         signal('variables').send(self, variables=variables)
 

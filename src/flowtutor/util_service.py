@@ -38,7 +38,7 @@ class UtilService:
         if (exe := which('gdb')) is not None:
             return exe
         elif platform.system() == 'Windows':
-            path.join(self.root, 'mingw', 'bin', 'gdb.exe')
+            return path.join(self.root, 'mingw64', 'bin', 'gdb.exe')
         else:
             raise FileNotFoundError('gdb could not be found on the system!')
 
