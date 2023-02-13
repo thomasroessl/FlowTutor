@@ -5,7 +5,7 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.loop import Loop
 
-from flowtutor.themes import theme_colors
+from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node

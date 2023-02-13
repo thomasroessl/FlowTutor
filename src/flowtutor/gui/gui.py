@@ -18,12 +18,21 @@ from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
+from flowtutor.gui.sidebar_assignment import SidebarAssignment
+from flowtutor.gui.sidebar_call import SidebarCall
+from flowtutor.gui.sidebar_conditional import SidebarConditional
+from flowtutor.gui.sidebar_declaration import SidebarDeclaration
+from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
+from flowtutor.gui.sidebar_input import SidebarInput
+from flowtutor.gui.sidebar_loop import SidebarLoop
+from flowtutor.gui.sidebar_output import SidebarOutput
 from flowtutor.language import Language
 from flowtutor.modal_service import ModalService
 from flowtutor.settings_service import SettingsService
-from flowtutor.themes import create_theme_dark, create_theme_light
+from flowtutor.gui.themes import create_theme_dark, create_theme_light
 from flowtutor.codegenerator import CodeGenerator
-from flowtutor.debugger import Debugger
+from flowtutor.gui.debugger import Debugger
+from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -89,20 +98,22 @@ class GUI:
 
         dpg.create_context()
 
+        dpg.show_imgui_demo()
+
         c_image_width, c_image_height, _, c_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/c.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/c.png'))
         debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/debug.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/debug.png'))
         run_image_width, run_image_height, _, run_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/run.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/run.png'))
         stop_image_width, stop_image_height, _, stop_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/stop.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/stop.png'))
         step_into_image_width, step_into_image_height, _, step_into_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/step_into.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/step_into.png'))
         step_over_image_width, step_over_image_height, _, step_over_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/step_over.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/step_over.png'))
         hammer_image_width, hammer_image_height, _, hammer_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../assets/hammer.png'))
+            os.path.join(os.path.dirname(__file__), '../../../assets/hammer.png'))
 
         with dpg.texture_registry():
             dpg.add_static_texture(width=c_image_width, height=c_image_height,
@@ -121,8 +132,10 @@ class GUI:
                                    default_value=hammer_image_data, tag='hammer_image')
 
         with dpg.font_registry():
-            deafault_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../assets/inconsolata.ttf'), 18)
-        dpg.bind_font(deafault_font)
+            default_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../../assets/inconsolata.ttf'), 18)
+            dpg.add_font(os.path.join(os.path.dirname(__file__),
+                         '../../../assets/inconsolata.ttf'), 22, tag='header_font')
+        dpg.bind_font(default_font)
 
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
@@ -144,225 +157,20 @@ class GUI:
                         dpg.add_text('Selected Node')
                     with dpg.group(tag='selected_any'):
                         dpg.add_text('None', tag='selected_any_name')
-                    with dpg.group(tag='selected_assignment', show=False):
-                        dpg.add_text('Assignment')
-                        if Language.has_var_declaration():
-                            with dpg.group(horizontal=True):
-                                dpg.add_text('Name')
-                                dpg.add_combo([],
-                                              tag='selected_assignment_name',
-                                              indent=50,
-                                              width=-1,
-                                              callback=lambda _, data: (self.selected_node.__setattr__('var_name',
-                                                                                                       data),
-                                                                        self.on_select_node(self.selected_node),
-                                                                        self.redraw_all()))
-                        else:
-                            with dpg.group(horizontal=True):
-                                dpg.add_text('Name')
-                                dpg.add_input_text(tag='selected_assignment_name',
-                                                   indent=50,
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (self.selected_node.__setattr__('var_name',
-                                                                                                            data),
-                                                                             self.redraw_all()))
-                        if Language.has_arrays():
-                            with dpg.group(horizontal=True, tag='selected_assignment_offset_group', show=False):
-                                dpg.add_text('Index')
-                                dpg.add_input_text(tag='selected_assignment_offset',
-                                                   indent=50,
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (self.selected_node.__setattr__(
-                                                       'var_offset', data),
-                                                       self.redraw_all()))
-                        with dpg.group(horizontal=True):
-                            dpg.add_text('Value')
-                            dpg.add_input_text(tag='selected_assignment_value',
-                                               indent=50,
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'var_value', data),
-                                                   self.redraw_all()))
-                    with dpg.group(tag='selected_function_start', show=False):
-                        dpg.add_text('Function')
-                        with dpg.group(tag='selected_function_return_type_group'):
-                            dpg.add_text('Return Type')
-                            dpg.add_combo(Language.get_data_types(),
-                                          tag='selected_function_return_type',
-                                          width=-1,
-                                          callback=lambda _, data: (self.selected_node.__setattr__('return_type', data),
-                                                                    self.redraw_all()))
-                    with dpg.group(tag='selected_function_end', show=False):
-                        dpg.add_text('Function')
-                        with dpg.group():
-                            dpg.add_text('Return Value')
-                            dpg.add_input_text(tag='selected_function_return_value',
-                                               width=-1,
-                                               no_spaces=True,
-                                               callback=lambda _, data: (
-                                                   self.selected_node.__setattr__('return_value', data),
-                                                   self.redraw_all()))
-                    with dpg.group(tag='selected_call', show=False):
-                        dpg.add_text('Call')
-                        with dpg.group():
-                            dpg.add_text('Expression')
-                            with dpg.group(horizontal=True):
-                                dpg.add_input_text(tag='selected_call_expression',
-                                                   width=-44,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (
-                                                       self.selected_node.__setattr__('expression', data),
-                                                       self.redraw_all()))
-                                dpg.add_button(label='...')
-                    with dpg.group(tag='selected_declaration', show=False):
-                        dpg.add_text('Declaration')
-                        with dpg.group(horizontal=True):
-                            dpg.add_text('Name')
-                            dpg.add_input_text(tag='selected_declaration_name',
-                                               indent=50,
-                                               width=-1,
-                                               no_spaces=True,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'var_name', data),
-                                                   self.redraw_all()))
-                        with dpg.group(horizontal=True):
-                            dpg.add_text('Type')
-                            dpg.add_combo(Language.get_data_types(),
-                                          tag='selected_declaration_type',
-                                          indent=50,
-                                          width=-1,
-                                          callback=lambda _, data: (self.selected_node.__setattr__('var_type', data),
-                                                                    self.redraw_all()))
-                        if Language.has_pointers():
-                            with dpg.group(horizontal=True):
-                                dpg.add_checkbox(label='Pointer',
-                                                 tag='selected_declaration_is_pointer',
-                                                 indent=50,
-                                                 callback=lambda _, data: (self.selected_node.__setattr__('is_pointer',
-                                                                                                          data),
-                                                                           self.on_select_node(self.selected_node),
-                                                                           self.redraw_all()))
-                        if Language.has_arrays():
-                            with dpg.group(horizontal=True):
-                                dpg.add_checkbox(label='Array',
-                                                 tag='selected_declaration_is_array',
-                                                 indent=50,
-                                                 callback=lambda _, data: (self.selected_node.__setattr__('is_array',
-                                                                                                          data),
-                                                                           self.on_select_node(self.selected_node),
-                                                                           self.redraw_all()))
-                        if Language.has_arrays():
-                            with dpg.group(horizontal=True, tag='selected_declaration_array_size_group', show=False):
-                                dpg.add_text('Size')
-                                dpg.add_input_text(tag='selected_declaration_array_size',
-                                                   indent=50,
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (self.selected_node.__setattr__(
-                                                       'array_size', data),
-                                                       self.redraw_all()))
-                        with dpg.group(horizontal=True, tag='selected_declaration_var_value_group'):
-                            dpg.add_text('Value')
-                            dpg.add_input_text(tag='selected_declaration_var_value',
-                                               indent=50,
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'var_value', data),
-                                                   self.redraw_all()))
-                    with dpg.group(tag='selected_conditional', show=False):
-                        dpg.add_text('Conditional')
-                        with dpg.group():
-                            dpg.add_text('Condition')
-                            dpg.add_input_text(tag='selected_conditional_condition',
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'condition', data),
-                                                   self.redraw_all()))
-                    with dpg.group(tag='selected_loop', show=False):
-                        dpg.add_text('Loop')
-                        if Language.has_for_loops():
-                            with dpg.group(horizontal=True):
-                                dpg.add_text('Type')
-                                dpg.add_combo(Language.get_loop_types(),
-                                              tag='selected_loop_type',
-                                              indent=50,
-                                              width=-1,
-                                              callback=lambda _, data: (self.selected_node.__setattr__(
-                                                  'loop_type', data),
-                                                  self.on_select_node(self.selected_node),
-                                                  self.redraw_all()))
-                            with dpg.group(tag='selected_for_loop_group_1'):
-                                dpg.add_text('Counter Variable Name')
-                                dpg.add_input_text(tag='selected_loop_var_name',
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                       callback=lambda _, data: (self.selected_node.__setattr__(
-                                                           'var_name', data),
-                                                           self.redraw_all()))
-                                dpg.add_text('Start Value')
-                                dpg.add_input_text(tag='selected_loop_start_value',
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                       callback=lambda _, data: (
-                                                           self.selected_node.__setattr__('start_value', data),
-                                                           self.redraw_all())
-                                                   )
-                        with dpg.group():
-                            dpg.add_text('Condition')
-                            dpg.add_input_text(tag='selected_loop_condition',
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'condition', data),
-                                                   self.redraw_all()))
-                        if Language.has_for_loops():
-                            with dpg.group(horizontal=True, tag='selected_for_loop_group_2'):
-                                dpg.add_text('Update')
-                                dpg.add_input_text(tag='selected_loop_update',
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (self.selected_node.__setattr__('update',
-                                                                                                            data),
-                                                                             self.redraw_all()))
-                    with dpg.group(tag='selected_input', show=False):
-                        dpg.add_text('Input')
-                        if Language.has_var_declaration():
-                            with dpg.group(horizontal=True):
-                                dpg.add_text('Name')
-                                dpg.add_combo([],
-                                              tag='selected_input_name',
-                                              indent=50,
-                                              width=-1,
-                                              callback=lambda _, data: (self.selected_node.__setattr__('var_name',
-                                                                                                       data),
-                                                                        self.on_select_node(self.selected_node),
-                                                                        self.redraw_all()))
-                        else:
-                            with dpg.group(horizontal=True):
-                                dpg.add_text('Name')
-                                dpg.add_input_text(tag='selected_input_name',
-                                                   indent=50,
-                                                   width=-1,
-                                                   no_spaces=True,
-                                                   callback=lambda _, data: (self.selected_node.__setattr__('var_name',
-                                                                                                            data),
-                                                                             self.redraw_all()))
-                    with dpg.group(tag='selected_output', show=False):
-                        dpg.add_text('Output')
-                        with dpg.group():
-                            dpg.add_input_text(tag='selected_output_format_string',
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'format_string', data),
-                                                   self.redraw_all()))
-                        with dpg.group():
-                            dpg.add_text('Arguments')
-                            dpg.add_input_text(tag='selected_output_arguments',
-                                               width=-1,
-                                               callback=lambda _, data: (self.selected_node.__setattr__(
-                                                   'arguments', data),
-                                                   self.redraw_all()))
+
+                    SidebarAssignment(self)
+                    SidebarFunctionStart(self)
+                    SidebarFunctionEnd(self)
+                    SidebarCall(self)
+                    SidebarDeclaration(self)
+                    SidebarConditional(self)
+                    SidebarLoop(self)
+                    SidebarInput(self)
+                    SidebarOutput(self)
+
+                    dpg.add_spacer(height=5)
+                    dpg.add_separator()
+
                     with dpg.group(tag='selected_node_comment_group', show=False):
                         dpg.add_text('Comment')
                         dpg.add_input_text(tag='selected_node_comment',
@@ -555,8 +363,10 @@ class GUI:
             # hide return type selection for 'main', because it has to always return int
             if self.selected_node.name == 'main':
                 dpg.hide_item('selected_function_return_type_group')
+                dpg.hide_item('selected_function_parameters_group')
             else:
                 dpg.show_item('selected_function_return_type_group')
+                dpg.show_item('selected_function_parameters_group')
         elif isinstance(self.selected_node, FunctionEnd):
             dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
             dpg.show_item('selected_function_end')
@@ -619,7 +429,6 @@ class GUI:
             with open(file_path, 'wb') as file:
                 self.file_path = file_path
                 dpg.set_viewport_title(f'Flowtutor - {file_path}')
-                print(self.flowcharts)
                 dump(self.flowcharts, file)
         self.modal_service.show_save_as_modal(callback)
 

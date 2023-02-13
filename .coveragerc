@@ -10,6 +10,6 @@ omit =
     */flowtutor/__init__.py
     */flowtutor/flowchart/__init__.py 
     */flowtutor/main.py 
-    */flowtutor/gui.py 
-    */flowtutor/themes.py
+    */flowtutor/gui/*
+    */flowtutor/modal_service.py
     */flowtutor/debugsession.py

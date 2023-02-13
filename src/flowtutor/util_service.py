@@ -57,7 +57,7 @@ class UtilService:
         if platform.system() == 'Windows':
             gdb_commands += '\nset new-console on'
         else:
-            gdb_commands += '\ntty /dev/ttys001'
+            gdb_commands += '\ntty /dev/ttys002'
 
         gdb_commands += f'\nsource {self.get_break_points_path()}'
         with open(gdb_commands_path, 'w') as gdb_commands_file:

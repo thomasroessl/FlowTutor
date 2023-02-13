@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
-from flowtutor.themes import theme_colors
+from flowtutor.gui.themes import theme_colors
 
 
 class Conditional(Node):

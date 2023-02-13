@@ -2,7 +2,7 @@ import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.containers import Container
-from flowtutor.gui import GUI
+from flowtutor.gui.gui import GUI
 from flowtutor.util_service import UtilService
 
 
@@ -25,7 +25,7 @@ def main():
                             'flowtutor.codegenerator',
                             'flowtutor.debugsession',
                             'flowtutor.debugger',
-                            'flowtutor.gui'])
+                            'flowtutor.gui.gui'])
     start()
 
 

@@ -10,7 +10,7 @@ from dependency_injector.wiring import Provide, inject
 from flowtutor.util_service import UtilService
 
 if TYPE_CHECKING:
-    from flowtutor.debugger import Debugger
+    from flowtutor.gui.debugger import Debugger
 
 
 class DebugSession:

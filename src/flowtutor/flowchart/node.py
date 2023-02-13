@@ -6,7 +6,7 @@ import dearpygui.dearpygui as dpg
 from shapely.geometry import Polygon
 from shapely.geometry import Point
 
-from flowtutor.themes import theme_colors
+from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.connection import Connection
