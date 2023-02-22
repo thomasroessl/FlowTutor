@@ -72,6 +72,8 @@ class GUI:
 
     file_path: Optional[str] = None
 
+    sidebar_functionstart: Optional[SidebarFunctionStart] = None
+
     @property
     def selected_flowchart(self) -> Flowchart:
         return self.flowcharts[self.selected_flowchart_tag]
@@ -157,7 +159,7 @@ class GUI:
                         dpg.add_text('None', tag='selected_any_name')
 
                     SidebarAssignment(self)
-                    SidebarFunctionStart(self)
+                    self.sidebar_functionstart = SidebarFunctionStart(self)
                     SidebarFunctionEnd(self)
                     SidebarCall(self)
                     SidebarDeclaration(self)
@@ -357,6 +359,8 @@ class GUI:
             dpg.show_item('selected_conditional')
         elif isinstance(self.selected_node, FunctionStart):
             dpg.configure_item('selected_function_return_type', default_value=self.selected_node.return_type)
+            if self.sidebar_functionstart is not None:
+                self.sidebar_functionstart.refresh_entries(self.selected_node.__getattribute__('parameters'))
             dpg.show_item('selected_function_start')
             # hide return type selection for 'main', because it has to always return int
             if self.selected_node.name == 'main':

@@ -89,6 +89,8 @@ class FunctionStart(Node):
 
     @property
     def parameters(self) -> list[Parameter]:
+        if not hasattr(self, '_parameters'):
+            self._parameters = []
         return self._parameters
 
     @property
@@ -97,4 +99,7 @@ class FunctionStart(Node):
 
     @property
     def is_initialized(self) -> bool:
-        return all(len(p.name) > 0 for p in self.parameters)
+        if hasattr(self, '_parameters'):
+            return all(len(p.name) > 0 for p in self.parameters)
+        else:
+            return True
