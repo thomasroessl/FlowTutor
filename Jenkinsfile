@@ -3,8 +3,8 @@ pipeline {
     stages {
         stage('dependencies') {
             steps {
-                sh 'python -m pip install -r requirements_dev.txt'
-                sh 'python -m pip install -r requirements.txt'
+                sh 'python -m pip install -r requirements_dev.txt --user'
+                sh 'python -m pip install -r requirements.txt --user'
             }
         }
     }
