@@ -3,10 +3,10 @@ pipeline {
     stages {
         stage('dependencies') {
             steps {
-                withPythonEnv('python') {
+                sh 'python -m venv venv'
+                sh 'source ./venv/bin/activate'
                 sh 'python -m pip install -r requirements_dev.txt'
                 sh 'python -m pip install -r requirements.txt'
-                }
             }
         }
     }
