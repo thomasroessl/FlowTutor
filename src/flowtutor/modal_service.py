@@ -1,7 +1,8 @@
 import dearpygui.dearpygui as dpg
 from multiprocessing import Process, Queue
-import wx
 from typing import Any
+import tkinter as tk
+from tkinter import filedialog as fd
 
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
@@ -93,15 +94,14 @@ class ModalService:
                     callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
 
     def open(self, queue):
-        app = wx.App(None)
-        style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST
-        dialog = wx.FileDialog(None, 'Open', wildcard='*.flowtutor', style=style)
-        if dialog.ShowModal() == wx.ID_OK:
-            path = dialog.GetPath()
-        else:
-            path = None
-        dialog.Destroy()
-        app.Destroy()
+        tk_root = tk.Tk()
+        tk_root.withdraw()
+        path = fd.askopenfilename(
+            title='Open...',
+            defaultextension='*.flowtutor',
+            filetypes=[('FlowTutor Files', '*.flowtutor')]
+        )
+        tk_root.destroy()
         ret = queue.get()
         ret['path'] = path
         queue.put(ret)
@@ -116,15 +116,14 @@ class ModalService:
         callback(queue.get()['path'])
 
     def save_as(self, queue):
-        app = wx.App(None)
-        style = wx.FD_SAVE
-        dialog = wx.FileDialog(None, 'Save as...', wildcard='*.flowtutor', style=style)
-        if dialog.ShowModal() == wx.ID_OK:
-            path = dialog.GetPath()
-        else:
-            path = None
-        dialog.Destroy()
-        app.Destroy()
+        tk_root = tk.Tk()
+        tk_root.withdraw()
+        path = fd.askopenfilename(
+            title='Save As...',
+            defaultextension='*.flowtutor',
+            filetypes=[('FlowTutor Files', '*.flowtutor')]
+        )
+        tk_root.destroy()
         ret = queue.get()
         ret['path'] = path
         queue.put(ret)
