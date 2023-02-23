@@ -165,3 +165,4 @@ flowtutor.c
 flowtutor.exe
 flowtutor.exe.dSYM/
 mingw64/
+win_installer.cfg
