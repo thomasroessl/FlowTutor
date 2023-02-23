@@ -410,7 +410,7 @@ class GUI:
         def callback(file_path):
             with open(file_path, 'rb') as file:
                 self.file_path = file_path
-                dpg.set_viewport_title(f'Flowtutor - {file_path}')
+                dpg.set_viewport_title(f'FlowTutor - {file_path}')
                 self.clear_flowchart()
                 self.flowcharts = load(file)
                 self.redraw_all()
@@ -430,7 +430,7 @@ class GUI:
         def callback(file_path):
             with open(file_path, 'wb') as file:
                 self.file_path = file_path
-                dpg.set_viewport_title(f'Flowtutor - {file_path}')
+                dpg.set_viewport_title(f'FlowTutor - {file_path}')
                 dump(self.flowcharts, file)
         self.modal_service.show_save_as_modal(callback)
 
