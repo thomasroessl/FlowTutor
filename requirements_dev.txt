@@ -1,6 +1,6 @@
 flake8==6.0.0
-mypy==1.0.0
-pytest==7.2.0
+mypy==1.0.1
+pytest==7.2.1
 pytest-cov==4.0.0
-tox==4.4.5
+tox==4.4.6
 pynsist==2.8
