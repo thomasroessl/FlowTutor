@@ -1,6 +1,6 @@
 blinker==1.5
 dearpygui==1.8.0
-Shapely==2.0.0
+Shapely==2.0.1
 appdirs==1.4.4
 dependency-injector==4.41.0
 pygdbmi==0.11.0.0
