@@ -24,11 +24,13 @@ class Debugger:
         self._auto_scroll = True
         self.filter_id = None
         self.window_id = parent
-        self.count = 0
-        self.flush_count = 1000
+        self.log_count = 0
+        self.log_flush_count = 1000
+        self.log_last_line: Optional[int | str] = None
 
         signal('program-finished').connect(self.on_program_finished)
         signal('program-kiled').connect(self.on_program_killed)
+        signal('recieve_output').connect(self.on_recieve_output)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
             self.build_button = dpg.add_image_button('hammer_image', callback=lambda: self.on_build(self))
@@ -118,41 +120,48 @@ class Debugger:
     def auto_scroll(self, value):
         self._auto_scroll = value
 
-    def _log(self, message, level):
+    def _log(self, message: str, level):
 
         if level < self.log_level:
             return
 
-        self.count += 1
-
-        if self.count > self.flush_count:
+        if self.log_count > self.log_flush_count:
             self.clear_log()
 
         theme = None
-
+        # For log-level 0 the messages are processed per character
+        # For all other levels the message is processed per line
         if level == 0:
-            message = message
-        elif level == 1:
-            message = '[DEBUG]  \t' + message
-            theme = self.debug_theme
-        elif level == 2:
-            message = '[INFO]   \t' + message
-            theme = self.info_theme
-        elif level == 3:
-            message = '[WARNING]\t' + message
-            theme = self.warning_theme
-        elif level == 4:
-            message = '[ERROR]  \t' + message
-            theme = self.error_theme
+            if self.log_last_line is None:
+                self.log_last_line = dpg.add_text(message, parent=self.filter_id, filter_key=message)
+            else:
+                line_value = dpg.get_value(self.log_last_line)
+                dpg.configure_item(self.log_last_line, default_value=line_value + message)
+            if message.endswith('\n'):
+                self.log_last_line = None
+        else:
+            self.log_count += 1
+            if level == 1:
+                message = '[DEBUG]  \t' + message
+                theme = self.debug_theme
+            elif level == 2:
+                message = '[INFO]   \t' + message
+                theme = self.info_theme
+            elif level == 3:
+                message = '[WARNING]\t' + message
+                theme = self.warning_theme
+            elif level == 4:
+                message = '[ERROR]  \t' + message
+                theme = self.error_theme
+            new_log = dpg.add_text(message, parent=self.filter_id, filter_key=message)
+            if theme is not None:
+                dpg.bind_item_theme(new_log, theme)
 
-        new_log = dpg.add_text(message, parent=self.filter_id, filter_key=message)
-        if theme is not None:
-            dpg.bind_item_theme(new_log, theme)
         if self._auto_scroll:
             dpg.set_y_scroll(self.child_id, -1.0)
 
-    def log(self, message):
-        self._log(message, 0)
+    def log(self, character):
+        self._log(character, 0)
 
     def log_debug(self, message):
         self._log(message, 1)
@@ -168,7 +177,7 @@ class Debugger:
 
     def clear_log(self):
         dpg.delete_item(self.filter_id, children_only=True)
-        self.count = 0
+        self.log_count = 0
 
     def load_start(self):
         dpg.add_loading_indicator(tag=LOADING_INDICATOR_TAG, parent=self.filter_id)
@@ -232,3 +241,7 @@ class Debugger:
     def on_program_killed(self, _, **kw):
         self.log_info('Program killed.')
         self.debug_session = None
+
+    def on_recieve_output(self, _, **kw):
+        output = kw['output']
+        self.log(output)

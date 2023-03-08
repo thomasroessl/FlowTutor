@@ -1,3 +1,4 @@
+import platform
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
@@ -8,6 +9,8 @@ from flowtutor.util_service import UtilService
 
 @inject
 def start(utils_service: UtilService = Provide['utils_service']):
+    if platform.system() != 'Windows':
+        utils_service.open_tty()
     gui = GUI(2000, 2000)
     # Calls the redraw function after the first frame is rendered
     if dpg.is_dearpygui_running():

@@ -1,8 +1,13 @@
 import sys
 import platform
 import pathlib
-import subprocess
+import pty
+import os
+import select
+import termios
+import threading
 
+from blinker import signal
 from shutil import which, rmtree
 from tempfile import mkdtemp
 from os import path
@@ -13,6 +18,9 @@ class UtilService:
     def __init__(self):
         self.root = pathlib.Path(sys.modules['__main__'].__file__ or '').parent.resolve()
         self.temp_dir = mkdtemp(None, 'flowtutor-')
+        print(self.temp_dir)
+        self.tty_name = ''
+        self.tty_fd = 0
 
     def cleanup_temp(self):
         '''Deletes the temporary working directory.'''
@@ -50,6 +58,7 @@ class UtilService:
         '''Creates and gets the path to the command file used for starting gdb.'''
         gdb_commands_path = path.join(self.temp_dir, 'gdb_commands')
         gdb_commands = 'set prompt (gdb)\\n'
+
         # The following command is needed for gdb to run on MacOS with System Integrity Protection
         if platform.system() == 'Darwin':
             gdb_commands += '\nset startup-with-shell off'
@@ -57,7 +66,7 @@ class UtilService:
         if platform.system() == 'Windows':
             gdb_commands += '\nset new-console on'
         else:
-            gdb_commands += '\ntty /dev/ttys002'
+            gdb_commands += f'\ntty {self.tty_name}'
 
         gdb_commands += f'\nsource {self.get_break_points_path()}'
         with open(gdb_commands_path, 'w') as gdb_commands_file:
@@ -72,32 +81,27 @@ class UtilService:
         '''Gets the path to the break-point file for gdb.'''
         return path.join(self.temp_dir, 'flowtutor_break_points')
 
-    def open_terminal(self):
-        '''Opens a new terminal and returns its tty file path'''
+    def open_tty(self):
+        '''Opens a pseudoterminal for communication with gdb.'''
 
-        raise NotImplementedError
+        if (os.isatty(sys.stdin.fileno())):
+            attrs = termios.tcgetattr(sys.stdin)
+            attrs[3] = attrs[3] & ~(termios.ISIG | termios.ICANON | termios.ECHO)
+            termios.tcsetattr(sys.stdin, termios.TCSANOW, attrs)
 
-        if platform.system() == 'Windows':  # type: ignore[unreachable]
-            raise Exception('Windows has no tty.')
+        self.tty_fd, slave_fd = pty.openpty()
+        self.tty_name = os.ttyname(slave_fd)
 
-        terminal_process = None
-        if platform.system() == 'Darwin':
-            tmp_sh_path = path.join(self.temp_dir, 'tmp.sh')
-            tmp_sh_commands = 'tty'
-            with open(tmp_sh_path, 'w') as tmp_sh_file:
-                tmp_sh_file.write(tmp_sh_commands)
-            terminal_process = subprocess.Popen(['tty'],
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.STDOUT,
-                                                stdin=subprocess.PIPE,
-                                                text=True,
-                                                shell=True,
-                                                bufsize=1)
-        else:
-            terminal_process = subprocess.Popen(['xterm'],
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.STDOUT,
-                                                stdin=subprocess.PIPE,
-                                                text=True,
-                                                bufsize=1)
-        print(terminal_process)
+        def output(fd):
+            while True:
+                rfds, _, _ = select.select([fd], [], [])
+                if fd in rfds:
+                    data = os.read(fd, 1)
+                    if len(data) > 0:
+                        signal('recieve_output').send(self, output=data.decode('utf-8'))
+
+        threading.Thread(target=output, args=[self.tty_fd]).start()
+
+    def write_tty(self, message: str):
+        '''Writes to the opened pseudoterminal that communicates with with gdb.'''
+        os.write(self.tty_fd, message.encode('utf-8'))
