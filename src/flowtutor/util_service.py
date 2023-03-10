@@ -104,4 +104,4 @@ class UtilService:
 
     def write_tty(self, message: str):
         '''Writes to the opened pseudoterminal that communicates with with gdb.'''
-        os.write(self.tty_fd, message.encode('utf-8'))
+        os.write(self.tty_fd, (message + '\n').encode('utf-8'))

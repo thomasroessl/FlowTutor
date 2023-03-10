@@ -23,6 +23,7 @@ class Debugger:
         self.log_level = 0
         self._auto_scroll = True
         self.filter_id = None
+        self.input_id = None
         self.window_id = parent
         self.log_count = 0
         self.log_flush_count = 1000
@@ -66,6 +67,20 @@ class Debugger:
         self.child_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, autosize_y=True)
         self.filter_id = dpg.add_filter_set(parent=self.child_id)
 
+        if True:
+            dpg.configure_item(self.child_id, autosize_y=False, height=190)
+
+            input_window_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, height=22)
+
+            with dpg.theme() as test:
+                with dpg.theme_component(dpg.mvChildWindow):
+                    dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 0.0, category=dpg.mvThemeCat_Core)
+            dpg.bind_item_theme(input_window_id, test)
+
+            with dpg.group(horizontal=True, parent=input_window_id):
+                self.input_id = dpg.add_input_text(width=-80, on_enter=True, callback=self.on_input)
+                dpg.add_button(label='Enter', width=71, callback=self.on_input)
+
         with dpg.theme() as self.debug_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (64, 128, 255, 255))
@@ -81,6 +96,10 @@ class Debugger:
         with dpg.theme() as self.error_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
+
+    def on_input(self):
+        self.utils.write_tty(dpg.get_value(self.input_id))
+        dpg.configure_item(self.input_id, default_value='')
 
     def disable_all(self):
         self.disable_children(self.controls_group)
@@ -140,6 +159,7 @@ class Debugger:
             if message.endswith('\n'):
                 self.log_last_line = None
         else:
+            self.log_last_line = None
             self.log_count += 1
             if level == 1:
                 message = '[DEBUG]  \t' + message

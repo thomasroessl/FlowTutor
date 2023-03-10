@@ -5,6 +5,7 @@ from sys import stderr
 import re
 import platform
 import subprocess
+import threading
 from pygdbmi import gdbmiparser
 from dependency_injector.wiring import Provide, inject
 
@@ -71,27 +72,29 @@ class DebugSession:
         return self._gdb_process
 
     def execute(self, command: str) -> None:
-        if not self.process.stdin or not self.process.stdout:
-            return
-        print('START EXECUTE:', command, file=stderr)
-        self.process.stdin.write(f'{command}\n')
+        def t(self):
+            if not self.process.stdin or not self.process.stdout:
+                return
+            print('START EXECUTE:', command, file=stderr)
+            self.process.stdin.write(f'{command}\n')
 
-        for line in self.process.stdout:
-            record = gdbmiparser.parse_response(line)
-            print(f'EXECUTE {command}', record, file=stderr)
-            if record['message'] == 'stopped':
-                reason = record['payload']['reason']
-                if reason == 'exited-normally':
-                    signal('program-finished').send(self)
-                elif reason == 'breakpoint-hit' or reason == 'end-stepping-range':
-                    frame = record['payload']['frame']
-                    if frame['func'] == '??':
-                        self.cont()
-                    else:
-                        self.get_variable_assignments()
-                        signal('hit-line').send(self, line=int(frame['line']))
-                break
-        print('END EXECUTE:', command, file=stderr)
+            for line in self.process.stdout:
+                record = gdbmiparser.parse_response(line)
+                print(f'EXECUTE {command}', record, file=stderr)
+                if record['message'] == 'stopped':
+                    reason = record['payload']['reason']
+                    if reason == 'exited-normally':
+                        signal('program-finished').send(self)
+                    elif reason == 'breakpoint-hit' or reason == 'end-stepping-range':
+                        frame = record['payload']['frame']
+                        if frame['func'] == '??':
+                            self.cont()
+                        else:
+                            self.get_variable_assignments()
+                            signal('hit-line').send(self, line=int(frame['line']))
+                    break
+            print('END EXECUTE:', command, file=stderr)
+        threading.Thread(target=t, args=[self]).start()
 
     def run(self) -> None:
         self.execute('-exec-run\n')
