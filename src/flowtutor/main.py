@@ -17,6 +17,8 @@ def start(utils_service: UtilService = Provide['utils_service']):
         dpg.render_dearpygui_frame()
         gui.redraw_all()
     dpg.start_dearpygui()
+    if platform.system() != 'Windows':
+        utils_service.stop_tty()
     dpg.destroy_context()
     utils_service.cleanup_temp()
 

@@ -21,6 +21,7 @@ class UtilService:
         print(self.temp_dir)
         self.tty_name = ''
         self.tty_fd = 0
+        self.is_stopped = threading.Event()
 
     def cleanup_temp(self):
         '''Deletes the temporary working directory.'''
@@ -93,7 +94,7 @@ class UtilService:
         self.tty_name = os.ttyname(slave_fd)
 
         def output(fd):
-            while True:
+            while not self.is_stopped.is_set():
                 rfds, _, _ = select.select([fd], [], [])
                 if fd in rfds:
                     data = os.read(fd, 1)
@@ -105,3 +106,8 @@ class UtilService:
     def write_tty(self, message: str):
         '''Writes to the opened pseudoterminal that communicates with with gdb.'''
         os.write(self.tty_fd, (message + '\n').encode('utf-8'))
+
+    def stop_tty(self):
+        '''Stops the pseudoterminal thread.'''
+        self.is_stopped.set()
+        os.write(self.tty_fd, '\n'.encode('utf-8'))
