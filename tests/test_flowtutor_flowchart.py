@@ -8,6 +8,7 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
+from flowtutor.flowchart.snippet import Snippet
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.connector import Connector
@@ -18,7 +19,8 @@ SIMPLE_NODES = [  # Nodes with exactly one input and one output
     Declaration,
     Assignment,
     Input,
-    Output
+    Output,
+    Snippet
 ]
 
 ALL_NODES = [
@@ -28,6 +30,7 @@ ALL_NODES = [
     Input,
     Loop,
     Output,
+    Snippet,
     FunctionStart
 ]
 

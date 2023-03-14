@@ -11,6 +11,7 @@ from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.parameter import Parameter
+from flowtutor.flowchart.snippet import Snippet
 
 from flowtutor.language import Language
 from flowtutor.flowchart.node import dpg as node_dpg
@@ -346,6 +347,29 @@ class TestCodeGenerator:
         print(repr(code))
         print(repr(expected))
         assert code == expected, 'Output.'
+
+    def test_code_from_snippet(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+
+        snippet = Snippet()
+        snippet.code = 'printf("Test Code line 1");\nprintf("Test Code line 2");'
+
+        flowchart.add_node(flowchart.root, snippet)
+
+        code, _ = code_generator.generate_code([flowchart])
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  printf("Test Code line 1");',
+            '  printf("Test Code line 2");',
+            '  return 0;',
+            '}'])
+        print(code)
+        print(expected)
+        print(repr(code))
+        print(repr(expected))
+        assert code == expected, 'Snippet.'
 
     def test_code_from_output_with_arguments(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
