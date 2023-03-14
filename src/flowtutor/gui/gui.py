@@ -18,6 +18,7 @@ from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
+from flowtutor.flowchart.snippet import Snippet
 from flowtutor.gui.sidebar_assignment import SidebarAssignment
 from flowtutor.gui.sidebar_call import SidebarCall
 from flowtutor.gui.sidebar_conditional import SidebarConditional
@@ -26,6 +27,7 @@ from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
 from flowtutor.gui.sidebar_loop import SidebarLoop
 from flowtutor.gui.sidebar_output import SidebarOutput
+from flowtutor.gui.sidebar_snippet import SidebarSnippet
 from flowtutor.language import Language
 from flowtutor.modal_service import ModalService
 from flowtutor.settings_service import SettingsService
@@ -167,6 +169,7 @@ class GUI:
                     SidebarLoop(self)
                     SidebarInput(self)
                     SidebarOutput(self)
+                    SidebarSnippet(self)
 
                     dpg.add_spacer(height=5)
                     dpg.add_separator()
@@ -321,6 +324,7 @@ class GUI:
         dpg.hide_item('selected_loop')
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
+        dpg.hide_item('selected_snippet')
         if isinstance(self.selected_node, Assignment):
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
@@ -397,6 +401,9 @@ class GUI:
             dpg.configure_item('selected_output_arguments', default_value=self.selected_node.arguments)
             dpg.configure_item('selected_output_format_string', default_value=self.selected_node.format_string)
             dpg.show_item('selected_output')
+        elif isinstance(self.selected_node, Snippet):
+            dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
+            dpg.show_item('selected_snippet')
         else:
             dpg.show_item('selected_any')
             if self.selected_node:

@@ -11,6 +11,7 @@ from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
+from flowtutor.flowchart.snippet import Snippet
 
 
 class ModalService:
@@ -92,6 +93,10 @@ class ModalService:
                     label='Output',
                     width=-1,
                     callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
+                dpg.add_button(
+                    label='Code Snippet',
+                    width=-1,
+                    callback=lambda: (callback(Snippet()), dpg.delete_item('node_type_modal')))
 
     def open(self, queue):
         tk_root = tk.Tk()
