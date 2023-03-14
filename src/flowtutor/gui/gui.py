@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'
+FLOWCHART_CONTAINER_TAG = 'flowchart_container'
 SOURCE_CODE_TAG = 'source_code'
 TAB_BAR_TAG = 'func_tab_bar'
 
@@ -215,7 +216,14 @@ class GUI:
                                 reorderable=True,
                                 callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab)):
                             self.refresh_function_tabs()
-                        with dpg.child_window(tag='flowchart_container', horizontal_scrollbar=True):
+                        with dpg.child_window(tag=FLOWCHART_CONTAINER_TAG, horizontal_scrollbar=True):
+
+                            # Remove the padding of the flowchart container
+                            with dpg.theme() as item_theme:
+                                with dpg.theme_component(dpg.mvChildWindow):
+                                    dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 0.0, category=dpg.mvThemeCat_Core)
+                            dpg.bind_item_theme(FLOWCHART_CONTAINER_TAG, item_theme)
+
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
                                              height=self.height)
@@ -455,8 +463,8 @@ class GUI:
 
     @staticmethod
     def on_window_resize(self: GUI):
-        (width, height) = dpg.get_item_rect_size('flowchart_container')
-        self.parent_size = (width, height - 30)
+        (width, height) = dpg.get_item_rect_size(FLOWCHART_CONTAINER_TAG)
+        self.parent_size = (width, height)
         self.resize()
         self.settings_service.set_setting('height', dpg.get_viewport_height())
         self.settings_service.set_setting('width', dpg.get_viewport_width())
@@ -500,6 +508,7 @@ class GUI:
                 if parent is not None:
                     self.selected_flowchart.add_node(parent, node, int(src_index))
                     self.redraw_all()
+                    self.resize()
             self.modal_service.show_node_type_modal(callback, self.mouse_position)
         elif self.selected_node is not None:
             self.dragging_node = self.selected_node
@@ -527,6 +536,7 @@ class GUI:
                 self.selected_flowchart.remove_node(self.selected_node)
                 self.on_select_node(None)
                 self.redraw_all()
+                self.resize()
 
         if self.selected_node.has_nested_nodes():
             self.modal_service.show_approval_modal(
@@ -580,7 +590,6 @@ class GUI:
             if self.debugger is not None:
                 self.debugger.disable_all()
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
-        self.resize()
 
     def draw_add_button(self, node: Node):
         '''Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
@@ -606,7 +615,7 @@ class GUI:
     def resize(self):
         '''Sets the size of the drawing area.'''
         width, height = self.parent_size
-
+        width += 14
         for node in self.selected_flowchart:
             (_, _, max_x, max_y) = node.bounds
             if max_x > width:
