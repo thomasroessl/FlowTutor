@@ -110,4 +110,7 @@ class UtilService:
     def stop_tty(self):
         '''Stops the pseudoterminal thread.'''
         self.is_stopped.set()
-        os.write(self.tty_fd, '\n'.encode('utf-8'))
+        try:
+            os.write(self.tty_fd, '\n'.encode('utf-8'))
+        except OSError:
+            pass  # Ignore error if tty has been stopped already
