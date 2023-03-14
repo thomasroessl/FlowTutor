@@ -36,14 +36,6 @@ class Language:
         ]
 
     @staticmethod
-    def get_loop_types() -> list[str]:
-        return [
-            'while',
-            'do while',
-            'for'
-        ]
-
-    @staticmethod
     def has_var_declaration() -> bool:
         return True
 

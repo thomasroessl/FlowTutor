@@ -16,7 +16,8 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
-from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.forloop import ForLoop
+from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
 from flowtutor.gui.sidebar_assignment import SidebarAssignment
@@ -25,7 +26,8 @@ from flowtutor.gui.sidebar_conditional import SidebarConditional
 from flowtutor.gui.sidebar_declaration import SidebarDeclaration
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
-from flowtutor.gui.sidebar_loop import SidebarLoop
+from flowtutor.gui.sidebar_forloop import SidebarForLoop
+from flowtutor.gui.sidebar_whileloop import SidebarWhileLoop
 from flowtutor.gui.sidebar_output import SidebarOutput
 from flowtutor.gui.sidebar_snippet import SidebarSnippet
 from flowtutor.language import Language
@@ -59,7 +61,7 @@ class GUI:
     # The size of the GUI parent
     parent_size: Tuple[int, int] = (0, 0)
 
-    declared_variables: list[Union[Declaration, Loop]] = []
+    declared_variables: list[Union[Declaration, ForLoop]] = []
 
     mouse_position: Optional[Tuple[int, int]] = None
 
@@ -167,7 +169,8 @@ class GUI:
                     SidebarCall(self)
                     SidebarDeclaration(self)
                     SidebarConditional(self)
-                    SidebarLoop(self)
+                    SidebarForLoop(self)
+                    SidebarWhileLoop(self)
                     SidebarInput(self)
                     SidebarOutput(self)
                     SidebarSnippet(self)
@@ -329,7 +332,8 @@ class GUI:
         dpg.hide_item('selected_conditional')
         dpg.hide_item('selected_function_start')
         dpg.hide_item('selected_function_end')
-        dpg.hide_item('selected_loop')
+        dpg.hide_item('selected_forloop')
+        dpg.hide_item('selected_whileloop')
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         dpg.hide_item('selected_snippet')
@@ -342,7 +346,10 @@ class GUI:
             dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
             if Language.has_arrays():
                 declaration = self.selected_flowchart.find_declaration(self.selected_node.var_name)
-                if declaration is not None and not isinstance(declaration, Loop) and declaration.is_array:
+                if declaration is not None and\
+                        not isinstance(declaration, ForLoop) and\
+                        not isinstance(declaration, WhileLoop) and\
+                        declaration.is_array:
                     dpg.show_item('selected_assignment_offset_group')
                 else:
                     self.selected_node.var_offset = ''
@@ -384,20 +391,15 @@ class GUI:
         elif isinstance(self.selected_node, FunctionEnd):
             dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
             dpg.show_item('selected_function_end')
-        elif isinstance(self.selected_node, Loop):
-            dpg.configure_item('selected_loop_type', default_value=self.selected_node.loop_type)
-            dpg.configure_item('selected_loop_condition', default_value=self.selected_node.condition)
-            if Language.has_for_loops():
-                dpg.configure_item('selected_loop_var_name', default_value=self.selected_node.var_name)
-                dpg.configure_item('selected_loop_start_value', default_value=self.selected_node.start_value)
-                dpg.configure_item('selected_loop_update', default_value=self.selected_node.update)
-                if self.selected_node.loop_type == 'for':
-                    dpg.show_item('selected_for_loop_group_1')
-                    dpg.show_item('selected_for_loop_group_2')
-                else:
-                    dpg.hide_item('selected_for_loop_group_1')
-                    dpg.hide_item('selected_for_loop_group_2')
-            dpg.show_item('selected_loop')
+        elif isinstance(self.selected_node, ForLoop):
+            dpg.configure_item('selected_forloop_condition', default_value=self.selected_node.condition)
+            dpg.configure_item('selected_forloop_var_name', default_value=self.selected_node.var_name)
+            dpg.configure_item('selected_forloop_start_value', default_value=self.selected_node.start_value)
+            dpg.configure_item('selected_forloop_update', default_value=self.selected_node.update)
+            dpg.show_item('selected_forloop')
+        elif isinstance(self.selected_node, WhileLoop):
+            dpg.configure_item('selected_whileloop_condition', default_value=self.selected_node.condition)
+            dpg.show_item('selected_whileloop')
         elif isinstance(self.selected_node, Input):
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():

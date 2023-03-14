@@ -5,10 +5,11 @@ from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.flowchart import Flowchart
+from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.input import Input
-from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.connector import Connector
@@ -28,7 +29,8 @@ ALL_NODES = [
     Assignment,
     Conditional,
     Input,
-    Loop,
+    WhileLoop,
+    ForLoop,
     Output,
     Snippet,
     FunctionStart
@@ -72,7 +74,7 @@ class TestFlowchart:
 
     def test_flowchart_add_loop(self):
         flowchart = Flowchart('main')
-        loop1 = Loop()
+        loop1 = WhileLoop()
         flowchart.add_node(flowchart.root, loop1)
         assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
         root_connection_0 = flowchart.root.find_connection(0)
@@ -124,7 +126,7 @@ class TestFlowchart:
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
     def test_flowchart_node_in_loop_body(self, node_class):
         flowchart = Flowchart('main')
-        loop1 = Loop()
+        loop1 = WhileLoop()
         node1 = node_class()
         flowchart.add_node(flowchart.root, loop1)
         flowchart.add_node(loop1, node1, 1)
@@ -179,11 +181,11 @@ class TestFlowchart:
     def test_flowchart_add_and_remove_nested_loops(self, node_class):
         flowchart = Flowchart('main')
 
-        loop1 = Loop()
+        loop1 = WhileLoop()
         flowchart.add_node(flowchart.root, loop1)
         assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
 
-        loop2 = Loop()
+        loop2 = WhileLoop()
         flowchart.add_node(loop1, loop2, 1)
         assert len(flowchart) == 4, 'After adding another loop, there should be 4 nodes in the flowchart'
         assert loop1.tag == loop2.scope[-1], ('The scope of the second loop should be the first loop')

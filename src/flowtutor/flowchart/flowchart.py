@@ -5,9 +5,10 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
-from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
+from flowtutor.flowchart.whileloop import WhileLoop
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -56,14 +57,14 @@ class Flowchart:
         parameters = ', '.join([str(p) for p in self.root.parameters])
         return f'{self.root.return_type} {self.root.name}({parameters});'
 
-    def get_all_declarations(self) -> Generator[Union[Declaration, Loop], None, None]:
+    def get_all_declarations(self) -> Generator[Union[Declaration, ForLoop], None, None]:
         for node in self:
             if isinstance(node, Declaration):
                 yield node
-            elif isinstance(node, Loop) and node.loop_type == 'for':
+            elif isinstance(node, ForLoop):
                 yield node
 
-    def find_declaration(self, var_name: str) -> Union[Declaration, Loop, None]:
+    def find_declaration(self, var_name: str) -> Union[Declaration, ForLoop, None]:
         return next(filter(lambda n: n is not None and n.var_name == var_name, self.get_all_declarations()), None)
 
     def find_node(self, tag: str) -> Optional[Node]:
@@ -93,7 +94,8 @@ class Flowchart:
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):
         child.scope = parent.scope.copy()
-        if isinstance(parent, Conditional) or isinstance(parent, Loop) and src_ind == 1:
+        if isinstance(parent, Conditional) or\
+                isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and src_ind == 1:
             child.scope.append(parent.tag)
         elif isinstance(parent, Connector):
             child.scope.pop()
@@ -120,7 +122,7 @@ class Flowchart:
                     connector_node.connections.append(
                         Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
-            elif isinstance(child, Loop):
+            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop):
                 child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 
@@ -136,9 +138,9 @@ class Flowchart:
                     pos = (parent.pos[0] - 125, connection_point_y + 50)
                 else:
                     pos = (parent.pos[0] + 125, connection_point_y + 50)
-            elif isinstance(parent, Loop) and int(src_ind) == 1:
+            elif isinstance(parent, ForLoop) and int(src_ind) == 1:
                 pos = (parent.pos[0] + 145, connection_point_y + 50)
-            elif isinstance(parent, Loop):
+            elif isinstance(parent, ForLoop):
                 pos = (parent.pos[0] - 35, connection_point_y + 50)
             elif isinstance(parent, Connector):
                 pos = (parent.pos[0] - parent.shape_width, connection_point_y + 50)

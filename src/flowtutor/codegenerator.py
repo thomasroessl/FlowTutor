@@ -10,13 +10,14 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
 from flowtutor.flowchart.flowchart import Flowchart
+from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.input import Input
-from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.language import Language
 from flowtutor.util_service import UtilService
 
@@ -128,21 +129,22 @@ class CodeGenerator:
             indent = indent[:len(indent) - 2]
             yield ('}', False, node)
             return
-        elif isinstance(node, Loop):
-            if node.loop_type == 'for':
-                yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
-                       node.break_point, node)
-            elif node.loop_type == 'while':
-                yield (f'{indent}while({node.condition}) {{', node.break_point, node)
-            else:
-                yield (f'{indent}do {{', node.break_point, node)
+        elif isinstance(node, ForLoop):
+            yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
+                   node.break_point, node)
             indent += '  '
+        elif isinstance(node, WhileLoop):
+            yield (f'{indent}while({node.condition}) {{', node.break_point, node)
+            indent += '  '
+        # elif isinstance(node, DoWhileLoop):
+        #     yield (f'{indent}do {{', node.break_point, node)
+        #     indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
             if declaration is None:
                 yield (f'{indent}// {node.var_name} is not declared!', False, node)
             else:
-                var_type = 'int' if isinstance(declaration, Loop) else declaration.var_type
+                var_type = 'int' if isinstance(declaration, ForLoop) else declaration.var_type
                 type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                 _, format_specifier = next(t for t in type_formats if t[0] == var_type)
                 yield (f'{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
@@ -159,12 +161,13 @@ class CodeGenerator:
             if isinstance(node, Conditional):
                 if connection.src_ind == 0 and not isinstance(connection.dst_node, Connector):
                     yield (f'{indent[:len(indent) - 2]}}} else {{', False, node)
-            elif isinstance(node, Loop):
+            elif isinstance(node, ForLoop) or isinstance(node, WhileLoop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
-                    if node.loop_type == 'do while':
-                        yield (f'{indent}}} while({node.condition});', False, node)
-                    else:
-                        yield (f'{indent}}}', False, node)
+                    yield (f'{indent}}}', False, node)
+            # elif isinstance(node, DoWhileLoop):
+            #     if connection.src_ind == 0 and not connection.dst_node == node:
+            #         indent = indent[:len(indent) - 2]
+            #         yield (f'{indent}}} while({node.condition});', False, node)
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self._generate_code(flowchart, connection.dst_node, indent)

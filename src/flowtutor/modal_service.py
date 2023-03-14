@@ -8,10 +8,11 @@ from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.declaration import Declaration
-from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.flowchart.whileloop import WhileLoop
 
 
 class ModalService:
@@ -82,9 +83,13 @@ class ModalService:
                     width=-1,
                     callback=lambda: (callback(Conditional()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
-                    label='Loop',
+                    label='For Loop',
                     width=-1,
-                    callback=lambda: (callback(Loop()), dpg.delete_item('node_type_modal')))
+                    callback=lambda: (callback(ForLoop()), dpg.delete_item('node_type_modal')))
+                dpg.add_button(
+                    label='While Loop',
+                    width=-1,
+                    callback=lambda: (callback(WhileLoop()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
                     label='Input',
                     width=-1,

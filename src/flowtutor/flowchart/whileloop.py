@@ -5,14 +5,10 @@ from flowtutor.flowchart.node import Node, FLOWCHART_TAG
 from flowtutor.gui.themes import theme_colors
 
 
-class Loop(Node):
+class WhileLoop(Node):
 
     def __init__(self):
         super().__init__()
-        self._loop_type = 'while'
-        self._var_name = 'i'
-        self._start_value = '0'
-        self._update = 'i++'
         self._condition = ''
 
     @property
@@ -49,14 +45,8 @@ class Loop(Node):
 
     @property
     def label(self):
-        if (self.loop_type == 'while' or self.loop_type == 'do while') and len(self.condition) > 0:
+        if len(self.condition) > 0:
             return self.condition
-        elif (self.loop_type == 'for' and
-              len(self.condition) > 0 and
-              len(self.var_name) > 0 and
-              len(self.start_value) > 0 and
-              len(self.update) > 0):
-            return f'int {self.var_name} = {self.start_value}; {self.condition}; {self.update}'
         else:
             return self.__class__.__name__
 
@@ -67,38 +57,6 @@ class Loop(Node):
     @condition.setter
     def condition(self, condition: str):
         self._condition = condition
-
-    @property
-    def loop_type(self) -> str:
-        return self._loop_type
-
-    @loop_type.setter
-    def loop_type(self, loop_type: str):
-        self._loop_type = loop_type
-
-    @property
-    def var_name(self) -> str:
-        return self._var_name
-
-    @var_name.setter
-    def var_name(self, var_name: str):
-        self._var_name = var_name
-
-    @property
-    def start_value(self) -> str:
-        return self._start_value
-
-    @start_value.setter
-    def start_value(self, start_value: str):
-        self._start_value = start_value
-
-    @property
-    def update(self) -> str:
-        return self._update
-
-    @update.setter
-    def update(self, update: str):
-        self._update = update
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)
@@ -112,8 +70,6 @@ class Loop(Node):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
             text_false = 'False'
-            text_false_width, _ = dpg.get_text_size(
-                text_false)
             dpg.draw_text((pos_x - 10,
                            pos_y + self.shape_height + 5),
                           text_false, color=text_color, size=18)
@@ -135,10 +91,4 @@ class Loop(Node):
 
     @property
     def is_initialized(self) -> bool:
-        if self.loop_type == 'for':
-            return (len(self.var_name) > 0 and
-                    len(self.start_value) > 0 and
-                    len(self.condition) > 0 and
-                    len(self.update) > 0)
-        else:
-            return len(self.condition) > 0
+        return len(self.condition) > 0

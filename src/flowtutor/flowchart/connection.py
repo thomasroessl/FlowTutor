@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
-from flowtutor.flowchart.loop import Loop
+from flowtutor.flowchart.forloop import ForLoop
+from flowtutor.flowchart.whileloop import WhileLoop
 
 from flowtutor.gui.themes import theme_colors
 
@@ -66,7 +67,7 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(parent, Loop) and int(self.src_ind) == 1:
+            elif isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and int(self.src_ind) == 1:
                 in_x, in_y = dst_in_points[0]
                 dpg.draw_line(
                     (in_x, out_y),
@@ -79,7 +80,7 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(self.dst_node, Loop) and self.dst_node.tag in parent.scope:
+            elif isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and self.dst_node.tag in parent.scope:
                 in_x, in_y = dst_in_points[1]
                 dpg.draw_line(
                     (out_x, out_y + 30),
