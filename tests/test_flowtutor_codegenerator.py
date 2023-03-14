@@ -243,6 +243,34 @@ class TestCodeGenerator:
         print(repr(expected))
         assert code == expected, 'While-Loop.'
 
+    def test_code_from_do_while_loop(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        loop = Loop()
+        loop.loop_type = 'do while'
+        loop.condition = 'x > 5'
+        flowchart.add_node(flowchart.root, loop)
+
+        assignment = Assignment()
+        assignment.var_name = 'x'
+        assignment.var_value = '3'
+        flowchart.add_node(loop, assignment, 1)
+
+        code, _ = code_generator.generate_code([flowchart])
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  do {',
+            '    x = 3;',
+            '  } while(x > 5);',
+            '  return 0;',
+            '}'])
+        print(code)
+        print(expected)
+        print(repr(code))
+        print(repr(expected))
+        assert code == expected, 'While-Loop.'
+
     def test_code_from_for_loop(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
         loop = Loop()
