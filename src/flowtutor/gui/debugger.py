@@ -27,7 +27,7 @@ class Debugger:
         self.window_id = parent
         self.log_count = 0
         self.log_flush_count = 1000
-        self.log_last_line: Optional[int | str] = None
+        self.log_last_line: Optional[Union[int, str]] = None
 
         signal('program-finished').connect(self.on_program_finished)
         signal('program-kiled').connect(self.on_program_killed)
