@@ -95,7 +95,6 @@ class Flowchart:
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):
         child.scope = parent.scope.copy()
-        print(parent.__class__.__name__ + str(src_ind))
         if isinstance(parent, Conditional) or\
                 isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) and\
                 src_ind == 1:
@@ -141,9 +140,10 @@ class Flowchart:
                     pos = (parent.pos[0] - 125, connection_point_y + 50)
                 else:
                     pos = (parent.pos[0] + 125, connection_point_y + 50)
-            elif isinstance(parent, ForLoop) and int(src_ind) == 1:
-                pos = (parent.pos[0] + 145, connection_point_y + 50)
-            elif isinstance(parent, ForLoop):
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop)) and\
+                    int(src_ind) == 1:
+                pos = (parent.pos[0] + 160, connection_point_y + 25)
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop)):
                 pos = (parent.pos[0] - 35, connection_point_y + 50)
             elif isinstance(parent, Connector):
                 pos = (parent.pos[0] - parent.shape_width, connection_point_y + 50)
