@@ -12,6 +12,7 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
@@ -24,6 +25,7 @@ from flowtutor.gui.sidebar_assignment import SidebarAssignment
 from flowtutor.gui.sidebar_call import SidebarCall
 from flowtutor.gui.sidebar_conditional import SidebarConditional
 from flowtutor.gui.sidebar_declaration import SidebarDeclaration
+from flowtutor.gui.sidebar_dowhileloop import SidebarDoWhileLoop
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
 from flowtutor.gui.sidebar_forloop import SidebarForLoop
@@ -33,10 +35,11 @@ from flowtutor.gui.sidebar_snippet import SidebarSnippet
 from flowtutor.language import Language
 from flowtutor.modal_service import ModalService
 from flowtutor.settings_service import SettingsService
-from flowtutor.gui.themes import create_theme_dark, create_theme_light
 from flowtutor.codegenerator import CodeGenerator
 from flowtutor.gui.debugger import Debugger
 from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
+
+from flowtutor.gui.themes import create_theme_dark, create_theme_light
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -171,6 +174,7 @@ class GUI:
                     SidebarConditional(self)
                     SidebarForLoop(self)
                     SidebarWhileLoop(self)
+                    SidebarDoWhileLoop(self)
                     SidebarInput(self)
                     SidebarOutput(self)
                     SidebarSnippet(self)
@@ -334,6 +338,7 @@ class GUI:
         dpg.hide_item('selected_function_end')
         dpg.hide_item('selected_forloop')
         dpg.hide_item('selected_whileloop')
+        dpg.hide_item('selected_dowhileloop')
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         dpg.hide_item('selected_snippet')
@@ -349,6 +354,7 @@ class GUI:
                 if declaration is not None and\
                         not isinstance(declaration, ForLoop) and\
                         not isinstance(declaration, WhileLoop) and\
+                        not isinstance(declaration, DoWhileLoop) and\
                         declaration.is_array:
                     dpg.show_item('selected_assignment_offset_group')
                 else:
@@ -400,6 +406,9 @@ class GUI:
         elif isinstance(self.selected_node, WhileLoop):
             dpg.configure_item('selected_whileloop_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_whileloop')
+        elif isinstance(self.selected_node, DoWhileLoop):
+            dpg.configure_item('selected_dowhileloop_condition', default_value=self.selected_node.condition)
+            dpg.show_item('selected_dowhileloop')
         elif isinstance(self.selected_node, Input):
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():

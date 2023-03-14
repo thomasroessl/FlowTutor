@@ -5,6 +5,7 @@ from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
@@ -94,8 +95,10 @@ class Flowchart:
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0):
         child.scope = parent.scope.copy()
+        print(parent.__class__.__name__ + str(src_ind))
         if isinstance(parent, Conditional) or\
-                isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and src_ind == 1:
+                isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) and\
+                src_ind == 1:
             child.scope.append(parent.tag)
         elif isinstance(parent, Connector):
             child.scope.pop()
@@ -122,7 +125,7 @@ class Flowchart:
                     connector_node.connections.append(
                         Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
-            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop):
+            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop) or isinstance(child, DoWhileLoop):
                 child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 

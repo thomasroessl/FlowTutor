@@ -199,9 +199,17 @@ class Node(ABC):
                              thickness=thickness)
 
             text_width, text_height = dpg.get_text_size(self.label)
-            dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
-                           pos_y + self.shape_height / 2 - text_height / 2),
-                          self.label, color=(0, 0, 0), size=18)
+
+            if self.__class__.__name__ == 'DoWhileLoop':
+                dpg.draw_circle((pos_x + 75, pos_y + 25), 25, fill=self.color)
+                dpg.draw_circle((pos_x + 75, pos_y + 25), 25, thickness=2, color=text_color)
+                dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
+                               pos_y + self.shape_height / 2 + 50 - text_height / 2),
+                              self.label, color=(0, 0, 0), size=18)
+            else:
+                dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
+                               pos_y + self.shape_height / 2 - text_height / 2),
+                              self.label, color=(0, 0, 0), size=18)
 
             if self.has_debug_cursor:
                 cursor_pos = self.pos

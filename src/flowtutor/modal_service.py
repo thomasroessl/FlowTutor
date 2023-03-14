@@ -8,6 +8,7 @@ from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
@@ -90,6 +91,10 @@ class ModalService:
                     label='While Loop',
                     width=-1,
                     callback=lambda: (callback(WhileLoop()), dpg.delete_item('node_type_modal')))
+                dpg.add_button(
+                    label='Do-While Loop',
+                    width=-1,
+                    callback=lambda: (callback(DoWhileLoop()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
                     label='Input',
                     width=-1,

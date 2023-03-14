@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
+from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.whileloop import WhileLoop
 
@@ -42,32 +43,33 @@ class Connection:
 
         text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
-        with dpg.draw_node(
-                parent=parent.tag):
+        with dpg.draw_node(parent=parent.tag):
             if parent == self.dst_node:
                 in_x, in_y = dst_in_points[1]
+                offset_y = max(out_y, in_y + 25)
                 dpg.draw_line(
-                    (out_x + 60, out_y),
+                    (out_x + 70, out_y),
                     (out_x, out_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_line(
-                    (out_x + 60, out_y + 75),
-                    (out_x + 60, out_y),
+                    (out_x + 70, offset_y),
+                    (out_x + 70, out_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_line(
-                    (in_x, out_y + 75),
-                    (out_x + 60, out_y + 75),
+                    (in_x, offset_y),
+                    (out_x + 70, offset_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
-                    (in_x, out_y + 75),
+                    (in_x, offset_y),
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and int(self.src_ind) == 1:
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop)) and\
+                    int(self.src_ind) == 1:
                 in_x, in_y = dst_in_points[0]
                 dpg.draw_line(
                     (in_x, out_y),
@@ -80,21 +82,24 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) and self.dst_node.tag in parent.scope:
+            elif (isinstance(self.dst_node, ForLoop) or isinstance(self.dst_node, WhileLoop) or
+                  isinstance(self.dst_node, DoWhileLoop)) and\
+                    self.dst_node.tag in parent.scope:
                 in_x, in_y = dst_in_points[1]
+                offset_y = max(out_y, in_y) + 25
                 dpg.draw_line(
-                    (out_x, out_y + 30),
+                    (out_x, offset_y),
                     (out_x, out_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_line(
-                    (in_x, out_y + 30),
-                    (out_x, out_y + 30),
+                    (in_x, offset_y),
+                    (out_x, offset_y),
                     color=text_color,
                     thickness=2)
                 dpg.draw_arrow(
                     (in_x, in_y),
-                    (in_x, out_y + 30),
+                    (in_x, offset_y),
                     color=text_color,
                     thickness=2,
                     size=10)

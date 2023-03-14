@@ -9,6 +9,7 @@ from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
@@ -136,9 +137,9 @@ class CodeGenerator:
         elif isinstance(node, WhileLoop):
             yield (f'{indent}while({node.condition}) {{', node.break_point, node)
             indent += '  '
-        # elif isinstance(node, DoWhileLoop):
-        #     yield (f'{indent}do {{', node.break_point, node)
-        #     indent += '  '
+        elif isinstance(node, DoWhileLoop):
+            yield (f'{indent}do {{', node.break_point, node)
+            indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
             if declaration is None:
@@ -165,9 +166,9 @@ class CodeGenerator:
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
                     yield (f'{indent}}}', False, node)
-            # elif isinstance(node, DoWhileLoop):
-            #     if connection.src_ind == 0 and not connection.dst_node == node:
-            #         indent = indent[:len(indent) - 2]
-            #         yield (f'{indent}}} while({node.condition});', False, node)
+            elif isinstance(node, DoWhileLoop):
+                if connection.src_ind == 0 and not connection.dst_node == node:
+                    indent = indent[:len(indent) - 2]
+                    yield (f'{indent}}} while({node.condition});', False, node)
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self._generate_code(flowchart, connection.dst_node, indent)
