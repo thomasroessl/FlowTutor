@@ -16,6 +16,7 @@ from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.loop import Loop
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.output import Output
+from flowtutor.flowchart.snippet import Snippet
 from flowtutor.language import Language
 from flowtutor.util_service import UtilService
 
@@ -143,12 +144,14 @@ class CodeGenerator:
                 type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                 _, format_specifier = next(t for t in type_formats if t[0] == var_type)
                 yield (f'{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
-
         elif isinstance(node, Output):
             if len(node.arguments) > 0:
                 yield (f'{indent}printf("{node.format_string}", {node.arguments});', node.break_point, node)
             else:
                 yield (f'{indent}printf("{node.format_string}");', node.break_point, node)
+        elif isinstance(node, Snippet):
+            if len(node.code) > 0:
+                yield (indent + f'\n{indent}'.join(node.code.splitlines()), node.break_point, node)
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):
