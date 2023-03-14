@@ -22,7 +22,7 @@ class FunctionEnd(Node):
 
     @property
     def raw_out_points(self):
-        return [(75, 75)]
+        return []
 
     @property
     def color(self):
