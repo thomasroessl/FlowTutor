@@ -432,6 +432,7 @@ class TestCodeGenerator:
         flowchart2 = Flowchart('func1')
 
         flowchart3 = Flowchart('func2')
+        flowchart3.root.return_type = 'float'
 
         parameter1 = Parameter()
         parameter1.name = 'x'
@@ -451,7 +452,7 @@ class TestCodeGenerator:
             '#include <stdio.h>',
             '',
             'int func1(int x, long y);',
-            'int func2(unsigned int z);',
+            'float func2(unsigned int z);',
             '',
             'int main() {',
             '  return 0;',
@@ -461,8 +462,8 @@ class TestCodeGenerator:
             '  return 0;',
             '}',
             '',
-            'int func2(unsigned int z) {',
-            '  return 0;',
+            'float func2(unsigned int z) {',
+            '  return 0.0;',
             '}'
         ])
         print(code)
