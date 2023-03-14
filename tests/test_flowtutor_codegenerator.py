@@ -463,7 +463,7 @@ class TestCodeGenerator:
             '}',
             '',
             'float func2(unsigned int z) {',
-            '  return 0.0;',
+            '  return 0;',
             '}'
         ])
         print(code)

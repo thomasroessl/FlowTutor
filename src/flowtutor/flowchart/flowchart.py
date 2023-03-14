@@ -54,7 +54,7 @@ class Flowchart:
 
     def get_function_declaration(self) -> str:
         parameters = ', '.join([str(p) for p in self.root.parameters])
-        return f'int {self.root.name}({parameters});'
+        return f'{self.root.return_type} {self.root.name}({parameters});'
 
     def get_all_declarations(self) -> Generator[Union[Declaration, Loop], None, None]:
         for node in self:
