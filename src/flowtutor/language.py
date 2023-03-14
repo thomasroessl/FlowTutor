@@ -39,6 +39,7 @@ class Language:
     def get_loop_types() -> list[str]:
         return [
             'while',
+            'do while',
             'for'
         ]
 

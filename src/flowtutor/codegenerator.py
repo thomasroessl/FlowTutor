@@ -132,8 +132,10 @@ class CodeGenerator:
             if node.loop_type == 'for':
                 yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
                        node.break_point, node)
-            else:
+            elif node.loop_type == 'while':
                 yield (f'{indent}while({node.condition}) {{', node.break_point, node)
+            else:
+                yield (f'{indent}do {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
@@ -160,6 +162,9 @@ class CodeGenerator:
             elif isinstance(node, Loop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
-                    yield (f'{indent}}}', False, node)
+                    if node.loop_type == 'do while':
+                        yield (f'{indent}}} while({node.condition});', False, node)
+                    else:
+                        yield (f'{indent}}}', False, node)
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self._generate_code(flowchart, connection.dst_node, indent)

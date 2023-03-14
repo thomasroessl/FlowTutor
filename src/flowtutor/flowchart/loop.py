@@ -49,7 +49,7 @@ class Loop(Node):
 
     @property
     def label(self):
-        if self.loop_type == 'while' and len(self.condition) > 0:
+        if (self.loop_type == 'while' or self.loop_type == 'do while') and len(self.condition) > 0:
             return self.condition
         elif (self.loop_type == 'for' and
               len(self.condition) > 0 and
