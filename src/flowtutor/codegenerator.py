@@ -58,7 +58,7 @@ class CodeGenerator:
 
     def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
         source: list[tuple[str, bool, Optional[Node]]] = [
-            ('#include <stdio.h>', False, None)
+            (f'#include <{h}.h>', False, None) for h in flowcharts[0].includes
         ]
 
         if len(flowcharts) > 1:
