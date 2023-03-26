@@ -42,6 +42,23 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'An empty flowchart should produce a main function, which returns 0.'
 
+    def test_code_from_includes(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        flowchart.includes.append('test1')
+        flowchart.includes.append('test2')
+        code, _ = code_generator.generate_code([flowchart])
+        print(code)
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '#include <test1.h>',
+            '#include <test2.h>',
+            '',
+            'int main() {',
+            '  return 0;',
+            '}'])
+        print(expected)
+        assert code == expected, 'Selected headers should be included in the source file.'
+
     @pytest.mark.parametrize('data_type', Language.get_data_types())
     def test_code_from_declaration(self, data_type, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
