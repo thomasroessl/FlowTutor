@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Generator, List, Optional, Tuple, Union
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -23,10 +23,15 @@ class Flowchart:
         self._root = root
         end = FunctionEnd(name)
         self.add_node(root, end)
+        self._includes: List[str] = ['stdio']
 
     @property
     def root(self) -> FunctionStart:
         return self._root
+
+    @property
+    def includes(self) -> List[str]:
+        return self._includes
 
     def __iter__(self):
         return self.deduplicate(self.get_all_nodes(self.root, False))

@@ -29,6 +29,7 @@ from flowtutor.gui.sidebar_dowhileloop import SidebarDoWhileLoop
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
 from flowtutor.gui.sidebar_forloop import SidebarForLoop
+from flowtutor.gui.sidebar_none import SidebarNone
 from flowtutor.gui.sidebar_whileloop import SidebarWhileLoop
 from flowtutor.gui.sidebar_output import SidebarOutput
 from flowtutor.gui.sidebar_snippet import SidebarSnippet
@@ -161,11 +162,8 @@ class GUI:
         with dpg.window(tag='main_window'):
             with dpg.group(tag='main_group', horizontal=True):
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, show=True):
-                    with dpg.menu_bar():
-                        dpg.add_text('Selected Node')
-                    with dpg.group(tag='selected_any'):
-                        dpg.add_text('None', tag='selected_any_name')
 
+                    SidebarNone(self)
                     SidebarAssignment(self)
                     self.sidebar_functionstart = SidebarFunctionStart(self)
                     SidebarFunctionEnd(self)
@@ -329,7 +327,7 @@ class GUI:
             dpg.configure_item('selected_node_comment', default_value=node.comment)
             dpg.configure_item('selected_node_break_point', default_value=node.break_point)
         self.selected_node = node
-        dpg.hide_item('selected_any')
+        dpg.hide_item('selected_none')
         dpg.hide_item('selected_assignment')
         dpg.hide_item('selected_call')
         dpg.hide_item('selected_declaration')
@@ -424,12 +422,7 @@ class GUI:
             dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
             dpg.show_item('selected_snippet')
         else:
-            dpg.show_item('selected_any')
-            if self.selected_node:
-                selected_name = self.selected_node.__class__.__name__
-            else:
-                selected_name = 'None'
-            dpg.configure_item('selected_any_name', default_value=selected_name)
+            dpg.show_item('selected_none')
 
     @staticmethod
     def on_open(self: GUI):

@@ -20,6 +20,21 @@ class Language:
         ]
 
     @staticmethod
+    def get_standard_headers() -> list[str]:
+        return [
+            'assert',
+            'ctype',
+            'errno',
+            'error',
+            'float',
+            'signal',
+            'stdio',
+            'stdlib',
+            'string',
+            'math'
+        ]
+
+    @staticmethod
     def get_format_specifiers() -> list[str]:
         return [
             '%c',
