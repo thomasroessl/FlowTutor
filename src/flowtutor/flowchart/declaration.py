@@ -14,6 +14,7 @@ class Declaration(Node):
         self._array_size = ''
         self._is_array = False
         self._is_pointer = False
+        self._is_static = False
 
     @property
     def shape_width(self):
@@ -108,6 +109,14 @@ class Declaration(Node):
     @is_pointer.setter
     def is_pointer(self, is_pointer: bool):
         self._is_pointer = is_pointer
+
+    @property
+    def is_static(self) -> bool:
+        return self._is_static
+
+    @is_static.setter
+    def is_static(self, is_static: bool):
+        self._is_static = is_static
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
         super().draw(mouse_pos, is_selected)

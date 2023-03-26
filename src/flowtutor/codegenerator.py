@@ -97,6 +97,7 @@ class CodeGenerator:
         if isinstance(node, Declaration):
             yield (''.join([
                 indent,
+                'static ' if node.is_static else '',
                 node.var_type,
                 ' ',
                 '*' if node.is_pointer else '',

@@ -80,6 +80,27 @@ class TestCodeGenerator:
         assert code == expected, 'Declaration with value.'
 
     @pytest.mark.parametrize('data_type', Language.get_data_types())
+    def test_code_from_static_declaration(self, data_type, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        declaration = Declaration()
+        declaration.var_name = 'x'
+        declaration.is_static = True
+        declaration.var_type = data_type
+        declaration.var_value = '3'
+        flowchart.add_node(flowchart.root, declaration)
+        code, _ = code_generator.generate_code([flowchart])
+        print(code)
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            f'  static {data_type} x = 3;',
+            '  return 0;',
+            '}'])
+        print(expected)
+        assert code == expected, 'Static declaration with initialization.'
+
+    @pytest.mark.parametrize('data_type', Language.get_data_types())
     def test_code_from_pointer_declaration(self, data_type, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
         declaration = Declaration()

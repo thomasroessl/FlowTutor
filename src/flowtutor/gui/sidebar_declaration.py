@@ -59,6 +59,14 @@ class SidebarDeclaration:
                                        callback=lambda _, data: (gui.selected_node.__setattr__(
                                            'array_size', data),
                                            gui.redraw_all()))
+            with dpg.group(horizontal=True):
+                dpg.add_checkbox(label='Static',
+                                 tag='selected_declaration_is_static',
+                                 indent=50,
+                                 callback=lambda _, data: (gui.selected_node.__setattr__('is_static',
+                                                                                         data),
+                                                           gui.on_select_node(gui.selected_node),
+                                                           gui.redraw_all()))
             with dpg.group(horizontal=True, tag='selected_declaration_var_value_group'):
                 dpg.add_text('Value')
                 dpg.add_input_text(tag='selected_declaration_var_value',
