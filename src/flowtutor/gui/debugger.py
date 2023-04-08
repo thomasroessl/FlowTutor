@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 from typing import Optional, Union
@@ -225,16 +226,36 @@ class Debugger:
         print(gcc_exe, file=sys.stderr)
 
         # Build the executable
-        subprocess.run([
+        result = subprocess.run([
             gcc_exe,
             self.utils.get_c_source_path(),
             '-g',
             '-o',
-            self.utils.get_exe_path()])
-        self.is_code_built = True
+            self.utils.get_exe_path()],
+            capture_output=True)
+
+        output = '\n'.join(filter(lambda s: s, [result.stdout.decode('utf-8'), result.stderr.decode('utf-8')]))
+        output_lines = output.split('\n')
+
+        log = self.log_info
+        for line in output_lines:
+            output_line = re.sub(r'.*?:(\d+:\d+:)?', '', line, count=1)
+            stripped = output_line.lstrip()
+            if stripped.startswith('warning'):
+                log = self.log_warning
+            elif stripped.startswith('error'):
+                log = self.log_error
+            elif stripped.startswith('note'):
+                log = self.log_info
+            if len(stripped) > 0:
+                log(output_line)
+
+        if result.returncode == 0:
+            self.is_code_built = True
+            self.log_info('Code built!')
+            self.enable_build_and_run()
+
         self.load_end()
-        self.log_info('Code built!')
-        self.enable_build_and_run()
 
     @staticmethod
     def on_debug_step_over(self):
