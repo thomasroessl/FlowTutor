@@ -30,7 +30,8 @@ def main():
                             'flowtutor.codegenerator',
                             'flowtutor.debugsession',
                             'flowtutor.gui.debugger',
-                            'flowtutor.gui.gui'])
+                            'flowtutor.gui.gui',
+                            'flowtutor.gui.sidebar_functionstart'])
     start()
 
 
