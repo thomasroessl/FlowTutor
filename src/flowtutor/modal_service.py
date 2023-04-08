@@ -130,7 +130,7 @@ class ModalService:
         process.join()
         path = queue.get()['path']
         if path:
-            callback(queue.get()['path'])
+            callback(path)
 
     def save_as(self, queue):
         tk_root = tk.Tk()
@@ -154,4 +154,4 @@ class ModalService:
         process.join()
         path = queue.get()['path']
         if path:
-            callback(queue.get()['path'])
+            callback(path)
