@@ -128,12 +128,14 @@ class ModalService:
         process = Process(target=self.open, args=(queue, ))
         process.start()
         process.join()
-        callback(queue.get()['path'])
+        path = queue.get()['path']
+        if path:
+            callback(queue.get()['path'])
 
     def save_as(self, queue):
         tk_root = tk.Tk()
         tk_root.withdraw()
-        path = fd.askopenfilename(
+        path = fd.asksaveasfilename(
             title='Save As...',
             defaultextension='*.flowtutor',
             filetypes=[('FlowTutor Files', '*.flowtutor')]
@@ -150,4 +152,6 @@ class ModalService:
         process = Process(target=self.save_as, args=(queue, ))
         process.start()
         process.join()
-        callback(queue.get()['path'])
+        path = queue.get()['path']
+        if path:
+            callback(queue.get()['path'])
