@@ -81,26 +81,24 @@ class DebugSession:
             for line in self.process.stdout:
                 record = gdbmiparser.parse_response(line)
                 print(f'EXECUTE {command}', record, file=stderr)
-                match record['message']:
-                    case 'stopped':
-                        reason = record['payload']['reason']
-                        match reason:
-                            case 'exited-normally':
-                                signal('program-finished').send(self)
-                            case 'breakpoint-hit' | 'end-stepping-range':
-                                frame = record['payload']['frame']
-                                if frame['func'] == '??':
-                                    self.cont()
-                                else:
-                                    self.get_variable_assignments()
-                                    signal('hit-line').send(self, line=int(frame['line']))
-                            case 'signal-received':
-                                meaning = record['payload']['signal-meaning']
-                                signal('program-error').send(self, error=meaning)
-                                signal('program-finished').send(self)
-                        break
-                    case 'error':
+                if record['message'] == 'stopped':
+                    reason = record['payload']['reason']
+                    if reason == 'exited-normally':
                         signal('program-finished').send(self)
+                    elif reason == 'breakpoint-hit' or reason == 'end-stepping-range':
+                        frame = record['payload']['frame']
+                        if frame['func'] == '??':
+                            self.cont()
+                        else:
+                            self.get_variable_assignments()
+                            signal('hit-line').send(self, line=int(frame['line']))
+                    elif reason == 'signal-received':
+                        meaning = record['payload']['signal-meaning']
+                        signal('program-error').send(self, error=meaning)
+                        signal('program-finished').send(self)
+                    break
+                elif record['message'] == 'error':
+                    signal('program-finished').send(self)
 
             print('END EXECUTE:', command, file=stderr)
         threading.Thread(target=t, args=[self]).start()
