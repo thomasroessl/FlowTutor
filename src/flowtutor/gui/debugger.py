@@ -33,6 +33,7 @@ class Debugger:
         signal('program-finished').connect(self.on_program_finished)
         signal('program-kiled').connect(self.on_program_killed)
         signal('recieve_output').connect(self.on_recieve_output)
+        signal('program-error').connect(self.on_program_error)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
             self.build_button = dpg.add_image_button('hammer_image', callback=lambda: self.on_build(self))
@@ -231,7 +232,8 @@ class Debugger:
             self.utils.get_c_source_path(),
             '-g',
             '-o',
-            self.utils.get_exe_path()],
+            self.utils.get_exe_path(),
+            '-lm'],
             capture_output=True)
 
         output = '\n'.join(filter(lambda s: s, [result.stdout.decode('utf-8'), result.stderr.decode('utf-8')]))
@@ -278,6 +280,10 @@ class Debugger:
     def on_program_finished(self, _, **kw):
         self.log_info('Program ended.')
         self.debug_session = None
+
+    def on_program_error(self, _, **kw):
+        error = kw['error']
+        self.log_error(error)
 
     def on_program_killed(self, _, **kw):
         self.log_info('Program killed.')
