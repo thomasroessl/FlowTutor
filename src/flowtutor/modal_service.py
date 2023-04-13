@@ -7,7 +7,7 @@ from tkinter import filedialog as fd
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
-from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.input import Input
@@ -78,7 +78,7 @@ class ModalService:
                 dpg.add_button(
                     label='Declaration',
                     width=-1,
-                    callback=lambda: (callback(Declaration()), dpg.delete_item('node_type_modal')))
+                    callback=lambda: (callback(Declarations()), dpg.delete_item('node_type_modal')))
                 dpg.add_button(
                     label='Conditional',
                     width=-1,

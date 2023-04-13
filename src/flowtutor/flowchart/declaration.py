@@ -49,12 +49,14 @@ class Declaration(Node):
     @property
     def label(self) -> str:
         if self.var_name:
-            return ''.join([f'{self.var_type} ',
-                            '*' if self.is_pointer else '',
-                            self.var_name,
-                            f'[{self.array_size}]' if self.is_array else '',
-                            f' = {self.var_value}' if len(self.var_value) > 0 else '',
-                            ';'])
+            return ''.join([
+                'static ' if self.is_static else '',
+                f'{self.var_type} ',
+                '*' if self.is_pointer else '',
+                self.var_name,
+                f'[{self.array_size}]' if self.is_array else '',
+                f' = {self.var_value}' if len(self.var_value) > 0 else '',
+                ';'])
         else:
             return self.__class__.__name__
 

@@ -12,6 +12,7 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.functionstart import FunctionStart
@@ -25,6 +26,7 @@ from flowtutor.gui.sidebar_assignment import SidebarAssignment
 from flowtutor.gui.sidebar_call import SidebarCall
 from flowtutor.gui.sidebar_conditional import SidebarConditional
 from flowtutor.gui.sidebar_declaration import SidebarDeclaration
+from flowtutor.gui.sidebar_declarations import SidebarDeclarations
 from flowtutor.gui.sidebar_dowhileloop import SidebarDoWhileLoop
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
@@ -168,6 +170,7 @@ class GUI:
                     SidebarFunctionEnd(self)
                     SidebarCall(self)
                     SidebarDeclaration(self)
+                    self.sidebar_declarations = SidebarDeclarations(self)
                     SidebarConditional(self)
                     SidebarForLoop(self)
                     SidebarWhileLoop(self)
@@ -332,6 +335,7 @@ class GUI:
         dpg.hide_item('selected_assignment')
         dpg.hide_item('selected_call')
         dpg.hide_item('selected_declaration')
+        dpg.hide_item('selected_declarations')
         dpg.hide_item('selected_conditional')
         dpg.hide_item('selected_function_start')
         dpg.hide_item('selected_function_end')
@@ -382,6 +386,10 @@ class GUI:
             dpg.configure_item('selected_declaration_array_size', default_value=self.selected_node.array_size)
             dpg.configure_item('selected_declaration_is_pointer', default_value=self.selected_node.is_pointer)
             dpg.show_item('selected_declaration')
+        elif isinstance(self.selected_node, Declarations):
+            self.set_sidebar_title('Declaration')
+            self.sidebar_declarations.refresh()
+            dpg.show_item('selected_declarations')
         elif isinstance(self.selected_node, Conditional):
             self.set_sidebar_title('Conditional')
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)

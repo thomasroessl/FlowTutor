@@ -9,6 +9,7 @@ from flowtutor.flowchart.call import Call
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.forloop import ForLoop
@@ -106,6 +107,17 @@ class CodeGenerator:
                 f' = {node.var_value}' if len(node.var_value) > 0 else '',
                 ';'
             ]), node.break_point, node)
+        if isinstance(node, Declarations):
+            yield ('\n'.join(map(lambda d: ''.join([
+                indent,
+                'static ' if d['is_static'] else '',
+                d['var_type'],
+                ' ',
+                '*' if d['is_pointer'] else '',
+                d['var_name'],
+                f'[{d["array_size"]}]' if d['is_array'] else '',
+                f' = {d["var_value"]}' if len(d['var_value']) > 0 else '',
+                ';']), node.declarations)), node.break_point, node)
         elif isinstance(node, Call):
             yield (''.join([
                 indent,
