@@ -6,6 +6,7 @@ from flowtutor.containers import Container
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.forloop import ForLoop
@@ -119,6 +120,54 @@ class TestCodeGenerator:
             '}'])
         print(expected)
         assert code == expected, 'Pointer declaration.'
+
+    @pytest.mark.parametrize('data_type', Language.get_data_types())
+    def test_code_from_declarations(self, data_type, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        declarations = Declarations()
+        declarations.declarations = [
+            {
+                'var_name': 'x',
+                'var_type': data_type,
+                'var_value': '1',
+                'array_size': '',
+                'is_array': False,
+                'is_pointer':  False,
+                'is_static':  False
+            },
+            {
+                'var_name': 'y',
+                'var_type': data_type,
+                'var_value': '2',
+                'array_size': '',
+                'is_array': False,
+                'is_pointer':  False,
+                'is_static':  True
+            },
+            {
+                'var_name': 'z',
+                'var_type': data_type,
+                'var_value': '',
+                'array_size': '',
+                'is_array': False,
+                'is_pointer':  True,
+                'is_static':  False
+            }
+        ]
+        flowchart.add_node(flowchart.root, declarations)
+        code, _ = code_generator.generate_code([flowchart])
+        print(code)
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            f'  {data_type} x = 1;',
+            f'  static {data_type} y = 2;',
+            f'  {data_type} *z;',
+            '  return 0;',
+            '}'])
+        print(expected)
+        assert code == expected, 'Multiple Declarations with values.'
 
     def test_code_from_assignment(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
