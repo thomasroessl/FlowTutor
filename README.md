@@ -19,4 +19,4 @@ codesign --entitlements gdb-entitlement.xml -fs gdb-cert $(which gdb)
 ### 3. Reboot
 This refreshes the system's certificates and code-signing data.
 
-[code signed]: <http://daringfireball.net>
+[code signed]: <https://sourceware.org/gdb/wiki/PermissionsDarwin>
