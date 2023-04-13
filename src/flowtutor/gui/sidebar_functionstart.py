@@ -39,8 +39,6 @@ class SidebarFunctionStart:
                             dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0, 1, category=dpg.mvThemeCat_Core)
                     dpg.bind_item_theme(self.table, item_theme)
 
-                print(dpg.get_item_type(90))
-
                 dpg.add_button(label='Add Parameter',
                                callback=lambda: (gui.selected_node.__getattribute__('parameters')
                                                  .append(Parameter()),

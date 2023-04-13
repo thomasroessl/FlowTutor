@@ -126,10 +126,18 @@ class GUI:
 
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
+                dpg.add_menu_item(label='New Program', callback=lambda: self.on_new(self))
+                dpg.add_separator()
                 dpg.add_menu_item(label='Open...', callback=lambda: self.on_open(self))
                 dpg.add_separator()
                 dpg.add_menu_item(label='Save', callback=lambda: self.on_save(self))
                 dpg.add_menu_item(label='Save As...', callback=lambda: self.on_save_as(self))
+            with dpg.menu(label='Edit'):
+                dpg.add_menu_item(label='Add Function', callback=lambda: self.on_add_function(self))
+                dpg.add_separator()
+                dpg.add_menu_item(label='Clear Current Function', callback=lambda: self.on_clear(self))
+                #
+
             with dpg.menu(label='View'):
                 with dpg.menu(label='Theme'):
                     dpg.add_menu_item(label='Light', callback=lambda: self.on_light_theme_menu_item_click(self))
@@ -443,6 +451,29 @@ class GUI:
                 self.redraw_all()
                 self.refresh_function_tabs()
         self.modal_service.show_open_modal(callback)
+
+    @staticmethod
+    def on_new(self: GUI):
+        def callback():
+            self.file_path = None
+            dpg.set_viewport_title('FlowTutor')
+            self.clear_flowchart()
+            self.flowcharts = {
+                'main': Flowchart('main')
+            }
+            self.redraw_all()
+            self.refresh_function_tabs()
+        self.modal_service.show_approval_modal(
+            'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
+
+    @staticmethod
+    def on_clear(self: GUI):
+        def callback():
+            self.selected_flowchart.reset()
+            self.clear_flowchart()
+            self.redraw_all()
+        self.modal_service.show_approval_modal(
+            'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     @staticmethod
     def on_save(self: GUI):

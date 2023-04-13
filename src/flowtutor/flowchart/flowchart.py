@@ -186,3 +186,11 @@ class Flowchart:
     def clear(self):
         for node in self:
             node.delete()
+
+    def reset(self):
+        name = self._root.name
+        root = FunctionStart(name)
+        root.pos = (290, 20)
+        self._root = root
+        end = FunctionEnd(name)
+        self.add_node(root, end)

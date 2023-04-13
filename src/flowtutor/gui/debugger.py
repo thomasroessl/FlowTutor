@@ -60,7 +60,7 @@ class Debugger:
                                                        default_value=True,
                                                        pos=(205, 3),
                                                        callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
-                self.clear_button = dpg.add_button(label='Clear',
+                self.clear_button = dpg.add_button(label='Clear Log',
                                                    pos=(340, 0),
                                                    callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
                 with dpg.theme() as item_theme:
