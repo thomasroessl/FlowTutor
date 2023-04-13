@@ -9,9 +9,6 @@ if TYPE_CHECKING:
 class SidebarFunctionEnd:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_function_end', show=False):
-            header = dpg.add_text('Function')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
             with dpg.group():
                 dpg.add_text('Return Value')
                 dpg.add_input_text(tag='selected_function_return_value',

@@ -9,10 +9,6 @@ if TYPE_CHECKING:
 class SidebarOutput:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_output', show=False):
-            header = dpg.add_text('Output')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
-            dpg.add_spacer(height=5)
             with dpg.group():
                 dpg.add_input_text(tag='selected_output_format_string',
                                    width=-1,

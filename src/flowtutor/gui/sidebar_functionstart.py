@@ -19,33 +19,27 @@ class SidebarFunctionStart:
         self.gui = gui
         self.modal_service = modal_service
         with dpg.group(tag='selected_function_start', show=False):
-            header = dpg.add_text('Function')
-
-            with dpg.group(tag='selected_function_start_management', horizontal=True, show=False):
-                dpg.add_button(label='Rename', callback=self.on_rename)
-                dpg.add_button(label='Delete', callback=self.on_delete)
-
-            dpg.bind_item_font(header, 'header_font')
+            dpg.configure_item(gui.rename_button, callback=self.on_rename)
+            dpg.configure_item(gui.delete_button, callback=self.on_delete)
 
             with dpg.group(tag='selected_function_parameters_group', show=False):
-                dpg.add_separator()
                 dpg.add_text('Parameters')
                 with dpg.table(header_row=True, sortable=False, hideable=False, reorderable=False,
                                borders_innerH=True, borders_outerH=True, borders_innerV=True,
-                               borders_outerV=True) as parameter_table:
-
-                    self.table = parameter_table
+                               borders_outerV=True) as self.table:
 
                     dpg.add_table_column(label='Name')
                     dpg.add_table_column(label='Type')
-                    dpg.add_table_column(label='', width_fixed=True, width=10)
+                    dpg.add_table_column(label='', width_fixed=True, width=12)
 
                     self.refresh_entries([])
 
                     with dpg.theme() as item_theme:
                         with dpg.theme_component(dpg.mvTable):
                             dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0, 1, category=dpg.mvThemeCat_Core)
-                    dpg.bind_item_theme(parameter_table, item_theme)
+                    dpg.bind_item_theme(self.table, item_theme)
+
+                print(dpg.get_item_type(90))
 
                 dpg.add_button(label='Add Parameter',
                                callback=lambda: (gui.selected_node.__getattribute__('parameters')
@@ -100,14 +94,20 @@ class SidebarFunctionStart:
                                                         .__setattr__('type', data),
                                                         self.gui.redraw_all()),
                               width=-1, default_value=entry.type)
-                dpg.add_button(label='X', callback=lambda: (
+
+                delete_button = dpg.add_image_button('trash_image', callback=lambda: (
                     self.gui.selected_node.__getattribute__('parameters').pop(i),
                     self.refresh_entries(self.gui.selected_node.__getattribute__('parameters'))
                 ))
+                with dpg.theme() as delete_button_theme:
+                    with dpg.theme_component(dpg.mvImageButton):
+                        dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 4, category=dpg.mvThemeCat_Core)
+
+                dpg.bind_item_theme(delete_button, delete_button_theme)
 
         # Hide function management buttons for main (cannot be renamed or deleted)
         if isinstance(self.gui.selected_node, FunctionStart):
             if self.gui.selected_node.name == 'main':
-                dpg.hide_item('selected_function_start_management')
+                dpg.hide_item('function_management_group')
             else:
-                dpg.show_item('selected_function_start_management')
+                dpg.show_item('function_management_group')

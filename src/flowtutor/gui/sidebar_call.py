@@ -9,9 +9,6 @@ if TYPE_CHECKING:
 class SidebarCall:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_call', show=False):
-            header = dpg.add_text('Call')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
             with dpg.group():
                 dpg.add_text('Expression')
                 with dpg.group(horizontal=True):

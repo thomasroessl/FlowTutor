@@ -9,9 +9,6 @@ if TYPE_CHECKING:
 class SidebarConditional:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_conditional', show=False):
-            header = dpg.add_text('Conditional')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
             with dpg.group():
                 dpg.add_text('Condition')
                 dpg.add_input_text(tag='selected_conditional_condition',

@@ -13,20 +13,13 @@ class SidebarNone:
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
         with dpg.group(tag='selected_none'):
-            header = dpg.add_text('Program')
-            dpg.bind_item_font(header, 'header_font')
-
-            dpg.add_separator()
-
-            dpg.add_spacer(height=5)
-            with dpg.group():
-                with dpg.collapsing_header(label='Include'):
-                    for header in Language.get_standard_headers():
-                        dpg.add_checkbox(
-                            label=header, default_value=header in self.gui.flowcharts['main']
-                            .__getattribute__('includes'),
-                            user_data=header,
-                            callback=self.on_header_checkbox_change)
+            with dpg.collapsing_header(label='Include'):
+                for header in Language.get_standard_headers():
+                    dpg.add_checkbox(
+                        label=header, default_value=header in self.gui.flowcharts['main']
+                        .__getattribute__('includes'),
+                        user_data=header,
+                        callback=self.on_header_checkbox_change)
 
     def on_header_checkbox_change(self, sender, is_checked):
         header = dpg.get_item_user_data(sender)

@@ -9,10 +9,6 @@ if TYPE_CHECKING:
 class SidebarDoWhileLoop:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_dowhileloop', show=False):
-            header = dpg.add_text('Do-While Loop')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
-            dpg.add_spacer(height=5)
             with dpg.group():
                 dpg.add_text('Condition')
                 dpg.add_input_text(tag='selected_dowhileloop_condition',

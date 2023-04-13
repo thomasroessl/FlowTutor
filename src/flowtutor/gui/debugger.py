@@ -37,34 +37,56 @@ class Debugger:
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
             self.build_button = dpg.add_image_button('hammer_image', callback=lambda: self.on_build(self))
+
             with dpg.group(horizontal=True):
                 self.run_button = dpg.add_image_button('run_image',
                                                        tag='debug_run_button',
                                                        callback=lambda: self.on_debug_run(self),
                                                        enabled=False)
-                dpg.add_image_button('step_over_image',
-                                     tag='debug_step_over_button',
-                                     callback=lambda: self.on_debug_step_over(self),
-                                     enabled=False)
-                dpg.add_image_button('step_into_image',
-                                     tag='debug_step_into_button',
-                                     callback=lambda: self.on_debug_step_into(self),
-                                     enabled=False)
-                dpg.add_image_button('stop_image',
-                                     tag='debug_stop_button',
-                                     callback=lambda: self.on_debug_stop(self),
-                                     enabled=False)
+                self.step_over_button = dpg.add_image_button('step_over_image',
+                                                             tag='debug_step_over_button',
+                                                             callback=lambda: self.on_debug_step_over(self),
+                                                             enabled=False)
+                self.step_into_button = dpg.add_image_button('step_into_image',
+                                                             tag='debug_step_into_button',
+                                                             callback=lambda: self.on_debug_step_into(self),
+                                                             enabled=False)
+                self.stop_button = dpg.add_image_button('stop_image',
+                                                        tag='debug_stop_button',
+                                                        callback=lambda: self.on_debug_stop(self),
+                                                        enabled=False)
             with dpg.group(horizontal=True) as g1:
                 self.auto_scroll_cb = dpg.add_checkbox(label='Auto-scroll',
                                                        default_value=True,
                                                        pos=(205, 3),
                                                        callback=lambda sender: self.auto_scroll(dpg.get_value(sender)))
                 self.clear_button = dpg.add_button(label='Clear',
+                                                   pos=(340, 0),
                                                    callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvGroup):
                         dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0.0, category=dpg.mvThemeCat_Core)
                 dpg.bind_item_theme(g1, item_theme)
+
+            with dpg.theme() as tool_button_theme:
+                with dpg.theme_component(dpg.mvImageButton):
+                    dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
+                with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
+                    dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
+
+            dpg.bind_item_theme(self.build_button, tool_button_theme)
+            dpg.bind_item_theme(self.run_button, tool_button_theme)
+            dpg.bind_item_theme(self.step_over_button, tool_button_theme)
+            dpg.bind_item_theme(self.step_into_button, tool_button_theme)
+            dpg.bind_item_theme(self.stop_button, tool_button_theme)
+
+            with dpg.theme() as clear_button_theme:
+                with dpg.theme_component(dpg.mvButton):
+                    dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 12, 6, category=dpg.mvThemeCat_Core)
+                with dpg.theme_component(dpg.mvButton, enabled_state=False):
+                    dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
+
+            dpg.bind_item_theme(self.clear_button, clear_button_theme)
 
         self.child_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, autosize_y=True)
         self.filter_id = dpg.add_filter_set(parent=self.child_id)

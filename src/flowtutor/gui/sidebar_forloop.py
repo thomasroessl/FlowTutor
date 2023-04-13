@@ -9,10 +9,6 @@ if TYPE_CHECKING:
 class SidebarForLoop:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_forloop', show=False):
-            header = dpg.add_text('For Loop')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
-            dpg.add_spacer(height=5)
             with dpg.group():
                 dpg.add_text('Counter Variable Name')
                 dpg.add_input_text(tag='selected_forloop_var_name',

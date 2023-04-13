@@ -11,10 +11,6 @@ if TYPE_CHECKING:
 class SidebarInput:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_input', show=False):
-            header = dpg.add_text('Input')
-            dpg.bind_item_font(header, 'header_font')
-            dpg.add_separator()
-            dpg.add_spacer(height=5)
             if Language.has_var_declaration():
                 with dpg.group(horizontal=True):
                     dpg.add_text('Name')

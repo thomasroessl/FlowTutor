@@ -79,6 +79,8 @@ class GUI:
 
     selected_flowchart_tag: str = 'main'
 
+    sidebar_title_tag: Optional[str | int] = None
+
     file_path: Optional[str] = None
 
     sidebar_functionstart: Optional[SidebarFunctionStart] = None
@@ -109,36 +111,12 @@ class GUI:
 
         dpg.create_context()
 
-        c_image_width, c_image_height, _, c_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/c.png'))
-        debug_image_width, debug_image_height, _, debug_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/debug.png'))
-        run_image_width, run_image_height, _, run_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/run.png'))
-        stop_image_width, stop_image_height, _, stop_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/stop.png'))
-        step_into_image_width, step_into_image_height, _, step_into_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/step_into.png'))
-        step_over_image_width, step_over_image_height, _, step_over_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/step_over.png'))
-        hammer_image_width, hammer_image_height, _, hammer_image_data = dpg.load_image(
-            os.path.join(os.path.dirname(__file__), '../../../assets/hammer.png'))
-
-        with dpg.texture_registry():
-            dpg.add_static_texture(width=c_image_width, height=c_image_height,
-                                   default_value=c_image_data, tag='c_image')
-            dpg.add_static_texture(width=run_image_width, height=run_image_height,
-                                   default_value=run_image_data, tag='run_image')
-            dpg.add_static_texture(width=debug_image_width, height=debug_image_height,
-                                   default_value=debug_image_data, tag='debug_image')
-            dpg.add_static_texture(width=stop_image_width, height=stop_image_height,
-                                   default_value=stop_image_data, tag='stop_image')
-            dpg.add_static_texture(width=step_into_image_width, height=step_into_image_height,
-                                   default_value=step_into_image_data, tag='step_into_image')
-            dpg.add_static_texture(width=step_over_image_width, height=step_over_image_height,
-                                   default_value=step_over_image_data, tag='step_over_image')
-            dpg.add_static_texture(width=hammer_image_width, height=hammer_image_height,
-                                   default_value=hammer_image_data, tag='hammer_image')
+        for image in ['c', 'run', 'stop', 'step_into', 'step_over', 'hammer', 'trash', 'pencil']:
+            image_width, image_height, _, image_data = dpg.load_image(
+                os.path.join(os.path.dirname(__file__), f'../../../assets/{image}.png'))
+            with dpg.texture_registry():
+                dpg.add_static_texture(width=image_width, height=image_height,
+                                       default_value=image_data, tag=f'{image}_image')
 
         with dpg.font_registry():
             default_font = dpg.add_font(os.path.join(os.path.dirname(__file__), '../../../assets/inconsolata.ttf'), 18)
@@ -163,6 +141,19 @@ class GUI:
             with dpg.group(tag='main_group', horizontal=True):
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, show=True):
 
+                    with dpg.menu_bar():
+                        self.sidebar_title_tag = dpg.add_text('Program')
+                        with dpg.group(tag='function_management_group', horizontal=True, show=False):
+                            dpg.add_spacer(width=63)
+                            self.rename_button = dpg.add_image_button('pencil_image')
+                            self.delete_button = dpg.add_image_button('trash_image')
+                        with dpg.theme() as tool_button_theme:
+                            with dpg.theme_component(dpg.mvImageButton):
+                                dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 4, category=dpg.mvThemeCat_Core)
+
+                        dpg.bind_item_theme(self.rename_button, tool_button_theme)
+                        dpg.bind_item_theme(self.delete_button, tool_button_theme)
+
                     SidebarNone(self)
                     SidebarAssignment(self)
                     self.sidebar_functionstart = SidebarFunctionStart(self)
@@ -177,8 +168,9 @@ class GUI:
                     SidebarOutput(self)
                     SidebarSnippet(self)
 
-                    dpg.add_spacer(height=5)
-                    dpg.add_separator()
+                    with dpg.group(tag='selected_node_separator_group', show=False):
+                        dpg.add_spacer(height=5)
+                        dpg.add_separator()
 
                     with dpg.group(tag='selected_node_comment_group', show=False):
                         dpg.add_text('Comment')
@@ -324,6 +316,7 @@ class GUI:
         else:
             dpg.show_item('selected_node_comment_group')
             dpg.show_item('selected_node_break_point_group')
+            dpg.show_item('selected_node_separator_group')
             dpg.configure_item('selected_node_comment', default_value=node.comment)
             dpg.configure_item('selected_node_break_point', default_value=node.break_point)
         self.selected_node = node
@@ -340,7 +333,9 @@ class GUI:
         dpg.hide_item('selected_input')
         dpg.hide_item('selected_output')
         dpg.hide_item('selected_snippet')
+        dpg.hide_item('function_management_group')
         if isinstance(self.selected_node, Assignment):
+            self.set_sidebar_title('Assignment')
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
                 dpg.configure_item('selected_assignment_name',
@@ -361,9 +356,11 @@ class GUI:
             dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
             dpg.show_item('selected_assignment')
         elif isinstance(self.selected_node, Call):
+            self.set_sidebar_title('Call')
             dpg.configure_item('selected_call_expression', default_value=self.selected_node.expression)
             dpg.show_item('selected_call')
         elif isinstance(self.selected_node, Declaration):
+            self.set_sidebar_title('Declaration')
             dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)
             dpg.configure_item('selected_declaration_var_value', default_value=self.selected_node.var_value)
@@ -378,9 +375,11 @@ class GUI:
             dpg.configure_item('selected_declaration_is_pointer', default_value=self.selected_node.is_pointer)
             dpg.show_item('selected_declaration')
         elif isinstance(self.selected_node, Conditional):
+            self.set_sidebar_title('Conditional')
             dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_conditional')
         elif isinstance(self.selected_node, FunctionStart):
+            self.set_sidebar_title('Function')
             dpg.configure_item('selected_function_return_type', default_value=self.selected_node.return_type)
             if self.sidebar_functionstart is not None:
                 self.sidebar_functionstart.refresh_entries(self.selected_node.__getattribute__('parameters'))
@@ -389,25 +388,31 @@ class GUI:
             if self.selected_node.name == 'main':
                 dpg.hide_item('selected_function_return_type_group')
                 dpg.hide_item('selected_function_parameters_group')
+                dpg.hide_item('selected_node_separator_group')
             else:
                 dpg.show_item('selected_function_return_type_group')
                 dpg.show_item('selected_function_parameters_group')
         elif isinstance(self.selected_node, FunctionEnd):
+            self.set_sidebar_title('Function')
             dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
             dpg.show_item('selected_function_end')
         elif isinstance(self.selected_node, ForLoop):
+            self.set_sidebar_title('For Loop')
             dpg.configure_item('selected_forloop_condition', default_value=self.selected_node.condition)
             dpg.configure_item('selected_forloop_var_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_forloop_start_value', default_value=self.selected_node.start_value)
             dpg.configure_item('selected_forloop_update', default_value=self.selected_node.update)
             dpg.show_item('selected_forloop')
         elif isinstance(self.selected_node, WhileLoop):
+            self.set_sidebar_title('While Loop')
             dpg.configure_item('selected_whileloop_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_whileloop')
         elif isinstance(self.selected_node, DoWhileLoop):
+            self.set_sidebar_title('Do While Loop')
             dpg.configure_item('selected_dowhileloop_condition', default_value=self.selected_node.condition)
             dpg.show_item('selected_dowhileloop')
         elif isinstance(self.selected_node, Input):
+            self.set_sidebar_title('Input')
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
                 dpg.configure_item('selected_input_name',
@@ -415,13 +420,16 @@ class GUI:
             dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
             dpg.show_item('selected_input')
         elif isinstance(self.selected_node, Output):
+            self.set_sidebar_title('Output')
             dpg.configure_item('selected_output_arguments', default_value=self.selected_node.arguments)
             dpg.configure_item('selected_output_format_string', default_value=self.selected_node.format_string)
             dpg.show_item('selected_output')
         elif isinstance(self.selected_node, Snippet):
+            self.set_sidebar_title('Code Snippet')
             dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
             dpg.show_item('selected_snippet')
         else:
+            self.set_sidebar_title('Program')
             dpg.show_item('selected_none')
 
     @staticmethod
@@ -549,6 +557,9 @@ class GUI:
                 callback)
         else:
             callback()
+
+    def set_sidebar_title(self, title):
+        dpg.configure_item(self.sidebar_title_tag, default_value=title)
 
     def clear_flowchart(self):
         self.selected_node = None
