@@ -1,11 +1,15 @@
 import sys
 import platform
 import pathlib
-import pty
 import os
 import select
-import termios
 import threading
+
+try:
+    import termios
+    import pty
+except ModuleNotFoundError:
+    pass
 
 from blinker import signal
 from shutil import which, rmtree
