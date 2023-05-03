@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -67,7 +67,7 @@ class GUI:
     # The size of the GUI parent
     parent_size: Tuple[int, int] = (0, 0)
 
-    declared_variables: list[Union[Declaration, ForLoop]] = []
+    declared_variables: list[dict[str, Any]] = []
 
     mouse_position: Optional[Tuple[int, int]] = None
 
@@ -351,16 +351,12 @@ class GUI:
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
             if Language.has_var_declaration():
                 dpg.configure_item('selected_assignment_name',
-                                   items=list(map(lambda d: d.var_name, self.declared_variables)))
+                                   items=list(map(lambda d: str(d['var_name']), self.declared_variables)))
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
             if Language.has_arrays():
                 declaration = self.selected_flowchart.find_declaration(self.selected_node.var_name)
-                if declaration is not None and\
-                        not isinstance(declaration, ForLoop) and\
-                        not isinstance(declaration, WhileLoop) and\
-                        not isinstance(declaration, DoWhileLoop) and\
-                        declaration.is_array:
+                if declaration is not None and declaration['is_array']:
                     dpg.show_item('selected_assignment_offset_group')
                 else:
                     self.selected_node.var_offset = ''
@@ -430,9 +426,11 @@ class GUI:
         elif isinstance(self.selected_node, Input):
             self.set_sidebar_title('Input')
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
+            print(self.selected_flowchart.get_all_declarations())
+            print(self.declared_variables)
             if Language.has_var_declaration():
                 dpg.configure_item('selected_input_name',
-                                   items=list(map(lambda d: d.var_name, self.declared_variables)))
+                                   items=list(map(lambda d: str(d['var_name']), self.declared_variables)))
             dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
             dpg.show_item('selected_input')
         elif isinstance(self.selected_node, Output):

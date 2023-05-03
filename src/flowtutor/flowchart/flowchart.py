@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Generator, List, Optional, Tuple
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
@@ -63,15 +64,18 @@ class Flowchart:
         parameters = ', '.join([str(p) for p in self.root.parameters])
         return f'{self.root.return_type} {self.root.name}({parameters});'
 
-    def get_all_declarations(self) -> Generator[Union[Declaration, ForLoop], None, None]:
+    def get_all_declarations(self) -> Generator[dict[str, Any], None, None]:
         for node in self:
             if isinstance(node, Declaration):
-                yield node
+                yield node.get_declaration()
+            elif isinstance(node, Declarations):
+                for declaration in node.declarations:
+                    yield declaration
             elif isinstance(node, ForLoop):
-                yield node
+                yield node.get_declaration()
 
-    def find_declaration(self, var_name: str) -> Union[Declaration, ForLoop, None]:
-        return next(filter(lambda n: n is not None and n.var_name == var_name, self.get_all_declarations()), None)
+    def find_declaration(self, var_name: str) -> Optional[dict[str, Any]]:
+        return next(filter(lambda n: n is not None and n['var_name'] == var_name, self.get_all_declarations()), None)
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)

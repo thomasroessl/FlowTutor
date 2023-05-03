@@ -158,9 +158,12 @@ class CodeGenerator:
             if declaration is None:
                 yield (f'{indent}// {node.var_name} is not declared!', False, node)
             else:
-                var_type = 'int' if isinstance(declaration, ForLoop) else declaration.var_type
-                type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
-                _, format_specifier = next(t for t in type_formats if t[0] == var_type)
+                var_type = declaration['var_type']
+                if var_type == 'char' and declaration['is_array']:
+                    format_specifier = '%s'
+                else:
+                    type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
+                    _, format_specifier = next(t for t in type_formats if t[0] == var_type)
                 yield (f'{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
         elif isinstance(node, Output):
             if len(node.arguments) > 0:

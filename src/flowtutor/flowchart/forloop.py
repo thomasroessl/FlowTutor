@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
@@ -127,3 +127,14 @@ class ForLoop(Node):
                 len(self.start_value) > 0 and
                 len(self.condition) > 0 and
                 len(self.update) > 0)
+
+    def get_declaration(self) -> dict[str, Any]:
+        return {
+            'var_name': self.var_name,
+            'var_type': 'int',
+            'var_value': 0,
+            'array_size': 0,
+            'is_array': False,
+            'is_pointer':  False,
+            'is_static':  False
+        }

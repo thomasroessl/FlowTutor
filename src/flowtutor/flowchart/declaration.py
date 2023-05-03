@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
@@ -156,3 +156,14 @@ class Declaration(Node):
         if self.is_array:
             is_initialized = len(self.array_size) > 0
         return is_initialized and len(self.var_name) > 0
+
+    def get_declaration(self) -> dict[str, Any]:
+        return {
+            'var_name': self.var_name,
+            'var_type': self.var_type,
+            'var_value': self.var_value,
+            'array_size': self.array_size,
+            'is_array': self.is_array,
+            'is_pointer':  self.is_array,
+            'is_static':  self.is_array
+        }
