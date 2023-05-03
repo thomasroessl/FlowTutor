@@ -103,7 +103,10 @@ class UtilService:
                 if fd in rfds:
                     data = os.read(fd, 1)
                     if len(data) > 0:
-                        signal('recieve_output').send(self, output=data.decode('utf-8'))
+                        try:
+                            signal('recieve_output').send(self, output=data.decode('utf-8'))
+                        except UnicodeDecodeError:
+                            pass
 
         threading.Thread(target=output, args=[self.tty_fd]).start()
 
