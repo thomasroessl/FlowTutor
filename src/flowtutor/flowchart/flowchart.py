@@ -26,6 +26,7 @@ class Flowchart:
         self.add_node(root, end)
         self._includes: List[str] = ['stdio']
         self._preprocessor_definitions: List[str] = []
+        self._preprocessor_custom: str = ''
 
     @property
     def root(self) -> FunctionStart:
@@ -38,6 +39,14 @@ class Flowchart:
     @property
     def preprocessor_definitions(self) -> List[str]:
         return self._preprocessor_definitions
+
+    @property
+    def preprocessor_custom(self) -> str:
+        return self._preprocessor_custom
+
+    @preprocessor_custom.setter
+    def preprocessor_custom(self, preprocessor_custom: str):
+        self._preprocessor_custom = preprocessor_custom
 
     def __iter__(self):
         return self.deduplicate(self.get_all_nodes(self.root, False))

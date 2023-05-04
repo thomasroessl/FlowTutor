@@ -40,6 +40,15 @@ class SidebarNone:
                                                  self.refresh_definitions(
                                    self.gui.flowcharts['main'].__getattribute__('preprocessor_definitions')),
                                    gui.redraw_all()))
+            with dpg.collapsing_header(label='Custom'):
+                dpg.add_input_text(tag='selected_preprocessor_custom',
+                                   width=-1,
+                                   height=-1,
+                                   multiline=True,
+                                   callback=lambda _, data:
+                                   (self.gui.flowcharts['main']  # type: ignore [func-returns-value]
+                                    .__setattr__('preprocessor_custom', data),
+                                    gui.redraw_all()))
 
     def on_header_checkbox_change(self, sender, is_checked):
         header = dpg.get_item_user_data(sender)

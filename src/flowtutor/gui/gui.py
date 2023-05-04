@@ -330,6 +330,7 @@ class GUI:
             dpg.hide_item('selected_node_comment_group')
             dpg.hide_item('selected_node_break_point_group')
             dpg.hide_item('selected_node_is_comment_group')
+            dpg.hide_item('selected_node_separator_group')
         else:
             dpg.show_item('selected_node_comment_group')
             dpg.show_item('selected_node_break_point_group')
