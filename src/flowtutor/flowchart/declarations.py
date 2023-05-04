@@ -100,9 +100,9 @@ class Declarations(Node):
     def is_initialized(self) -> bool:
         for d in self.declarations:
             if d['is_array'] and len(d['array_size']) <= 0:
-                return False
+                return self.is_comment
             elif len(d['var_name']) <= 0:
-                return False
+                return self.is_comment
         return True
 
     def new_declaration(self) -> dict[str, Any]:

@@ -95,4 +95,4 @@ class Conditional(Node):
 
     @property
     def is_initialized(self) -> bool:
-        return len(self.condition) > 0
+        return self.is_comment or len(self.condition) > 0

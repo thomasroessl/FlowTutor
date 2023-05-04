@@ -155,7 +155,7 @@ class Declaration(Node):
         is_initialized = True
         if self.is_array:
             is_initialized = len(self.array_size) > 0
-        return is_initialized and len(self.var_name) > 0
+        return self.is_comment or (is_initialized and len(self.var_name) > 0)
 
     def get_declaration(self) -> dict[str, Any]:
         return {

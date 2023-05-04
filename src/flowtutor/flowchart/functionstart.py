@@ -100,6 +100,6 @@ class FunctionStart(Node):
     @property
     def is_initialized(self) -> bool:
         if hasattr(self, '_parameters'):
-            return all(len(p.name) > 0 for p in self.parameters)
+            return self.is_comment or all(len(p.name) > 0 for p in self.parameters)
         else:
             return True

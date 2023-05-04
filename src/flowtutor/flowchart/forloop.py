@@ -123,10 +123,10 @@ class ForLoop(Node):
 
     @property
     def is_initialized(self) -> bool:
-        return (len(self.var_name) > 0 and
-                len(self.start_value) > 0 and
-                len(self.condition) > 0 and
-                len(self.update) > 0)
+        return self.is_comment or (len(self.var_name) > 0 and
+                                   len(self.start_value) > 0 and
+                                   len(self.condition) > 0 and
+                                   len(self.update) > 0)
 
     def get_declaration(self) -> dict[str, Any]:
         return {

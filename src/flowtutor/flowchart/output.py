@@ -65,4 +65,4 @@ class Output(Node):
 
     @property
     def is_initialized(self) -> bool:
-        return len(self.format_string) > 0
+        return self.is_comment or len(self.format_string) > 0
