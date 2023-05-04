@@ -138,7 +138,6 @@ class GUI:
                 dpg.add_menu_item(label='Add Function', callback=lambda: self.on_add_function(self))
                 dpg.add_separator()
                 dpg.add_menu_item(label='Clear Current Function', callback=lambda: self.on_clear(self))
-                #
 
             with dpg.menu(label='View'):
                 with dpg.menu(label='Theme'):
@@ -152,7 +151,7 @@ class GUI:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, show=True):
 
                     with dpg.menu_bar():
-                        self.sidebar_title_tag = dpg.add_text('Program')
+                        self.sidebar_title_tag = dpg.add_text('Preprocessor')
                         with dpg.group(tag='function_management_group', horizontal=True, show=False):
                             dpg.add_spacer(width=63)
                             self.rename_button = dpg.add_image_button('pencil_image')
@@ -454,7 +453,7 @@ class GUI:
             dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
             dpg.show_item('selected_snippet')
         else:
-            self.set_sidebar_title('Program')
+            self.set_sidebar_title('Preprocessor')
             dpg.show_item('selected_none')
 
     @staticmethod
