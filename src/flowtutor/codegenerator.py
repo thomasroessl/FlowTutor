@@ -91,12 +91,15 @@ class CodeGenerator:
 
         return (source_code, break_point_definitions)
 
-    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '') -> \
+    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '', prefix: str = '') -> \
             Generator[tuple[str, bool, Node], None, None]:
+        if node.is_comment:
+            prefix = '// '
         if len(node.comment) > 0:
-            yield (f'{indent}// {node.comment}', False, node)
+            yield (f'{prefix}{indent}// {node.comment}', False, node)
         if isinstance(node, Declaration):
             yield (''.join([
+                prefix,
                 indent,
                 'static ' if node.is_static else '',
                 node.var_type,
@@ -109,6 +112,7 @@ class CodeGenerator:
             ]), node.break_point, node)
         if isinstance(node, Declarations):
             yield ('\n'.join(map(lambda d: ''.join([
+                prefix,
                 indent,
                 'static ' if d['is_static'] else '',
                 d['var_type'],
@@ -120,38 +124,39 @@ class CodeGenerator:
                 ';']), node.declarations)), node.break_point, node)
         elif isinstance(node, Call):
             yield (''.join([
+                prefix,
                 indent,
                 node.expression,
                 ';'
             ]), node.break_point, node)
         elif isinstance(node, Assignment):
-            yield (''.join([f'{indent}{node.var_name}',
+            yield (''.join([f'{prefix}{indent}{node.var_name}',
                             f'[{node.var_offset}]' if len(node.var_offset) > 0 else '',
                            f' = {node.var_value};']), node.break_point, node)
         elif isinstance(node, Conditional):
-            yield (f'{indent}if({node.condition}) {{', node.break_point, node)
+            yield (f'{prefix}{indent}if({node.condition}) {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, Connector):
             indent = indent[:len(indent) - 2]
-            yield (f'{indent}}}', False, node)
+            yield (f'{prefix}{indent}}}', False, node)
         elif isinstance(node, FunctionStart):
             parameters = ', '.join([str(p) for p in node.parameters])
-            yield (f'{indent}{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
+            yield (f'{prefix}{indent}{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, FunctionEnd):
-            yield (f'{indent}return {node.return_value};', node.break_point, node)
+            yield (f'{prefix}{indent}return {node.return_value};', node.break_point, node)
             indent = indent[:len(indent) - 2]
             yield ('}', False, node)
             return
         elif isinstance(node, ForLoop):
-            yield (f'{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
+            yield (f'{prefix}{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
                    node.break_point, node)
             indent += '  '
         elif isinstance(node, WhileLoop):
-            yield (f'{indent}while({node.condition}) {{', node.break_point, node)
+            yield (f'{prefix}{indent}while({node.condition}) {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, DoWhileLoop):
-            yield (f'{indent}do {{', node.break_point, node)
+            yield (f'{prefix}{indent}do {{', node.break_point, node)
             indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
@@ -164,27 +169,29 @@ class CodeGenerator:
                 else:
                     type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
                     _, format_specifier = next(t for t in type_formats if t[0] == var_type)
-                yield (f'{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
+                yield (f'{prefix}{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
         elif isinstance(node, Output):
             if len(node.arguments) > 0:
-                yield (f'{indent}printf("{node.format_string}", {node.arguments});', node.break_point, node)
+                yield (f'{prefix}{indent}printf("{node.format_string}", {node.arguments});', node.break_point, node)
             else:
-                yield (f'{indent}printf("{node.format_string}");', node.break_point, node)
+                yield (f'{prefix}{indent}printf("{node.format_string}");', node.break_point, node)
         elif isinstance(node, Snippet):
             if len(node.code) > 0:
-                yield (indent + f'\n{indent}'.join(node.code.splitlines()), node.break_point, node)
+                yield (indent + f'\n{prefix}{indent}'.join(node.code.splitlines()), node.break_point, node)
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):
                 if connection.src_ind == 0 and not isinstance(connection.dst_node, Connector):
-                    yield (f'{indent[:len(indent) - 2]}}} else {{', False, node)
+                    yield (f'{indent[:len(indent) - 2]}{prefix}}} else {{', False, node)
             elif isinstance(node, ForLoop) or isinstance(node, WhileLoop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
-                    yield (f'{indent}}}', False, node)
+                    yield (f'{prefix}{indent}}}', False, node)
+                    prefix = ''
             elif isinstance(node, DoWhileLoop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]
-                    yield (f'{indent}}} while({node.condition});', False, node)
+                    yield (f'{prefix}{indent}}} while({node.condition});', False, node)
+                    prefix = ''
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
-                yield from self._generate_code(flowchart, connection.dst_node, indent)
+                yield from self._generate_code(flowchart, connection.dst_node, indent, prefix)

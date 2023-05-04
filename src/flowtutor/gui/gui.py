@@ -194,6 +194,11 @@ class GUI:
                         dpg.add_checkbox(tag='selected_node_break_point',
                                          callback=lambda _, data: (self.selected_node.__setattr__('break_point', data),
                                                                    self.redraw_all()))
+                    with dpg.group(tag='selected_node_is_comment_group', show=False):
+                        dpg.add_text('Disabled')
+                        dpg.add_checkbox(tag='selected_node_is_comment',
+                                         callback=lambda _, data: (self.selected_node.__setattr__('is_comment', data),
+                                                                   self.redraw_all()))
 
         with dpg.item_handler_registry(tag='window_handler'):
             dpg.add_item_resize_handler(callback=lambda: self.on_window_resize(self))
@@ -324,12 +329,15 @@ class GUI:
         if node is None:
             dpg.hide_item('selected_node_comment_group')
             dpg.hide_item('selected_node_break_point_group')
+            dpg.hide_item('selected_node_is_comment_group')
         else:
             dpg.show_item('selected_node_comment_group')
             dpg.show_item('selected_node_break_point_group')
+            dpg.show_item('selected_node_is_comment_group')
             dpg.show_item('selected_node_separator_group')
             dpg.configure_item('selected_node_comment', default_value=node.comment)
             dpg.configure_item('selected_node_break_point', default_value=node.break_point)
+            dpg.configure_item('selected_node_is_comment', default_value=node.is_comment)
         self.selected_node = node
         dpg.hide_item('selected_none')
         dpg.hide_item('selected_assignment')
@@ -401,6 +409,7 @@ class GUI:
                 dpg.hide_item('selected_function_return_type_group')
                 dpg.hide_item('selected_function_parameters_group')
                 dpg.hide_item('selected_node_separator_group')
+                dpg.hide_item('selected_node_is_comment_group')
             else:
                 dpg.show_item('selected_function_return_type_group')
                 dpg.show_item('selected_function_parameters_group')
@@ -408,6 +417,7 @@ class GUI:
             self.set_sidebar_title('Function')
             dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
             dpg.show_item('selected_function_end')
+            dpg.hide_item('selected_node_is_comment_group')
         elif isinstance(self.selected_node, ForLoop):
             self.set_sidebar_title('For Loop')
             dpg.configure_item('selected_forloop_condition', default_value=self.selected_node.condition)

@@ -23,6 +23,7 @@ class Node(ABC):
         self._pos = (0, 0)
         self._comment = ''
         self._break_point = False
+        self._is_comment = False
         self._lines = []
         self._has_debug_cursor = False
 
@@ -173,6 +174,14 @@ class Node(ABC):
     def break_point(self, break_point: bool):
         self._break_point = break_point
 
+    @property
+    def is_comment(self) -> bool:
+        return self._is_comment
+
+    @is_comment.setter
+    def is_comment(self, is_comment: bool):
+        self._is_comment = is_comment
+
     def get_left_x(self):
         return self.shape_width//2 - self.width//2
 
@@ -183,7 +192,7 @@ class Node(ABC):
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 
     def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
-        color = self.color
+        color = (150, 150, 150) if self.is_comment else self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
                 tag=self.tag,
