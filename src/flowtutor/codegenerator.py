@@ -65,7 +65,7 @@ class CodeGenerator:
             (f'#define {d}', False, None) for d in flowcharts[0].preprocessor_definitions
         ]
         source += [
-            (c, False, None) for c in flowcharts[0].preprocessor_custom.split('\n')
+            (c, False, None) for c in filter(lambda c: c, flowcharts[0].preprocessor_custom.split('\n'))
         ]
 
         if len(flowcharts) > 1:
