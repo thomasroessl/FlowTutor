@@ -83,19 +83,22 @@ class SidebarFunctionStart:
         for i, entry in enumerate(entries):
             with dpg.table_row(parent=self.table):
                 dpg.add_input_text(width=-1, height=-1,
-                                   callback=lambda _, data: (self.gui.selected_node.__getattribute__('parameters')[i]
+                                   callback=lambda s, data: (self.gui.selected_node
+                                                             .__getattribute__('parameters')[dpg.get_item_user_data(s)]
                                                              .__setattr__('name', data),
                                                              self.gui.redraw_all()),
                                    no_spaces=True, default_value=entry.name)
                 dpg.add_combo(Language.get_data_types(),
-                              callback=lambda _, data: (self.gui.selected_node.__getattribute__('parameters')[i]
+                              callback=lambda s, data: (self.gui.selected_node
+                                                        .__getattribute__('parameters')[dpg.get_item_user_data(s)]
                                                         .__setattr__('type', data),
                                                         self.gui.redraw_all()),
                               width=-1, default_value=entry.type)
 
-                delete_button = dpg.add_image_button('trash_image', callback=lambda: (
-                    self.gui.selected_node.__getattribute__('parameters').pop(i),
-                    self.refresh_entries(self.gui.selected_node.__getattribute__('parameters'))
+                delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
+                    self.gui.selected_node.__getattribute__('parameters').pop(dpg.get_item_user_data(s)),
+                    self.refresh_entries(self.gui.selected_node.__getattribute__('parameters')),
+                    self.gui.redraw_all()
                 ))
                 with dpg.theme() as delete_button_theme:
                     with dpg.theme_component(dpg.mvImageButton):
