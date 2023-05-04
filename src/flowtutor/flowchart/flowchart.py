@@ -25,6 +25,7 @@ class Flowchart:
         end = FunctionEnd(name)
         self.add_node(root, end)
         self._includes: List[str] = ['stdio']
+        self._preprocessor_definitions: List[str] = []
 
     @property
     def root(self) -> FunctionStart:
@@ -33,6 +34,10 @@ class Flowchart:
     @property
     def includes(self) -> List[str]:
         return self._includes
+
+    @property
+    def preprocessor_definitions(self) -> List[str]:
+        return self._preprocessor_definitions
 
     def __iter__(self):
         return self.deduplicate(self.get_all_nodes(self.root, False))

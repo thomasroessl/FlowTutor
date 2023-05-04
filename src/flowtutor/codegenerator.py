@@ -61,6 +61,9 @@ class CodeGenerator:
         source: list[tuple[str, bool, Optional[Node]]] = [
             (f'#include <{h}.h>', False, None) for h in flowcharts[0].includes
         ]
+        source += [
+            (f'#define {d}', False, None) for d in flowcharts[0].preprocessor_definitions
+        ]
 
         if len(flowcharts) > 1:
             source.append(('', False, None))
