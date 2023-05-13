@@ -14,6 +14,7 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
+disable_error_code = "func-returns-value"
 
 [tool.pytest.ini_options]
 addopts = "--cov"
