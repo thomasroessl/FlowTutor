@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
@@ -57,6 +57,10 @@ class SidebarFunctionStart:
                               callback=lambda _, data: (gui.selected_node.__setattr__('return_type', data),
                                                         gui.redraw_all()))
 
+    def parameters(self) -> List[Parameter]:
+        result: List[Parameter] = self.gui.selected_node.__getattribute__('parameters')
+        return result
+
     def on_delete(self):
         if isinstance(self.gui.selected_node, FunctionStart):
             del self.gui.flowcharts[self.gui.selected_node.name]
@@ -82,22 +86,23 @@ class SidebarFunctionStart:
 
         for i, entry in enumerate(entries):
             with dpg.table_row(parent=self.table):
-                dpg.add_input_text(width=-1, height=-1,
-                                   callback=lambda s, data: (self.gui.selected_node
-                                                             .__getattribute__('parameters')[dpg.get_item_user_data(s)]
+                dpg.add_input_text(width=-1,
+                                   height=-1,
+                                   user_data=i,
+                                   callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                              .__setattr__('name', data),
                                                              self.gui.redraw_all()),
                                    no_spaces=True, default_value=entry.name)
                 dpg.add_combo(Language.get_data_types(),
-                              callback=lambda s, data: (self.gui.selected_node
-                                                        .__getattribute__('parameters')[dpg.get_item_user_data(s)]
+                              user_data=i,
+                              callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                         .__setattr__('type', data),
                                                         self.gui.redraw_all()),
                               width=-1, default_value=entry.type)
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
-                    self.gui.selected_node.__getattribute__('parameters').pop(dpg.get_item_user_data(s)),
-                    self.refresh_entries(self.gui.selected_node.__getattribute__('parameters')),
+                    self.parameters().pop(dpg.get_item_user_data(s)),
+                    self.refresh_entries(self.parameters()),
                     self.gui.redraw_all()
                 ))
                 with dpg.theme() as delete_button_theme:

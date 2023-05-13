@@ -35,6 +35,7 @@ from flowtutor.gui.sidebar_none import SidebarNone
 from flowtutor.gui.sidebar_whileloop import SidebarWhileLoop
 from flowtutor.gui.sidebar_output import SidebarOutput
 from flowtutor.gui.sidebar_snippet import SidebarSnippet
+from flowtutor.gui.window_types import WindowTypes
 from flowtutor.language import Language
 from flowtutor.modal_service import ModalService
 from flowtutor.settings_service import SettingsService
@@ -151,7 +152,7 @@ class GUI:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, show=True):
 
                     with dpg.menu_bar():
-                        self.sidebar_title_tag = dpg.add_text('Preprocessor')
+                        self.sidebar_title_tag = dpg.add_text('Program')
                         with dpg.group(tag='function_management_group', horizontal=True, show=False):
                             dpg.add_spacer(width=63)
                             self.rename_button = dpg.add_image_button('pencil_image')
@@ -163,7 +164,7 @@ class GUI:
                         dpg.bind_item_theme(self.rename_button, tool_button_theme)
                         dpg.bind_item_theme(self.delete_button, tool_button_theme)
 
-                    SidebarNone(self)
+                    self.sidebar_none = SidebarNone(self)
                     SidebarAssignment(self)
                     self.sidebar_functionstart = SidebarFunctionStart(self)
                     SidebarFunctionEnd(self)
@@ -177,6 +178,7 @@ class GUI:
                     SidebarInput(self)
                     SidebarOutput(self)
                     SidebarSnippet(self)
+                    self.window_types = WindowTypes(self)
 
                     with dpg.group(tag='selected_node_separator_group', show=False):
                         dpg.add_spacer(height=5)
@@ -453,7 +455,7 @@ class GUI:
             dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
             dpg.show_item('selected_snippet')
         else:
-            self.set_sidebar_title('Preprocessor')
+            self.set_sidebar_title('Program')
             dpg.show_item('selected_none')
 
     @staticmethod
@@ -462,8 +464,9 @@ class GUI:
             with open(file_path, 'rb') as file:
                 self.file_path = file_path
                 dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                self.clear_flowchart()
                 self.flowcharts = load(file)
+                self.window_types.refresh()
+                self.sidebar_none.refresh()
                 self.redraw_all()
                 self.refresh_function_tabs()
         self.modal_service.show_open_modal(callback)
