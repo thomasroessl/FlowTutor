@@ -12,6 +12,7 @@ from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.struct_definition import StructDefinition
 from flowtutor.flowchart.struct_member import StructMember
+from flowtutor.flowchart.type_definition import TypeDefinition
 from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
@@ -589,6 +590,35 @@ class TestCodeGenerator:
         print(repr(code))
         print(repr(expected))
         assert code == expected, 'Declaration of multiple empty functions.'
+
+    def test_code_from_typedef(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        type_definition1 = TypeDefinition()
+        type_definition1.definition = 'char *'
+        type_definition1.name = 'string'
+        flowchart.type_definitions.append(type_definition1)
+        type_definition2 = TypeDefinition()
+        type_definition2.definition = 'int'
+        type_definition2.name = 'testtype'
+        flowchart.type_definitions.append(type_definition2)
+        type_definition3 = TypeDefinition()
+        type_definition3.definition = ' long   '
+        type_definition3.name = 'testtype2'
+        flowchart.type_definitions.append(type_definition3)
+        code, _ = code_generator.generate_code([flowchart])
+        print(code)
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'typedef char *string;',
+            'typedef int testtype;',
+            'typedef long testtype2;',
+            '',
+            'int main() {',
+            '  return 0;',
+            '}'])
+        print(expected)
+        assert code == expected, 'Type definitions should be included in the source file.'
 
     def test_code_from_struct(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
