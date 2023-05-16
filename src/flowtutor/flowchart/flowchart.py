@@ -11,6 +11,7 @@ from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.struct_definition import StructDefinition
+from flowtutor.flowchart.type_definition import TypeDefinition
 from flowtutor.flowchart.whileloop import WhileLoop
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ class Flowchart:
         self.add_node(root, end)
         self._includes: List[str] = ['stdio']
         self._preprocessor_definitions: List[str] = []
+        self._type_definitions: List[TypeDefinition] = []
         self._struct_definitions: List[StructDefinition] = []
         self._preprocessor_custom: str = ''
 
@@ -41,6 +43,10 @@ class Flowchart:
     @property
     def preprocessor_definitions(self) -> List[str]:
         return self._preprocessor_definitions
+
+    @property
+    def type_definitions(self) -> List[TypeDefinition]:
+        return self._type_definitions
 
     @property
     def struct_definitions(self) -> List[StructDefinition]:
