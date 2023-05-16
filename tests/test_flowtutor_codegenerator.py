@@ -10,6 +10,8 @@ from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.forloop import ForLoop
+from flowtutor.flowchart.struct_definition import StructDefinition
+from flowtutor.flowchart.struct_member import StructMember
 from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
@@ -587,3 +589,34 @@ class TestCodeGenerator:
         print(repr(code))
         print(repr(expected))
         assert code == expected, 'Declaration of multiple empty functions.'
+
+    def test_code_from_struct(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+        struct_definition = StructDefinition()
+        struct_definition.members.clear()
+        struct_definition.name = 'Test'
+        struct_member1 = StructMember()
+        struct_member1.name = 'x'
+        struct_member1.type = 'int'
+        struct_definition.members.append(struct_member1)
+        struct_member2 = StructMember()
+        struct_member2.name = 'y'
+        struct_member2.type = 'long'
+        struct_member2.is_pointer = True
+        struct_definition.members.append(struct_member2)
+        flowchart.struct_definitions.append(struct_definition)
+        code, _ = code_generator.generate_code([flowchart])
+        print(code)
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'struct Test_s {',
+            '  int x;',
+            '  long *y;',
+            '} Test_t;',
+            '',
+            'int main() {',
+            '  return 0;',
+            '}'])
+        print(expected)
+        assert code == expected, 'Structure definitions should be included in the source file.'
