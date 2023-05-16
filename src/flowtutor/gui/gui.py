@@ -22,6 +22,7 @@ from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.gui.sidebar import Sidebar
 from flowtutor.gui.sidebar_assignment import SidebarAssignment
 from flowtutor.gui.sidebar_call import SidebarCall
 from flowtutor.gui.sidebar_conditional import SidebarConditional
@@ -164,20 +165,37 @@ class GUI:
                         dpg.bind_item_theme(self.delete_button, tool_button_theme)
 
                     self.sidebar_none = SidebarNone(self)
-                    SidebarAssignment(self)
-                    self.sidebar_functionstart = SidebarFunctionStart(self)
-                    SidebarFunctionEnd(self)
-                    SidebarCall(self)
-                    SidebarDeclaration(self)
+                    self.sidebar_assignment = SidebarAssignment(self)
+                    self.sidebar_function_start = SidebarFunctionStart(self)
+                    self.sidebar_function_end = SidebarFunctionEnd(self)
+                    self.sidebar_call = SidebarCall(self)
+                    self.sidebar_declaration = SidebarDeclaration(self)
                     self.sidebar_declarations = SidebarDeclarations(self)
-                    SidebarConditional(self)
-                    SidebarForLoop(self)
-                    SidebarWhileLoop(self)
-                    SidebarDoWhileLoop(self)
-                    SidebarInput(self)
-                    SidebarOutput(self)
-                    SidebarSnippet(self)
+                    self.sidebar_conditional = SidebarConditional(self)
+                    self.sidebar_for_loop = SidebarForLoop(self)
+                    self.sidebar_while_loop = SidebarWhileLoop(self)
+                    self.sidebar_do_while_loop = SidebarDoWhileLoop(self)
+                    self.sidebar_input = SidebarInput(self)
+                    self.sidebar_output = SidebarOutput(self)
+                    self.sidebar_snippet = SidebarSnippet(self)
                     self.window_types = WindowTypes(self)
+
+                    self.sidebars: list[Sidebar] = [
+                        self.sidebar_none,
+                        self.sidebar_assignment,
+                        self.sidebar_function_start,
+                        self.sidebar_function_end,
+                        self.sidebar_call,
+                        self.sidebar_declaration,
+                        self.sidebar_declarations,
+                        self.sidebar_conditional,
+                        self.sidebar_for_loop,
+                        self.sidebar_while_loop,
+                        self.sidebar_do_while_loop,
+                        self.sidebar_input,
+                        self.sidebar_output,
+                        self.sidebar_snippet
+                    ]
 
                     with dpg.group(tag='selected_node_separator_group', show=False):
                         dpg.add_spacer(height=5)
@@ -340,113 +358,37 @@ class GUI:
             dpg.configure_item('selected_node_break_point', default_value=node.break_point)
             dpg.configure_item('selected_node_is_comment', default_value=node.is_comment)
         self.selected_node = node
-        dpg.hide_item('selected_none')
-        dpg.hide_item('selected_assignment')
-        dpg.hide_item('selected_call')
-        dpg.hide_item('selected_declaration')
-        dpg.hide_item('selected_declarations')
-        dpg.hide_item('selected_conditional')
-        dpg.hide_item('selected_function_start')
-        dpg.hide_item('selected_function_end')
-        dpg.hide_item('selected_forloop')
-        dpg.hide_item('selected_whileloop')
-        dpg.hide_item('selected_dowhileloop')
-        dpg.hide_item('selected_input')
-        dpg.hide_item('selected_output')
-        dpg.hide_item('selected_snippet')
+        for sidebar in self.sidebars:
+            sidebar.hide()
         dpg.hide_item('function_management_group')
-        if isinstance(self.selected_node, Assignment):
-            self.set_sidebar_title('Assignment')
-            self.declared_variables = list(self.selected_flowchart.get_all_declarations())
-            dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
-            dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
-            declaration = self.selected_flowchart.find_declaration(self.selected_node.var_name)
-            if declaration is not None and declaration['is_array']:
-                dpg.show_item('selected_assignment_offset_group')
-            else:
-                self.selected_node.var_offset = ''
-                dpg.hide_item('selected_assignment_offset_group')
-            dpg.configure_item('selected_assignment_value', default_value=self.selected_node.var_value)
-            dpg.show_item('selected_assignment')
-        elif isinstance(self.selected_node, Call):
-            self.set_sidebar_title('Call')
-            dpg.configure_item('selected_call_expression', default_value=self.selected_node.expression)
-            dpg.show_item('selected_call')
-        elif isinstance(self.selected_node, Declaration):
-            self.set_sidebar_title('Declaration')
-            dpg.configure_item('selected_declaration_name', default_value=self.selected_node.var_name)
-            dpg.configure_item('selected_declaration_type', default_value=self.selected_node.var_type)
-            dpg.configure_item('selected_declaration_var_value', default_value=self.selected_node.var_value)
-            dpg.configure_item('selected_declaration_is_array', default_value=self.selected_node.is_array)
-            if self.selected_node.is_array:
-                dpg.show_item('selected_declaration_array_size_group')
-                dpg.hide_item('selected_declaration_var_value_group')
-            else:
-                dpg.hide_item('selected_declaration_array_size_group')
-                dpg.show_item('selected_declaration_var_value_group')
-            dpg.configure_item('selected_declaration_array_size', default_value=self.selected_node.array_size)
-            dpg.configure_item('selected_declaration_is_pointer', default_value=self.selected_node.is_pointer)
-            dpg.show_item('selected_declaration')
-        elif isinstance(self.selected_node, Declarations):
-            self.set_sidebar_title('Declaration')
-            self.sidebar_declarations.refresh()
-            dpg.show_item('selected_declarations')
-        elif isinstance(self.selected_node, Conditional):
-            self.set_sidebar_title('Conditional')
-            dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
-            dpg.show_item('selected_conditional')
-        elif isinstance(self.selected_node, FunctionStart):
-            self.set_sidebar_title('Function')
-            dpg.configure_item('selected_function_return_type', default_value=self.selected_node.return_type)
-            if self.sidebar_functionstart is not None:
-                self.sidebar_functionstart.refresh_entries(self.selected_node.__getattribute__('parameters'))
-            dpg.show_item('selected_function_start')
-            # hide return type selection for 'main', because it has to always return int
-            if self.selected_node.name == 'main':
-                dpg.hide_item('selected_function_return_type_group')
-                dpg.hide_item('selected_function_parameters_group')
-                dpg.hide_item('selected_node_separator_group')
-                dpg.hide_item('selected_node_is_comment_group')
-            else:
-                dpg.show_item('selected_function_return_type_group')
-                dpg.show_item('selected_function_parameters_group')
-        elif isinstance(self.selected_node, FunctionEnd):
-            self.set_sidebar_title('Function')
-            dpg.configure_item('selected_function_return_value', default_value=self.selected_node.return_value)
-            dpg.show_item('selected_function_end')
-            dpg.hide_item('selected_node_is_comment_group')
-        elif isinstance(self.selected_node, ForLoop):
-            self.set_sidebar_title('For Loop')
-            dpg.configure_item('selected_forloop_condition', default_value=self.selected_node.condition)
-            dpg.configure_item('selected_forloop_var_name', default_value=self.selected_node.var_name)
-            dpg.configure_item('selected_forloop_start_value', default_value=self.selected_node.start_value)
-            dpg.configure_item('selected_forloop_update', default_value=self.selected_node.update)
-            dpg.show_item('selected_forloop')
-        elif isinstance(self.selected_node, WhileLoop):
-            self.set_sidebar_title('While Loop')
-            dpg.configure_item('selected_whileloop_condition', default_value=self.selected_node.condition)
-            dpg.show_item('selected_whileloop')
-        elif isinstance(self.selected_node, DoWhileLoop):
-            self.set_sidebar_title('Do While Loop')
-            dpg.configure_item('selected_dowhileloop_condition', default_value=self.selected_node.condition)
-            dpg.show_item('selected_dowhileloop')
-        elif isinstance(self.selected_node, Input):
-            self.set_sidebar_title('Input')
-            self.declared_variables = list(self.selected_flowchart.get_all_declarations())
-            dpg.configure_item('selected_input_name', default_value=self.selected_node.var_name)
-            dpg.show_item('selected_input')
-        elif isinstance(self.selected_node, Output):
-            self.set_sidebar_title('Output')
-            dpg.configure_item('selected_output_arguments', default_value=self.selected_node.arguments)
-            dpg.configure_item('selected_output_format_string', default_value=self.selected_node.format_string)
-            dpg.show_item('selected_output')
-        elif isinstance(self.selected_node, Snippet):
-            self.set_sidebar_title('Code Snippet')
-            dpg.configure_item('selected_snippet_code', default_value=self.selected_node.code)
-            dpg.show_item('selected_snippet')
+        if isinstance(node, Assignment):
+            self.sidebar_assignment.show(node)
+        elif isinstance(node, Call):
+            self.sidebar_call.show(node)
+        elif isinstance(node, Declaration):
+            self.sidebar_declaration.show(node)
+        elif isinstance(node, Declarations):
+            self.sidebar_declarations.show(node)
+        elif isinstance(node, Conditional):
+            self.sidebar_conditional.show(node)
+        elif isinstance(node, FunctionStart):
+            self.sidebar_function_start.show(node)
+        elif isinstance(node, FunctionEnd):
+            self.sidebar_function_end.show(node)
+        elif isinstance(node, ForLoop):
+            self.sidebar_for_loop.show(node)
+        elif isinstance(node, WhileLoop):
+            self.sidebar_while_loop.show(node)
+        elif isinstance(node, DoWhileLoop):
+            self.sidebar_do_while_loop.show(node)
+        elif isinstance(node, Input):
+            self.sidebar_input.show(node)
+        elif isinstance(node, Output):
+            self.sidebar_output.show(node)
+        elif isinstance(node, Snippet):
+            self.sidebar_snippet.show(node)
         else:
-            self.set_sidebar_title('Program')
-            dpg.show_item('selected_none')
+            self.sidebar_none.show(None)
 
     @staticmethod
     def on_open(self: GUI) -> None:

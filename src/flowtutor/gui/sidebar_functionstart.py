@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.functionstart import FunctionStart
+from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.parameter import Parameter
+from flowtutor.gui.sidebar import Sidebar
 from flowtutor.language import Language
 from flowtutor.modal_service import ModalService
 
@@ -12,13 +14,13 @@ if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
 
 
-class SidebarFunctionStart:
+class SidebarFunctionStart(Sidebar):
 
     @inject
     def __init__(self, gui: GUI, modal_service: ModalService = Provide['modal_service']) -> None:
         self.gui = gui
         self.modal_service = modal_service
-        with dpg.group(tag='selected_function_start', show=False):
+        with dpg.group(show=False) as self.main_group:
             dpg.configure_item(gui.rename_button, callback=self.on_rename)
             dpg.configure_item(gui.delete_button, callback=self.on_delete)
 
@@ -117,3 +119,23 @@ class SidebarFunctionStart:
                 dpg.hide_item('function_management_group')
             else:
                 dpg.show_item('function_management_group')
+
+    def hide(self) -> None:
+        dpg.hide_item(self.main_group)
+
+    def show(self, node: Optional[Node]) -> None:
+        if not isinstance(node, FunctionStart):
+            return
+        self.gui.set_sidebar_title('Function')
+        dpg.configure_item('selected_function_return_type', default_value=node.return_type)
+        self.refresh_entries(node.__getattribute__('parameters'))
+        dpg.show_item(self.main_group)
+        # hide return type selection for 'main', because it has to always return int
+        if node.name == 'main':
+            dpg.hide_item('selected_function_return_type_group')
+            dpg.hide_item('selected_function_parameters_group')
+            dpg.hide_item('selected_node_separator_group')
+            dpg.hide_item('selected_node_is_comment_group')
+        else:
+            dpg.show_item('selected_function_return_type_group')
+            dpg.show_item('selected_function_parameters_group')

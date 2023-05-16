@@ -1,6 +1,8 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 import dearpygui.dearpygui as dpg
+from flowtutor.flowchart.node import Node
+from flowtutor.gui.sidebar import Sidebar
 
 from flowtutor.language import Language
 
@@ -9,11 +11,11 @@ if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
 
 
-class SidebarNone:
+class SidebarNone(Sidebar):
 
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
-        with dpg.group(tag='selected_none'):
+        with dpg.group() as self.main_group:
             dpg.add_text('Preprocessor')
             with dpg.collapsing_header(label='Include', tag='selected_includes'):
                 for header in Language.get_standard_headers():
@@ -107,3 +109,10 @@ class SidebarNone:
             default_value=self.main_node().__getattribute__('preprocessor_custom'))
         for checkbox in dpg.get_item_children('selected_includes')[1]:
             dpg.configure_item(checkbox, default_value=dpg.get_item_user_data(checkbox) in self.includes())
+
+    def hide(self) -> None:
+        dpg.hide_item(self.main_group)
+
+    def show(self, node: Optional[Node]) -> None:
+        self.gui.set_sidebar_title('Program')
+        dpg.show_item(self.main_group)
