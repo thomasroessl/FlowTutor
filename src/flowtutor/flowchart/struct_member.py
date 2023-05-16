@@ -32,6 +32,8 @@ class StructMember:
         self._is_array = is_array
         if not is_array:
             self.array_size = ''
+        else:
+            self.is_pointer = False
 
     @property
     def array_size(self) -> str:
@@ -48,6 +50,8 @@ class StructMember:
     @is_pointer.setter
     def is_pointer(self, is_pointer: bool):
         self._is_pointer = is_pointer
+        if is_pointer:
+            self.is_array = False
 
     def __repr__(self) -> str:
         return ''.join([

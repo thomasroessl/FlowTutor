@@ -51,6 +51,7 @@ class SectionStructs:
                     dpg.add_table_column(label='Type')
                     dpg.add_table_column(label='Ptr', width_fixed=True, width=11)
                     dpg.add_table_column(label='Arr', width_fixed=True, width=11)
+                    dpg.add_table_column(label='Size')
                     dpg.add_table_column(label='', width_fixed=True, width=12)
 
                     self.refresh_members(i, table, d.members)
@@ -88,12 +89,30 @@ class SectionStructs:
     def struct_definitions(self):
         return self.main_node().struct_definitions
 
-    def members(self, i):
-        return self.struct_definitions()[i].__getattribute__('members')
+    def members(self, i) -> List[StructMember]:
+        result: List[StructMember] = self.struct_definitions()[i].__getattribute__('members')
+        return result
 
-    def member(self, t: tuple[int, int]):
+    def member(self, t: tuple[int, int]) -> StructMember:
         i, j = t
         return self.members(i)[j]
+
+    def toggle_is_array(self, is_array: bool, checkbox_id):
+        i, j = dpg.get_item_user_data(checkbox_id)
+        member = self.member((i, j))
+        if is_array:
+            dpg.show_item(f'struct_member_array_size_{i}_{j}')
+        else:
+            dpg.hide_item(f'struct_member_array_size_{i}_{j}')
+
+        dpg.configure_item(f'struct_member_is_pointer_{i}_{j}', default_value=member.is_pointer)
+
+    def toggle_is_pointer(self, checkbox_id):
+        i, j = dpg.get_item_user_data(checkbox_id)
+        member = self.member((i, j))
+        print(member.array_size)
+        dpg.configure_item(f'struct_member_array_size_{i}_{j}', default_value=member.array_size)
+        dpg.configure_item(f'struct_member_is_array_{i}_{j}', default_value=member.is_array)
 
     def refresh_members(self, i, table, members: List[StructMember]):
         # delete existing rows in the table to avoid duplicates
@@ -103,7 +122,6 @@ class SectionStructs:
         for j, member in enumerate(members):
             with dpg.table_row(parent=table):
                 dpg.add_input_text(width=-1,
-                                   height=-1,
                                    user_data=(i, j),
                                    callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                              .__setattr__('name', data),
@@ -111,24 +129,37 @@ class SectionStructs:
                                    no_spaces=True, default_value=member.name)
 
                 dpg.add_combo(Language.get_data_types(),
+                              width=-1,
                               user_data=(i, j),
                               callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                         .__setattr__('type', data),
                                                         self.gui.redraw_all()),
-                              width=-1,
                               default_value=member.type)
 
                 dpg.add_checkbox(user_data=(i, j),
+                                 tag=f'struct_member_is_pointer_{i}_{j}',
                                  callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                            .__setattr__('is_pointer', data),
+                                                           self.toggle_is_pointer(s),
                                                            self.gui.redraw_all()),
                                  default_value=member.is_pointer)
 
                 dpg.add_checkbox(user_data=(i, j),
+                                 tag=f'struct_member_is_array_{i}_{j}',
                                  callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                            .__setattr__('is_array', data),
+                                                           self.toggle_is_array(data, s),
                                                            self.gui.redraw_all()),
                                  default_value=member.is_array)
+
+                dpg.add_input_text(user_data=(i, j),
+                                   tag=f'struct_member_array_size_{i}_{j}',
+                                   width=-1,
+                                   callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
+                                                             .__setattr__('array_size', data),
+                                                             self.gui.redraw_all()),
+                                   default_value=member.array_size,
+                                   show=member.is_array)
 
                 delete_button = dpg.add_image_button(
                     'trash_image',

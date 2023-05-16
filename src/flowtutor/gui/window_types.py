@@ -14,7 +14,7 @@ class WindowTypes:
         with dpg.window(tag='type_window',
                         label='Types',
                         pos=(300, 75),
-                        width=300,
+                        width=600,
                         height=500,
                         no_collapse=True,
                         show=False):
