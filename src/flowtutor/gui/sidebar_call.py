@@ -13,8 +13,8 @@ class SidebarCall:
                 dpg.add_text('Expression')
                 with dpg.group(horizontal=True):
                     dpg.add_input_text(tag='selected_call_expression',
-                                       width=-44,
+                                       width=-1,
                                        callback=lambda _, data: (
                                            gui.selected_node.__setattr__('expression', data),
                                            gui.redraw_all()))
-                    dpg.add_button(label='...')
+                    # dpg.add_button(label='...')
