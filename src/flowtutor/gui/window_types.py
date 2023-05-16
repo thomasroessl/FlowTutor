@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 
 from flowtutor.gui.section_structs import SectionStructs
+from flowtutor.gui.section_typedefs import SectionTypedefs
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
@@ -18,7 +19,9 @@ class WindowTypes:
                         height=500,
                         no_collapse=True,
                         show=False):
+            self.section_typedefs = SectionTypedefs(gui)
             self.section_structs = SectionStructs(gui)
 
     def refresh(self):
+        self.section_typedefs.refresh()
         self.section_structs.refresh()

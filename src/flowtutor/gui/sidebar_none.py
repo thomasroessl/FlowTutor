@@ -14,8 +14,6 @@ class SidebarNone:
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
         with dpg.group(tag='selected_none'):
-            dpg.add_button(label='Types', width=-1,
-                           callback=lambda: (dpg.show_item('type_window'), gui.redraw_all()))
             dpg.add_text('Preprocessor')
             with dpg.collapsing_header(label='Include', tag='selected_includes'):
                 for header in Language.get_standard_headers():
@@ -48,11 +46,16 @@ class SidebarNone:
             with dpg.collapsing_header(label='Custom'):
                 dpg.add_input_text(tag='selected_preprocessor_custom',
                                    width=-1,
-                                   height=-1,
+                                   height=-46,
                                    multiline=True,
                                    callback=lambda _, data:
                                    (self.main_node().__setattr__('preprocessor_custom', data),
                                     gui.redraw_all()))
+            dpg.add_spacer(height=3)
+            dpg.add_separator()
+            dpg.add_spacer(height=3)
+            dpg.add_button(label='Types', width=-1,
+                           callback=lambda: (dpg.show_item('type_window'), gui.redraw_all()))
 
     def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']

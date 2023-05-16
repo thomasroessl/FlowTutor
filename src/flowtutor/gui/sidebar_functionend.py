@@ -13,7 +13,6 @@ class SidebarFunctionEnd:
                 dpg.add_text('Return Value')
                 dpg.add_input_text(tag='selected_function_return_value',
                                    width=-1,
-                                   no_spaces=True,
                                    callback=lambda _, data: (
                                        gui.selected_node.__setattr__('return_value', data),
                                        gui.redraw_all()))

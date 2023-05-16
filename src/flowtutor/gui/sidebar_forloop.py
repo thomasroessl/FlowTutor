@@ -37,7 +37,6 @@ class SidebarForLoop:
                 dpg.add_text('Update')
                 dpg.add_input_text(tag='selected_forloop_update',
                                    width=-1,
-                                   no_spaces=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__('update',
                                                                                            data),
                                                              gui.redraw_all()))

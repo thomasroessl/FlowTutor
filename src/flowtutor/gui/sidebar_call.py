@@ -14,7 +14,6 @@ class SidebarCall:
                 with dpg.group(horizontal=True):
                     dpg.add_input_text(tag='selected_call_expression',
                                        width=-44,
-                                       no_spaces=True,
                                        callback=lambda _, data: (
                                            gui.selected_node.__setattr__('expression', data),
                                            gui.redraw_all()))
