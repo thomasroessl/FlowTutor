@@ -127,7 +127,7 @@ class SectionStructs:
                                                              self.gui.redraw_all()),
                                    no_spaces=True, default_value=member.name)
 
-                dpg.add_combo(Language.get_data_types(),
+                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
                               width=-1,
                               user_data=(i, j),
                               callback=lambda s, data: (self.member(dpg.get_item_user_data(s))

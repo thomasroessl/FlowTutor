@@ -21,7 +21,7 @@ class SidebarDeclaration:
                                        gui.redraw_all()))
             with dpg.group(horizontal=True):
                 dpg.add_text('Type')
-                dpg.add_combo(Language.get_data_types(),
+                dpg.add_combo(Language.get_data_types(gui.flowcharts['main']),
                               tag='selected_declaration_type',
                               indent=50,
                               width=-1,

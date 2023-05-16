@@ -1,10 +1,17 @@
 from __future__ import annotations
+from typing import Optional
+
+from flowtutor.flowchart.flowchart import Flowchart
 
 
 class Language:
 
     @staticmethod
-    def get_data_types() -> list[str]:
+    def get_data_types(flowchart: Optional[Flowchart] = None) -> list[str]:
+
+        struct_defintions = list(map(lambda s: f'{s.name}_t', flowchart.struct_definitions)) if flowchart else []
+        type_defintions = list(map(lambda s: s.name, flowchart.type_definitions)) if flowchart else []
+
         return [
             'char',
             'unsigned char',
@@ -17,7 +24,7 @@ class Language:
             'float',
             'double',
             'long double'
-        ]
+        ] + type_defintions + struct_defintions
 
     @staticmethod
     def get_standard_headers() -> list[str]:

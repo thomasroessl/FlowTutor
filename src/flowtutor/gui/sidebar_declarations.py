@@ -45,7 +45,7 @@ class SidebarDeclarations:
                         dpg.bind_item_theme(delete_button, delete_button_theme)
                 with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
                     dpg.add_text('Type')
-                    dpg.add_combo(Language.get_data_types(),
+                    dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
                                   tag=f'selected_declaration[{i}]_type',
                                   indent=50,
                                   width=-1,

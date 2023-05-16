@@ -51,7 +51,7 @@ class SidebarFunctionStart:
 
             with dpg.group(tag='selected_function_return_type_group'):
                 dpg.add_text('Return Type')
-                dpg.add_combo(Language.get_data_types(),
+                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
                               tag='selected_function_return_type',
                               width=-1,
                               callback=lambda _, data: (gui.selected_node.__setattr__('return_type', data),
@@ -93,7 +93,7 @@ class SidebarFunctionStart:
                                                              .__setattr__('name', data),
                                                              self.gui.redraw_all()),
                                    no_spaces=True, default_value=entry.name)
-                dpg.add_combo(Language.get_data_types(),
+                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
                               user_data=i,
                               callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                         .__setattr__('type', data),
