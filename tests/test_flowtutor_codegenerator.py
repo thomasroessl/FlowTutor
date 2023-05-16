@@ -604,6 +604,12 @@ class TestCodeGenerator:
         struct_member2.type = 'long'
         struct_member2.is_pointer = True
         struct_definition.members.append(struct_member2)
+        struct_member3 = StructMember()
+        struct_member3.name = 'z'
+        struct_member3.type = 'long'
+        struct_member3.is_array = True
+        struct_member3.array_size = '10'
+        struct_definition.members.append(struct_member3)
         flowchart.struct_definitions.append(struct_definition)
         code, _ = code_generator.generate_code([flowchart])
         print(code)
@@ -613,6 +619,7 @@ class TestCodeGenerator:
             'struct Test_s {',
             '  int x;',
             '  long *y;',
+            '  long z[10];',
             '} Test_t;',
             '',
             'int main() {',
