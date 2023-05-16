@@ -438,8 +438,6 @@ class GUI:
         elif isinstance(self.selected_node, Input):
             self.set_sidebar_title('Input')
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
-            print(self.selected_flowchart.get_all_declarations())
-            print(self.declared_variables)
             if Language.has_var_declaration():
                 dpg.configure_item('selected_input_name',
                                    items=list(map(lambda d: str(d['var_name']), self.declared_variables)))

@@ -110,7 +110,6 @@ class SectionStructs:
     def toggle_is_pointer(self, checkbox_id):
         i, j = dpg.get_item_user_data(checkbox_id)
         member = self.member((i, j))
-        print(member.array_size)
         dpg.configure_item(f'struct_member_array_size_{i}_{j}', default_value=member.array_size)
         dpg.configure_item(f'struct_member_is_array_{i}_{j}', default_value=member.is_array)
 

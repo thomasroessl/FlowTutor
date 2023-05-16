@@ -112,7 +112,6 @@ class SidebarDeclarations:
                                        default_value=declaration['var_value'],
                                        user_data=i,
                                        callback=lambda s, data: (
-                                           print(s, data),
                                            self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                            .update({'var_value': data}),
                                            self.gui.redraw_all()))
