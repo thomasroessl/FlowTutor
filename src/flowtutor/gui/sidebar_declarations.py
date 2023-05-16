@@ -54,44 +54,45 @@ class SidebarDeclarations:
                                   callback=lambda s, data: (
                         self.gui.selected_node.declarations[dpg.get_item_user_data(s)].update({'var_type': data}),
                         self.gui.redraw_all()))
-                if Language.has_pointers():
-                    with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
-                        dpg.add_checkbox(label='Pointer',
-                                         tag=f'selected_declaration[{i}]_is_pointer',
-                                         indent=50,
-                                         default_value=declaration['is_pointer'],
-                                         user_data=i,
-                                         callback=lambda s, data: (
-                                             self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
-                                             .update({'is_pointer': data}),
-                                             self.gui.on_select_node(self.gui.selected_node),
-                                             self.gui.redraw_all()))
-                if Language.has_arrays():
-                    with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
-                        dpg.add_checkbox(label='Array',
-                                         tag=f'selected_declaration[{i}]_is_array',
-                                         indent=50,
-                                         default_value=declaration['is_array'],
-                                         user_data=i,
-                                         callback=lambda s, data: (
-                                             self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
-                                             .update({'is_array': data}),
-                                             self.gui.on_select_node(self.gui.selected_node),
-                                             self.gui.redraw_all()))
-                if Language.has_arrays():
-                    with dpg.group(horizontal=True, tag=f'selected_declaration[{i}]_array_size_group',
-                                   parent=SELECTED_DECLARATIONS_TAG, show=declaration['is_array']):
-                        dpg.add_text('Size')
-                        dpg.add_input_text(tag=f'selected_declaration[{i}]_array_size',
-                                           indent=50,
-                                           width=-1,
-                                           no_spaces=True,
-                                           default_value=declaration['array_size'],
-                                           user_data=i,
-                                           callback=lambda s, data: (
-                                               self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
-                                               .update({'array_size': data}),
-                                               self.gui.redraw_all()))
+
+                with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
+                    dpg.add_checkbox(label='Pointer',
+                                     tag=f'selected_declaration[{i}]_is_pointer',
+                                     indent=50,
+                                     default_value=declaration['is_pointer'],
+                                     user_data=i,
+                                     callback=lambda s, data: (
+                                         self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
+                                         .update({'is_pointer': data}),
+                                         self.gui.on_select_node(self.gui.selected_node),
+                                         self.gui.redraw_all()))
+
+                with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
+                    dpg.add_checkbox(label='Array',
+                                     tag=f'selected_declaration[{i}]_is_array',
+                                     indent=50,
+                                     default_value=declaration['is_array'],
+                                     user_data=i,
+                                     callback=lambda s, data: (
+                                         self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
+                                         .update({'is_array': data}),
+                                         self.gui.on_select_node(self.gui.selected_node),
+                                         self.gui.redraw_all()))
+
+                with dpg.group(horizontal=True, tag=f'selected_declaration[{i}]_array_size_group',
+                               parent=SELECTED_DECLARATIONS_TAG, show=declaration['is_array']):
+                    dpg.add_text('Size')
+                    dpg.add_input_text(tag=f'selected_declaration[{i}]_array_size',
+                                       indent=50,
+                                       width=-1,
+                                       no_spaces=True,
+                                       default_value=declaration['array_size'],
+                                       user_data=i,
+                                       callback=lambda s, data: (
+                                           self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
+                                           .update({'array_size': data}),
+                                           self.gui.redraw_all()))
+
                 with dpg.group(horizontal=True, parent=SELECTED_DECLARATIONS_TAG):
                     dpg.add_checkbox(label='Static',
                                      tag=f'selected_declaration[{i}]_is_static',

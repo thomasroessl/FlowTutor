@@ -56,19 +56,3 @@ class Language:
             '%lf',
             '%Lf'
         ]
-
-    @staticmethod
-    def has_var_declaration() -> bool:
-        return True
-
-    @staticmethod
-    def has_pointers() -> bool:
-        return True
-
-    @staticmethod
-    def has_arrays() -> bool:
-        return True
-
-    @staticmethod
-    def has_for_loops() -> bool:
-        return True

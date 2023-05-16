@@ -27,34 +27,34 @@ class SidebarDeclaration:
                               width=-1,
                               callback=lambda _, data: (gui.selected_node.__setattr__('var_type', data),
                                                         gui.redraw_all()))
-            if Language.has_pointers():
-                with dpg.group(horizontal=True):
-                    dpg.add_checkbox(label='Pointer',
-                                     tag='selected_declaration_is_pointer',
-                                     indent=50,
-                                     callback=lambda _, data: (gui.selected_node.__setattr__('is_pointer',
-                                                                                             data),
-                                                               gui.on_select_node(gui.selected_node),
-                                                               gui.redraw_all()))
-            if Language.has_arrays():
-                with dpg.group(horizontal=True):
-                    dpg.add_checkbox(label='Array',
-                                     tag='selected_declaration_is_array',
-                                     indent=50,
-                                     callback=lambda _, data: (gui.selected_node.__setattr__('is_array',
-                                                                                             data),
-                                                               gui.on_select_node(gui.selected_node),
-                                                               gui.redraw_all()))
-            if Language.has_arrays():
-                with dpg.group(horizontal=True, tag='selected_declaration_array_size_group', show=False):
-                    dpg.add_text('Size')
-                    dpg.add_input_text(tag='selected_declaration_array_size',
-                                       indent=50,
-                                       width=-1,
-                                       no_spaces=True,
-                                       callback=lambda _, data: (gui.selected_node.__setattr__(
-                                           'array_size', data),
-                                           gui.redraw_all()))
+
+            with dpg.group(horizontal=True):
+                dpg.add_checkbox(label='Pointer',
+                                 tag='selected_declaration_is_pointer',
+                                 indent=50,
+                                 callback=lambda _, data: (gui.selected_node.__setattr__('is_pointer',
+                                                                                         data),
+                                                           gui.on_select_node(gui.selected_node),
+                                                           gui.redraw_all()))
+
+            with dpg.group(horizontal=True):
+                dpg.add_checkbox(label='Array',
+                                 tag='selected_declaration_is_array',
+                                 indent=50,
+                                 callback=lambda _, data: (gui.selected_node.__setattr__('is_array',
+                                                                                         data),
+                                                           gui.on_select_node(gui.selected_node),
+                                                           gui.redraw_all()))
+
+            with dpg.group(horizontal=True, tag='selected_declaration_array_size_group', show=False):
+                dpg.add_text('Size')
+                dpg.add_input_text(tag='selected_declaration_array_size',
+                                   indent=50,
+                                   width=-1,
+                                   no_spaces=True,
+                                   callback=lambda _, data: (gui.selected_node.__setattr__(
+                                       'array_size', data),
+                                       gui.redraw_all()))
             with dpg.group(horizontal=True):
                 dpg.add_checkbox(label='Static',
                                  tag='selected_declaration_is_static',
