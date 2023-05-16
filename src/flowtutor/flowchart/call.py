@@ -1,4 +1,5 @@
-from typing import Optional, Tuple
+from __future__ import annotations
+from typing import Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
@@ -6,32 +7,32 @@ from flowtutor.flowchart.node import FLOWCHART_TAG, Node
 
 class Call(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._expression = ''
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, 75)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (200, 170, 255) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 0),
             (150, 0),
@@ -52,10 +53,10 @@ class Call(Node):
         return self._expression
 
     @expression.setter
-    def expression(self, expression: str):
+    def expression(self, expression: str) -> None:
         self._expression = expression
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
@@ -78,7 +79,7 @@ class Call(Node):
                 color=text_color,
                 thickness=1)
 
-    def delete(self):  # pragma: no cover
+    def delete(self) -> None:  # pragma: no cover
         super().delete()
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):

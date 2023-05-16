@@ -1,35 +1,36 @@
+from __future__ import annotations
 from flowtutor.flowchart.node import Node
 
 
 class Output(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._format_string = ''
         self._arguments = ''
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, 75)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (147, 255, 149) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (20, 0),
             (150, 0),
@@ -43,7 +44,7 @@ class Output(Node):
         return self._arguments
 
     @arguments.setter
-    def arguments(self, arguments: str):
+    def arguments(self, arguments: str) -> None:
         self._arguments = arguments
 
     @property
@@ -51,7 +52,7 @@ class Output(Node):
         return self._format_string
 
     @format_string.setter
-    def format_string(self, format_string: str):
+    def format_string(self, format_string: str) -> None:
         self._format_string = format_string
 
     @property

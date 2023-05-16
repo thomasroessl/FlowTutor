@@ -1,6 +1,6 @@
 from __future__ import annotations
 from blinker import signal
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 from sys import stderr
 import re
 import platform
@@ -64,7 +64,7 @@ class DebugSession:
             if (re.search(r'\(gdb\)\s*$', line)):
                 break
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._gdb_process.kill()
 
     @property
@@ -72,7 +72,7 @@ class DebugSession:
         return self._gdb_process
 
     def execute(self, command: str) -> None:
-        def t(self):
+        def t(self: DebugSession) -> None:
             if not self.process.stdin or not self.process.stdout:
                 return
             print('START EXECUTE:', command, file=stderr)
@@ -110,7 +110,7 @@ class DebugSession:
         self.refresh_break_points()
         self.execute('-exec-continue')
 
-    def stop(self):
+    def stop(self) -> None:
         if not self.process.stdin:
             return
         self.process.stdin.write('kill\n')
@@ -131,7 +131,7 @@ class DebugSession:
     def get_variable_assignments(self) -> None:
         if self.process.stdout is None or self.process.stdin is None:
             return
-        variables: Dict[str, str] = {}
+        variables: dict[str, str] = {}
         self.process.stdin.write('-stack-list-locals --simple-values\n')
         for line in self.process.stdout:
             record = gdbmiparser.parse_response(line)
@@ -146,8 +146,3 @@ class DebugSession:
                     print('VARIABLE_ASSIGNMENTS', variables, file=stderr)
                     break
         signal('variables').send(self, variables=variables)
-
-    def set_break_point(self, line) -> None:
-        if self.process.stdout is None or self.process.stdin is None:
-            return
-        self.process.stdin.write(f'-break-insert --source flowtutor.c --line {line}\n')

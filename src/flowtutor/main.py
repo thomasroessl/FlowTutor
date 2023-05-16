@@ -1,3 +1,4 @@
+from __future__ import annotations
 import platform
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
@@ -8,7 +9,7 @@ from flowtutor.util_service import UtilService
 
 
 @inject
-def start(utils_service: UtilService = Provide['utils_service']):
+def start(utils_service: UtilService = Provide['utils_service']) -> None:
     if platform.system() != 'Windows':
         utils_service.open_tty()
     gui = GUI(2000, 2000)
@@ -23,7 +24,7 @@ def start(utils_service: UtilService = Provide['utils_service']):
     utils_service.cleanup_temp()
 
 
-def main():
+def main() -> None:
     container = Container()
     container.init_resources()
     container.wire(modules=[__name__,

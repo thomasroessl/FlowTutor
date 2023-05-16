@@ -99,9 +99,9 @@ class CodeGenerator:
             for node in flowchart:
                 node.lines = []
 
-        for i, node in enumerate(nodes):
+        for i, node in enumerate(nodes):  # type: ignore
             if node is not None:
-                cast(Node, node).lines.append(i + 1)
+                cast(Node, node).lines.append(i + 1)  # type: ignore
 
         source_code = '\n'.join(cast(list[str], code_lines))
         break_point_definitions = '\n'.join(

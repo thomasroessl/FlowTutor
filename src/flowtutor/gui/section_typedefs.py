@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
+from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.type_definition import TypeDefinition
 
 if TYPE_CHECKING:
@@ -19,7 +20,7 @@ class SectionTypedefs:
         dpg.add_collapsing_header(label='Type Definitions', tag=HEADER_TAG)
         self.refresh()
 
-    def refresh(self):
+    def refresh(self) -> None:
         for child in dpg.get_item_children(HEADER_TAG)[1]:
             dpg.delete_item(child)
         for [i, d] in enumerate(self.type_definitions()):
@@ -56,18 +57,18 @@ class SectionTypedefs:
         dpg.add_spacer(height=5, parent=HEADER_TAG)
         dpg.add_button(label='Add Type Definition', parent=HEADER_TAG, width=-1, callback=self.on_add_definition)
 
-    def on_add_definition(self):
+    def on_add_definition(self) -> None:
         self.type_definitions().append(TypeDefinition())
         self.refresh()
         self.gui.redraw_all()
 
-    def on_delete_definition(self, index: int):
+    def on_delete_definition(self, index: int) -> None:
         del self.type_definitions()[index]
         self.refresh()
         self.gui.redraw_all()
 
-    def main_node(self):
+    def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']
 
-    def type_definitions(self):
+    def type_definitions(self) -> list[TypeDefinition]:
         return self.main_node().type_definitions

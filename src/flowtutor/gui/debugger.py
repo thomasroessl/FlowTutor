@@ -1,7 +1,7 @@
 import re
 import subprocess
 import sys
-from typing import Optional, Union
+from typing import Any, Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
@@ -17,7 +17,7 @@ class Debugger:
     debug_session: Optional[DebugSession] = None
 
     @inject
-    def __init__(self, parent, utils_service: UtilService = Provide['utils_service']):
+    def __init__(self, parent: Union[str, int], utils_service: UtilService = Provide['utils_service']) -> None:
 
         self.utils = utils_service
 
@@ -121,28 +121,28 @@ class Debugger:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
 
-    def on_input(self):
+    def on_input(self) -> None:
         self.utils.write_tty(dpg.get_value(self.input_id))
         dpg.configure_item(self.input_id, default_value='')
 
-    def disable_all(self):
+    def disable_all(self) -> None:
         self.disable_children(self.controls_group)
         dpg.enable_item(self.auto_scroll_cb)
         dpg.enable_item(self.clear_button)
 
-    def enable_build_only(self):
+    def enable_build_only(self) -> None:
         self.disable_all()
         dpg.enable_item(self.build_button)
 
-    def enable_build_and_run(self):
+    def enable_build_and_run(self) -> None:
         self.disable_all()
         dpg.enable_item(self.build_button)
         dpg.enable_item(self.run_button)
 
-    def enable_all(self):
+    def enable_all(self) -> None:
         self.enable_children(self.controls_group)
 
-    def disable_children(self, item: Union[int, str]):
+    def disable_children(self, item: Union[int, str]) -> None:
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -151,7 +151,7 @@ class Debugger:
                 else:
                     dpg.disable_item(child)
 
-    def enable_children(self, item: Union[int, str]):
+    def enable_children(self, item: Union[int, str]) -> None:
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -160,10 +160,10 @@ class Debugger:
                 else:
                     dpg.enable_item(child)
 
-    def auto_scroll(self, value):
+    def auto_scroll(self, value: bool) -> None:
         self._auto_scroll = value
 
-    def _log(self, message: str, level):
+    def _log(self, message: str, level: int) -> None:
 
         if level < self.log_level:
             return
@@ -204,35 +204,35 @@ class Debugger:
         if self._auto_scroll:
             dpg.set_y_scroll(self.child_id, -1.0)
 
-    def log(self, character):
+    def log(self, character: str) -> None:
         self._log(character, 0)
 
-    def log_debug(self, message):
+    def log_debug(self, message: str) -> None:
         self._log(message, 1)
 
-    def log_info(self, message):
+    def log_info(self, message: str) -> None:
         self._log(message, 2)
 
-    def log_warning(self, message):
+    def log_warning(self, message: str) -> None:
         self._log(message, 3)
 
-    def log_error(self, message):
+    def log_error(self, message: str) -> None:
         self._log(message, 4)
 
-    def clear_log(self):
+    def clear_log(self) -> None:
         dpg.delete_item(self.filter_id, children_only=True)
         self.log_count = 0
 
-    def load_start(self):
+    def load_start(self) -> None:
         dpg.add_loading_indicator(tag=LOADING_INDICATOR_TAG, parent=self.filter_id)
         if self._auto_scroll:
             dpg.set_y_scroll(self.child_id, -1.0)
 
-    def load_end(self):
+    def load_end(self) -> None:
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
     @staticmethod
-    def on_debug_run(self):
+    def on_debug_run(self: Any) -> None:
         if self.debug_session is None:
             # Start debugger
             self.debug_session = DebugSession(self)
@@ -241,7 +241,7 @@ class Debugger:
             self.debug_session.cont()
 
     @staticmethod
-    def on_build(self):
+    def on_build(self: Any) -> None:
         self.disable_all()
         self.load_start()
 
@@ -282,35 +282,35 @@ class Debugger:
         self.load_end()
 
     @staticmethod
-    def on_debug_step_over(self):
+    def on_debug_step_over(self: Any) -> None:
         if self.debug_session is None:
             return
         self.debug_session.next()
 
     @staticmethod
-    def on_debug_step_into(self):
+    def on_debug_step_into(self: Any) -> None:
         if self.debug_session is None:
             return
         self.debug_session.step()
 
     @staticmethod
-    def on_debug_stop(self):
+    def on_debug_stop(self: Any) -> None:
         if self.debug_session is None:
             return
         self.debug_session.stop()
 
-    def on_program_finished(self, _, **kw):
+    def on_program_finished(self, _: Any, **kw: Any) -> None:
         self.log_info('Program ended.')
         self.debug_session = None
 
-    def on_program_error(self, _, **kw):
+    def on_program_error(self, _: Any, **kw: str) -> None:
         error = kw['error']
         self.log_error(error)
 
-    def on_program_killed(self, _, **kw):
+    def on_program_killed(self, _: Any, **kw: Any) -> None:
         self.log_info('Program killed.')
         self.debug_session = None
 
-    def on_recieve_output(self, _, **kw):
+    def on_recieve_output(self, _: Any, **kw: str) -> None:
         output = kw['output']
         self.log(output)

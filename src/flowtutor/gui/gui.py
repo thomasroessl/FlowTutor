@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -62,16 +62,16 @@ class GUI:
     selected_node: Optional[Node] = None
 
     # The offset of the currently dragging node to its origin before moving
-    drag_offset: Tuple[int, int] = (0, 0)
+    drag_offset: tuple[int, int] = (0, 0)
 
     # The size of the GUI parent
-    parent_size: Tuple[int, int] = (0, 0)
+    parent_size: tuple[int, int] = (0, 0)
 
     declared_variables: list[dict[str, Any]] = []
 
-    mouse_position: Optional[Tuple[int, int]] = None
+    mouse_position: Optional[tuple[int, int]] = None
 
-    mouse_position_on_canvas: Optional[Tuple[int, int]] = None
+    mouse_position_on_canvas: Optional[tuple[int, int]] = None
 
     prev_source_code = ''
 
@@ -262,7 +262,7 @@ class GUI:
                         dpg.add_table_column(label='Name')
                         dpg.add_table_column(label='Value')
 
-    def refresh_function_tabs(self):
+    def refresh_function_tabs(self) -> None:
         for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
             dpg.delete_item(tab)
         for func in self.flowcharts.keys():
@@ -270,14 +270,14 @@ class GUI:
         dpg.add_tab_button(label='+', callback=lambda: self.on_add_function(self), parent=TAB_BAR_TAG)
 
     @staticmethod
-    def on_selected_tab_changed(self: GUI, _, tab):
+    def on_selected_tab_changed(self: GUI, _: Any, tab: str) -> None:
         self.clear_flowchart()
         self.selected_flowchart_tag = tab
         self.selected_node = self.selected_flowchart.root
         self.on_select_node(self.selected_flowchart.root)
         self.redraw_all()
 
-    def on_hit_line(self, _, **kw):
+    def on_hit_line(self, _: Any, **kw: int) -> None:
         line = kw['line']
         if self.debugger is not None:
             self.debugger.enable_all()
@@ -289,7 +289,7 @@ class GUI:
                     dpg.set_value(TAB_BAR_TAG, func.root.name)
         self.redraw_all()
 
-    def on_variables(self, _, **kw):
+    def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
         variables = kw['variables']
         if self.debugger is not None:
             for row_id in dpg.get_item_children(self.variable_table_id)[1]:
@@ -301,7 +301,7 @@ class GUI:
                         dpg.add_text(variables[variable])
         self.redraw_all()
 
-    def on_program_finished(self, _, **kw):
+    def on_program_finished(self: GUI, _: Any, **kw: dict[str, str]) -> None:
         for flowchart in self.flowcharts.values():
             for node in flowchart:
                 node.has_debug_cursor = False
@@ -310,8 +310,8 @@ class GUI:
         self.redraw_all()
 
     @staticmethod
-    def on_add_function(self: GUI):
-        def callback(name: str):
+    def on_add_function(self: GUI) -> None:
+        def callback(name: str) -> None:
             self.flowcharts[name] = Flowchart(name)
             self.refresh_function_tabs()
         i = len(self.flowcharts.values())
@@ -325,7 +325,7 @@ class GUI:
             new_name,
             callback)
 
-    def on_select_node(self, node: Optional[Node]):
+    def on_select_node(self, node: Optional[Node]) -> None:
         if node is None:
             dpg.hide_item('selected_node_comment_group')
             dpg.hide_item('selected_node_break_point_group')
@@ -449,8 +449,8 @@ class GUI:
             dpg.show_item('selected_none')
 
     @staticmethod
-    def on_open(self: GUI):
-        def callback(file_path):
+    def on_open(self: GUI) -> None:
+        def callback(file_path: str) -> None:
             with open(file_path, 'rb') as file:
                 self.file_path = file_path
                 dpg.set_viewport_title(f'FlowTutor - {file_path}')
@@ -462,8 +462,8 @@ class GUI:
         self.modal_service.show_open_modal(callback)
 
     @staticmethod
-    def on_new(self: GUI):
-        def callback():
+    def on_new(self: GUI) -> None:
+        def callback() -> None:
             self.file_path = None
             dpg.set_viewport_title('FlowTutor')
             self.clear_flowchart()
@@ -476,8 +476,8 @@ class GUI:
             'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     @staticmethod
-    def on_clear(self: GUI):
-        def callback():
+    def on_clear(self: GUI) -> None:
+        def callback() -> None:
             self.selected_flowchart.reset()
             self.clear_flowchart()
             self.redraw_all()
@@ -485,7 +485,7 @@ class GUI:
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     @staticmethod
-    def on_save(self: GUI):
+    def on_save(self: GUI) -> None:
         if self.file_path is not None:
             with open(self.file_path, 'wb') as file:
                 dump(self.flowcharts, file)
@@ -493,8 +493,8 @@ class GUI:
             GUI.on_save_as(self)
 
     @staticmethod
-    def on_save_as(self: GUI):
-        def callback(file_path):
+    def on_save_as(self: GUI) -> None:
+        def callback(file_path: str) -> None:
             with open(file_path, 'wb') as file:
                 self.file_path = file_path
                 dpg.set_viewport_title(f'FlowTutor - {file_path}')
@@ -502,28 +502,27 @@ class GUI:
         self.modal_service.show_save_as_modal(callback)
 
     @staticmethod
-    def on_light_theme_menu_item_click(self: GUI):
+    def on_light_theme_menu_item_click(self: GUI) -> None:
         dpg.bind_theme(create_theme_light())
         self.redraw_all()
         self.settings_service.set_setting('theme', 'light')
 
     @staticmethod
-    def on_dark_theme_menu_item_click(self: GUI):
+    def on_dark_theme_menu_item_click(self: GUI) -> None:
         dpg.bind_theme(create_theme_dark())
         self.redraw_all()
         self.settings_service.set_setting('theme', 'dark')
 
     @staticmethod
-    def on_window_resize(self: GUI):
+    def on_window_resize(self: GUI) -> None:
         (width, height) = dpg.get_item_rect_size(FLOWCHART_CONTAINER_TAG)
         self.parent_size = (width, height)
         self.resize()
         self.settings_service.set_setting('height', dpg.get_viewport_height())
         self.settings_service.set_setting('width', dpg.get_viewport_width())
-        pass
 
     @staticmethod
-    def on_hover(self: GUI, _, data: Tuple[int, int]):
+    def on_hover(self: GUI, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -533,17 +532,17 @@ class GUI:
         self.redraw_all()
 
     @staticmethod
-    def on_drag(self: GUI):
+    def on_drag(self: GUI) -> None:
         '''Redraws the currently dragging node to its new position.'''
         if self.mouse_position_on_canvas is None or self.dragging_node is None:
             return
         (cX, cY) = self.mouse_position_on_canvas
         (oX, oY) = self.drag_offset
         self.dragging_node.pos = (cX - oX, cY - oY)
-        self.dragging_node.redraw(self.mouse_position_on_canvas, self.selected_node)
+        self.dragging_node.redraw(self.mouse_position_on_canvas, self.dragging_node)
 
     @staticmethod
-    def on_mouse_click(self: GUI):
+    def on_mouse_click(self: GUI) -> None:
         '''Handles pressing down of the mouse button.'''
         if self.mouse_position_on_canvas is None:
             return
@@ -556,12 +555,12 @@ class GUI:
                 src_index = m.group(2)
                 parent = self.selected_flowchart.find_node(parent_tag)
 
-            def callback(node):
+            def callback(node: Node) -> None:
                 if parent is not None:
                     self.selected_flowchart.add_node(parent, node, int(src_index))
                     self.redraw_all()
                     self.resize()
-            self.modal_service.show_node_type_modal(callback, self.mouse_position)
+            self.modal_service.show_node_type_modal(callback, self.mouse_position or (0, 0))
         elif self.selected_node is not None:
             self.dragging_node = self.selected_node
             (pX, pY) = self.dragging_node.pos
@@ -573,16 +572,16 @@ class GUI:
             prev_selected_node.redraw(self.mouse_position_on_canvas, self.selected_node)
 
     @staticmethod
-    def on_mouse_release(self: GUI):
+    def on_mouse_release(self: GUI) -> None:
         self.dragging_node = None
         self.resize()
 
     @staticmethod
-    def on_delete_press(self: GUI):
+    def on_delete_press(self: GUI) -> None:
         if self.selected_node is None:
             return
 
-        def callback():
+        def callback() -> None:
             if self.selected_node is not None:
                 self.selected_flowchart.clear()
                 self.selected_flowchart.remove_node(self.selected_node)
@@ -598,10 +597,10 @@ class GUI:
         else:
             callback()
 
-    def set_sidebar_title(self, title):
+    def set_sidebar_title(self, title: str) -> None:
         dpg.configure_item(self.sidebar_title_tag, default_value=title)
 
-    def clear_flowchart(self):
+    def clear_flowchart(self) -> None:
         self.selected_node = None
         self.on_select_node(None)
         self.dragging_node = None
@@ -625,7 +624,7 @@ class GUI:
         sortedPos = sorted(pos, key=lambda pos: cast(int, pos))
         return list(map(lambda x: self.flowcharts[converter[x]], sortedPos))
 
-    def redraw_all(self):
+    def redraw_all(self) -> None:
         self.hovered_add_button = None
         is_add_button_drawn = False
         for node in self.selected_flowchart:
@@ -646,7 +645,7 @@ class GUI:
                 self.debugger.disable_all()
             dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
 
-    def draw_add_button(self, node: Node):
+    def draw_add_button(self, node: Node) -> bool:
         '''Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
            Returns True if an add button was drawn.
         '''
@@ -667,7 +666,7 @@ class GUI:
             return True
         return False
 
-    def resize(self):
+    def resize(self) -> None:
         '''Sets the size of the drawing area.'''
         width, height = self.parent_size
         width += 14
@@ -680,7 +679,7 @@ class GUI:
         dpg.set_item_height(FLOWCHART_TAG, height)
         dpg.set_item_width(FLOWCHART_TAG, width)
 
-    def get_point_on_canvas(self, point_on_screen: Tuple[int, int]):
+    def get_point_on_canvas(self, point_on_screen: tuple[int, int]) -> tuple[int, int]:
         '''Maps the point in screen coordinates to canvas coordinates.'''
         offsetX, offsetY = dpg.get_item_rect_min(FLOWCHART_TAG)
         x, y = point_on_screen

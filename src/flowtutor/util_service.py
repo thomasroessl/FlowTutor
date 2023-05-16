@@ -19,7 +19,7 @@ from os import path
 
 class UtilService:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = pathlib.Path(sys.modules['__main__'].__file__ or '').parent.resolve()
         self.temp_dir = mkdtemp(None, 'flowtutor-')
         print(self.temp_dir)
@@ -27,15 +27,15 @@ class UtilService:
         self.tty_fd = 0
         self.is_stopped = threading.Event()
 
-    def cleanup_temp(self):
+    def cleanup_temp(self) -> None:
         '''Deletes the temporary working directory.'''
         rmtree(self.temp_dir)
 
-    def get_root_dir(self):
+    def get_root_dir(self) -> pathlib.Path:
         '''Gets the root directory of the application.'''
         return self.root
 
-    def get_gcc_exe(self):
+    def get_gcc_exe(self) -> str:
         '''Gets the path to the installed gcc, or the packaged version of mingw on Windows.'''
         if (exe := which('gcc-12')) is not None:
             return exe
@@ -46,7 +46,7 @@ class UtilService:
         else:
             raise FileNotFoundError('gcc could not be found on the system!')
 
-    def get_gdb_exe(self):
+    def get_gdb_exe(self) -> str:
         '''Gets the path to the installed gdb, or the packaged version of mingw on Windows.'''
         if (exe := which('gdb')) is not None:
             return exe
@@ -55,11 +55,11 @@ class UtilService:
         else:
             raise FileNotFoundError('gdb could not be found on the system!')
 
-    def get_exe_path(self):
+    def get_exe_path(self) -> str:
         '''Gets the path to the executable compiled by flowtutor (through gcc).'''
         return path.join(self.temp_dir, 'flowtutor.exe')
 
-    def get_gdb_commands_path(self):
+    def get_gdb_commands_path(self) -> str:
         '''Creates and gets the path to the command file used for starting gdb.'''
         gdb_commands_path = path.join(self.temp_dir, 'gdb_commands')
         gdb_commands = 'set prompt (gdb)\\n'
@@ -78,15 +78,15 @@ class UtilService:
             gdb_commands_file.write(gdb_commands)
         return gdb_commands_path
 
-    def get_c_source_path(self):
+    def get_c_source_path(self) -> str:
         '''Gets the path to the generated C-source code of the flowchart.'''
         return path.join(self.temp_dir, 'flowtutor.c')
 
-    def get_break_points_path(self):
+    def get_break_points_path(self) -> str:
         '''Gets the path to the break-point file for gdb.'''
         return path.join(self.temp_dir, 'flowtutor_break_points')
 
-    def open_tty(self):
+    def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''
 
         if (os.isatty(sys.stdin.fileno())):
@@ -97,7 +97,7 @@ class UtilService:
         self.tty_fd, slave_fd = pty.openpty()
         self.tty_name = os.ttyname(slave_fd)
 
-        def output(fd):
+        def output(fd: int) -> None:
             while not self.is_stopped.is_set():
                 rfds, _, _ = select.select([fd], [], [])
                 if fd in rfds:
@@ -110,11 +110,11 @@ class UtilService:
 
         threading.Thread(target=output, args=[self.tty_fd]).start()
 
-    def write_tty(self, message: str):
+    def write_tty(self, message: str) -> None:
         '''Writes to the opened pseudoterminal that communicates with with gdb.'''
         os.write(self.tty_fd, (message + '\n').encode('utf-8'))
 
-    def stop_tty(self):
+    def stop_tty(self) -> None:
         '''Stops the pseudoterminal thread.'''
         self.is_stopped.set()
         try:

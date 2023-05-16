@@ -1,4 +1,5 @@
-from typing import Any, Optional, Tuple
+from __future__ import annotations
+from typing import Any, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
@@ -7,7 +8,7 @@ from flowtutor.gui.themes import theme_colors
 
 class ForLoop(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._var_name = 'i'
         self._start_value = '0'
@@ -15,27 +16,27 @@ class ForLoop(Node):
         self._condition = ''
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0), (125, 75)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(40, 75), (self.get_right_x(), 37.5)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (255, 208, 147) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 37.5),
             (20, 75),
@@ -47,7 +48,7 @@ class ForLoop(Node):
         ]
 
     @property
-    def label(self):
+    def label(self) -> str:
         if (len(self.condition) > 0 and
             len(self.var_name) > 0 and
             len(self.start_value) > 0 and
@@ -61,7 +62,7 @@ class ForLoop(Node):
         return self._condition
 
     @condition.setter
-    def condition(self, condition: str):
+    def condition(self, condition: str) -> None:
         self._condition = condition
 
     @property
@@ -69,7 +70,7 @@ class ForLoop(Node):
         return self._var_name
 
     @var_name.setter
-    def var_name(self, var_name: str):
+    def var_name(self, var_name: str) -> None:
         self._var_name = var_name
 
     @property
@@ -77,7 +78,7 @@ class ForLoop(Node):
         return self._start_value
 
     @start_value.setter
-    def start_value(self, start_value: str):
+    def start_value(self, start_value: str) -> None:
         self._start_value = start_value
 
     @property
@@ -85,10 +86,10 @@ class ForLoop(Node):
         return self._update
 
     @update.setter
-    def update(self, update: str):
+    def update(self, update: str) -> None:
         self._update = update
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
@@ -112,13 +113,13 @@ class ForLoop(Node):
                            pos_y + self.shape_height/2 - text_true_height - 5),
                           text_true, color=text_color, size=18)
 
-    def delete(self):  # pragma: no cover
+    def delete(self) -> None:  # pragma: no cover
         super().delete()
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):
             dpg.delete_item(tag)
 
-    def has_nested_nodes(self):
+    def has_nested_nodes(self) -> bool:
         return True
 
     @property

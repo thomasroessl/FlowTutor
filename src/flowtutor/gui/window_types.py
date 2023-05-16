@@ -22,6 +22,6 @@ class WindowTypes:
             self.section_typedefs = SectionTypedefs(gui)
             self.section_structs = SectionStructs(gui)
 
-    def refresh(self):
+    def refresh(self) -> None:
         self.section_typedefs.refresh()
         self.section_structs.refresh()

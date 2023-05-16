@@ -1,4 +1,6 @@
-from typing import Any, Optional, Tuple
+from __future__ import annotations
+import math
+from typing import Any, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
@@ -6,35 +8,35 @@ from flowtutor.flowchart.node import FLOWCHART_TAG, Node
 
 class Declarations(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._declarations = [
             self.new_declaration()
         ]
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         _, height = dpg.get_text_size(self.label)
-        return 57 + height
+        return 57 + int(math.floor(height))
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, self.shape_height)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (255, 255, 170) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 0),
             (150, 0),
@@ -48,7 +50,7 @@ class Declarations(Node):
         return self._declarations
 
     @declarations.setter
-    def declarations(self, declarations: list[dict[str, Any]]):
+    def declarations(self, declarations: list[dict[str, Any]]) -> None:
         self._declarations = declarations
 
     @property
@@ -66,7 +68,7 @@ class Declarations(Node):
         else:
             return self.__class__.__name__
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
@@ -90,7 +92,7 @@ class Declarations(Node):
                 color=text_color,
                 thickness=1)
 
-    def delete(self):  # pragma: no cover
+    def delete(self) -> None:  # pragma: no cover
         super().delete()
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):
@@ -116,8 +118,8 @@ class Declarations(Node):
             'is_static':  False
         }
 
-    def add_declaration(self):
+    def add_declaration(self) -> None:
         self.declarations.append(self.new_declaration())
 
-    def delete_declaration(self, index):
+    def delete_declaration(self, index: int) -> None:
         del self.declarations[index]

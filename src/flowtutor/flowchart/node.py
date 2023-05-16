@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Union
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Polygon
@@ -16,7 +16,7 @@ FLOWCHART_TAG = 'flowchart'
 
 class Node(ABC):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._tag = str(uuid4())
         self._connections: list[Connection] = []
         self._scope: list[str] = []
@@ -24,7 +24,7 @@ class Node(ABC):
         self._comment = ''
         self._break_point = False
         self._is_comment = False
-        self._lines = []
+        self._lines: list[int] = []
         self._has_debug_cursor = False
 
     def __repr__(self) -> str:
@@ -35,7 +35,7 @@ class Node(ABC):
         return self._tag
 
     @tag.setter
-    def tag(self, tag: str):
+    def tag(self, tag: str) -> None:
         self._tag = tag
 
     @property
@@ -43,7 +43,7 @@ class Node(ABC):
         return self._scope
 
     @scope.setter
-    def scope(self, scope: list[str]):
+    def scope(self, scope: list[str]) -> None:
         self._scope = scope
 
     @property
@@ -83,34 +83,35 @@ class Node(ABC):
         pass
 
     @property
-    def pos(self) -> Tuple[int, int]:
+    def pos(self) -> tuple[int, int]:
         return self._pos
 
     @pos.setter
-    def pos(self, pos: Tuple[int, int]):
+    def pos(self, pos: tuple[int, int]) -> None:
         self._pos = pos
 
     @property
-    def bounds(self):
-        return self.shape.bounds
+    def bounds(self) -> tuple[int, int, int, int]:
+        result: tuple[int, int, int, int] = self.shape.bounds
+        return result
 
     @property
     @abstractmethod
-    def raw_in_points(self) -> list[Tuple[int, int]]:
+    def raw_in_points(self) -> list[tuple[float, float]]:
         pass
 
     @property
     @abstractmethod
-    def raw_out_points(self) -> list[Tuple[int, int]]:
+    def raw_out_points(self) -> list[tuple[float, float]]:
         pass
 
     @property
-    def in_points(self) -> list[Tuple[int, int]]:
+    def in_points(self) -> list[tuple[float, float]]:
         pos_x, pos_y = self.pos
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_in_points))
 
     @property
-    def out_points(self) -> list[Tuple[int, int]]:
+    def out_points(self) -> list[tuple[float, float]]:
         pos_x, pos_y = self.pos
         return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), self.raw_out_points))
 
@@ -119,7 +120,7 @@ class Node(ABC):
         return self._lines
 
     @lines.setter
-    def lines(self, lines: list[int]):
+    def lines(self, lines: list[int]) -> None:
         self._lines = lines
 
     @property
@@ -127,17 +128,17 @@ class Node(ABC):
         return self._has_debug_cursor
 
     @has_debug_cursor.setter
-    def has_debug_cursor(self, has_debug_cursor: bool):
+    def has_debug_cursor(self, has_debug_cursor: bool) -> None:
         self._has_debug_cursor = has_debug_cursor
 
     @property
     @abstractmethod
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         pass
 
     @property
     @abstractmethod
-    def shape_points(self) -> list[Tuple[int, int]]:
+    def shape_points(self) -> list[tuple[float, float]]:
         pass
 
     @property
@@ -150,7 +151,7 @@ class Node(ABC):
         return self._connections
 
     @connections.setter
-    def connections(self, connections: list[Connection]):
+    def connections(self, connections: list[Connection]) -> None:
         self._connections = connections
 
     @property
@@ -163,7 +164,7 @@ class Node(ABC):
         return self._comment
 
     @comment.setter
-    def comment(self, comment: str):
+    def comment(self, comment: str) -> None:
         self._comment = comment
 
     @property
@@ -171,7 +172,7 @@ class Node(ABC):
         return self._break_point
 
     @break_point.setter
-    def break_point(self, break_point: bool):
+    def break_point(self, break_point: bool) -> None:
         self._break_point = break_point
 
     @property
@@ -179,19 +180,19 @@ class Node(ABC):
         return self._is_comment
 
     @is_comment.setter
-    def is_comment(self, is_comment: bool):
+    def is_comment(self, is_comment: bool) -> None:
         self._is_comment = is_comment
 
-    def get_left_x(self):
+    def get_left_x(self) -> int:
         return self.shape_width//2 - self.width//2
 
-    def get_right_x(self):
+    def get_right_x(self) -> int:
         return (self.width + self.shape_width)//2
 
     def find_connection(self, index: int) -> Optional[Connection]:
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
         color = (150, 150, 150) if self.is_comment else self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
@@ -249,20 +250,21 @@ class Node(ABC):
         for connection in self.connections:
             connection.draw(self)
 
-    def redraw(self, mouse_pos: Optional[Tuple[int, int]], selected_node):
+    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_node: Optional[Node]) -> None:
         '''Deletes the node and draws a new version of it.'''
         self.delete()
         self.draw(mouse_pos, selected_node == self)
 
-    def is_hovered(self, mouse_pos: Union[Tuple[int, int], None]):
+    def is_hovered(self, mouse_pos: Union[tuple[int, int], None]) -> bool:
         if mouse_pos is None:
             return False
         point = Point(*mouse_pos)
-        return self.shape.contains(point)
+        result: bool = self.shape.contains(point)
+        return result
 
-    def has_nested_nodes(self):
+    def has_nested_nodes(self) -> bool:
         return False
 
-    def delete(self):  # pragma: no cover
+    def delete(self) -> None:  # pragma: no cover
         if dpg.does_item_exist(self.tag):
             dpg.delete_item(self.tag)

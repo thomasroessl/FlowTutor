@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Union
 import dearpygui.dearpygui as dpg
+from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.struct_definition import StructDefinition
 from flowtutor.flowchart.struct_member import StructMember
 from flowtutor.language import Language
@@ -21,7 +22,7 @@ class SectionStructs:
         dpg.add_collapsing_header(label='Structures', tag=HEADER_TAG)
         self.refresh()
 
-    def refresh(self):
+    def refresh(self) -> None:
         for child in dpg.get_item_children(HEADER_TAG)[1]:
             dpg.delete_item(child)
         for [i, d] in enumerate(self.struct_definitions()):
@@ -73,31 +74,31 @@ class SectionStructs:
         dpg.add_spacer(height=5, parent=HEADER_TAG)
         dpg.add_button(label='Add Structure', parent=HEADER_TAG, width=-1, callback=self.on_add_definition)
 
-    def on_add_definition(self):
+    def on_add_definition(self) -> None:
         self.struct_definitions().append(StructDefinition())
         self.refresh()
         self.gui.redraw_all()
 
-    def on_delete_definition(self, index: int):
+    def on_delete_definition(self, index: int) -> None:
         del self.struct_definitions()[index]
         self.refresh()
         self.gui.redraw_all()
 
-    def main_node(self):
+    def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']
 
-    def struct_definitions(self):
+    def struct_definitions(self) -> list[StructDefinition]:
         return self.main_node().struct_definitions
 
-    def members(self, i) -> List[StructMember]:
-        result: List[StructMember] = self.struct_definitions()[i].__getattribute__('members')
+    def members(self, i: int) -> list[StructMember]:
+        result: list[StructMember] = self.struct_definitions()[i].__getattribute__('members')
         return result
 
     def member(self, t: tuple[int, int]) -> StructMember:
         i, j = t
         return self.members(i)[j]
 
-    def toggle_is_array(self, is_array: bool, checkbox_id):
+    def toggle_is_array(self, is_array: bool, checkbox_id: Union[int, str]) -> None:
         i, j = dpg.get_item_user_data(checkbox_id)
         member = self.member((i, j))
         if is_array:
@@ -107,13 +108,13 @@ class SectionStructs:
 
         dpg.configure_item(f'struct_member_is_pointer_{i}_{j}', default_value=member.is_pointer)
 
-    def toggle_is_pointer(self, checkbox_id):
+    def toggle_is_pointer(self, checkbox_id: Union[int, str]) -> None:
         i, j = dpg.get_item_user_data(checkbox_id)
         member = self.member((i, j))
         dpg.configure_item(f'struct_member_array_size_{i}_{j}', default_value=member.array_size)
         dpg.configure_item(f'struct_member_is_array_{i}_{j}', default_value=member.is_array)
 
-    def refresh_members(self, i, table, members: List[StructMember]):
+    def refresh_members(self, i: int, table: Union[int, str], members: list[StructMember]) -> None:
         # delete existing rows in the table to avoid duplicates
         for child in dpg.get_item_children(table)[1]:
             dpg.delete_item(child)

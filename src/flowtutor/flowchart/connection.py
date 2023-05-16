@@ -34,7 +34,7 @@ class Connection:
     def span(self) -> bool:
         return self._span
 
-    def draw(self, parent: Node):  # pragma: no cover
+    def draw(self, parent: Node) -> None:  # pragma: no cover
 
         dst_in_points = self.dst_node.in_points
         src_out_points = parent.out_points

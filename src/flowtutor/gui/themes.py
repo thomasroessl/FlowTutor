@@ -1,10 +1,9 @@
-from typing import Dict, Tuple
 import dearpygui.dearpygui as dpg
 
-theme_colors: Dict[Tuple[int, int], Tuple[float, float, float, float]] = {}
+theme_colors: dict[tuple[int, int], tuple[float, float, float, float]] = {}
 
 
-def set_theme_color(target: int, color: Tuple[float, float, float, float], category: int = 0):
+def set_theme_color(target: int, color: tuple[float, float, float, float], category: int = 0) -> None:
     dpg.add_theme_color(target, color, category=category)
     theme_colors[(target, category)] = color
 

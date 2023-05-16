@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Generator, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Generator, Optional
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -26,10 +26,10 @@ class Flowchart:
         self._root = root
         end = FunctionEnd(name)
         self.add_node(root, end)
-        self._includes: List[str] = ['stdio']
-        self._preprocessor_definitions: List[str] = []
-        self._type_definitions: List[TypeDefinition] = []
-        self._struct_definitions: List[StructDefinition] = []
+        self._includes: list[str] = ['stdio']
+        self._preprocessor_definitions: list[str] = []
+        self._type_definitions: list[TypeDefinition] = []
+        self._struct_definitions: list[StructDefinition] = []
         self._preprocessor_custom: str = ''
 
     @property
@@ -37,19 +37,19 @@ class Flowchart:
         return self._root
 
     @property
-    def includes(self) -> List[str]:
+    def includes(self) -> list[str]:
         return self._includes
 
     @property
-    def preprocessor_definitions(self) -> List[str]:
+    def preprocessor_definitions(self) -> list[str]:
         return self._preprocessor_definitions
 
     @property
-    def type_definitions(self) -> List[TypeDefinition]:
+    def type_definitions(self) -> list[TypeDefinition]:
         return self._type_definitions
 
     @property
-    def struct_definitions(self) -> List[StructDefinition]:
+    def struct_definitions(self) -> list[StructDefinition]:
         return self._struct_definitions
 
     @property
@@ -57,16 +57,16 @@ class Flowchart:
         return self._preprocessor_custom
 
     @preprocessor_custom.setter
-    def preprocessor_custom(self, preprocessor_custom: str):
+    def preprocessor_custom(self, preprocessor_custom: str) -> None:
         self._preprocessor_custom = preprocessor_custom
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[Node, None, None]:
         return self.deduplicate(self.get_all_nodes(self.root, False))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(list(self.__iter__()))
 
-    def deduplicate(self, it) -> Generator[Node, None, None]:
+    def deduplicate(self, it: Generator[Node, None, None]) -> Generator[Node, None, None]:
         seen = set()
         for node in it:
             if node not in seen:
@@ -122,13 +122,13 @@ class Flowchart:
             connection = node.find_connection(0)
             return None if connection is None else connection.dst_node
 
-    def find_hovered_node(self, mouse_position: Tuple[int, int]):
-        return next(filter(lambda n: n.is_hovered(mouse_position), self), None)
+    def find_hovered_node(self, mouse_position: tuple[int, int]) -> Optional[Node]:
+        return next(filter(lambda n: n is not None and n.is_hovered(mouse_position), self), None)
 
-    def is_initialized(self):
+    def is_initialized(self) -> bool:
         return all(map(lambda n: n.is_initialized, self))
 
-    def add_node(self, parent: Node, child: Node, src_ind: int = 0):
+    def add_node(self, parent: Node, child: Node, src_ind: int = 0) -> None:
         child.scope = parent.scope.copy()
         if isinstance(parent, Conditional) or\
                 isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) and\
@@ -163,7 +163,7 @@ class Flowchart:
                 child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 
-    def set_start_position(self, node: Node, parent: Node, src_ind: int):  # pragma: no cover
+    def set_start_position(self, node: Node, parent: Node, src_ind: int) -> None:  # pragma: no cover
         if isinstance(node, Connector):
             pos_x, pos_y = parent.pos
             pos = (int(pos_x + parent.shape_width/2 - node.shape_width/2),
@@ -172,22 +172,22 @@ class Flowchart:
             _, connection_point_y = parent.out_points[int(src_ind)]
             if isinstance(parent, Conditional):
                 if int(src_ind) == 0:
-                    pos = (parent.pos[0] - 125, connection_point_y + 50)
+                    pos = (parent.pos[0] - 125, int(connection_point_y + 50))
                 else:
-                    pos = (parent.pos[0] + 125, connection_point_y + 50)
+                    pos = (parent.pos[0] + 125, int(connection_point_y + 50))
             elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop)) and\
                     int(src_ind) == 1:
-                pos = (parent.pos[0] + 160, connection_point_y + 25)
+                pos = (parent.pos[0] + 160, int(connection_point_y + 25))
             elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop)):
-                pos = (parent.pos[0] - 35, connection_point_y + 50)
+                pos = (parent.pos[0] - 35, int(connection_point_y + 50))
             elif isinstance(parent, Connector):
-                pos = (parent.pos[0] - parent.shape_width, connection_point_y + 50)
+                pos = (parent.pos[0] - parent.shape_width, int(connection_point_y + 50))
             else:
-                pos = (parent.pos[0], connection_point_y + 50)
+                pos = (parent.pos[0], int(connection_point_y + 50))
 
         node.pos = pos
 
-    def remove_node(self, node: Node):
+    def remove_node(self, node: Node) -> None:
         if isinstance(node, Connector) or isinstance(node, FunctionStart) or isinstance(node, FunctionEnd):
             return
         parent = self.find_parent(node)
@@ -206,18 +206,18 @@ class Flowchart:
         else:
             parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
 
-    def move_below(self, parent: Node):  # pragma: no cover
+    def move_below(self, parent: Node) -> None:  # pragma: no cover
         for i, child in enumerate(self.deduplicate(self.get_all_children(parent, True))):
             if child.tag not in parent.scope:
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, int(pos_y + parent.shape_height + 50))
         pass
 
-    def clear(self):
+    def clear(self) -> None:
         for node in self:
             node.delete()
 
-    def reset(self):
+    def reset(self) -> None:
         name = self._root.name
         root = FunctionStart(name)
         root.pos = (290, 20)

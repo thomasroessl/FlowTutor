@@ -7,7 +7,7 @@ from pathlib import Path
 
 class SettingsService:
 
-    def set_setting(self, key: str, value: str):
+    def set_setting(self, key: str, value: str) -> None:
         with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
             db[key] = str(value)
 

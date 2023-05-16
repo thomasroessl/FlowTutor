@@ -9,7 +9,7 @@ class Parameter:
         return self._name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         self._name = name
 
     @property
@@ -17,7 +17,7 @@ class Parameter:
         return self._type
 
     @type.setter
-    def type(self, type: str):
+    def type(self, type: str) -> None:
         self._type = type
 
     def __repr__(self) -> str:

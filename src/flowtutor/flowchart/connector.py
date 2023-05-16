@@ -1,3 +1,4 @@
+from __future__ import annotations
 from shapely.geometry import Point
 
 from flowtutor.flowchart.node import Node
@@ -5,34 +6,36 @@ from flowtutor.flowchart.node import Node
 
 class Connector(Node):
 
-    _shape_points = list(Point(25, 25).buffer(25).exterior.coords)
+    def __init__(self) -> None:
+        super().__init__()
+        self._shape_points = list(Point(25, 25).buffer(25).exterior.coords)
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 50
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 50
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(25, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(25, 50)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (255, 170, 170)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return self._shape_points
 
     @property
-    def label(self):
+    def label(self) -> str:
         return ''
 
     @property

@@ -1,38 +1,37 @@
-from typing import List
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.parameter import Parameter
 
 
 class FunctionStart(Node):
 
-    def __init__(self, name: str = ''):
+    def __init__(self, name: str = '') -> None:
         super().__init__()
         self._name = name
         self._return_type = 'int'
-        self._parameters: List[Parameter] = []
+        self._parameters: list[Parameter] = []
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, 75)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (200, 170, 255)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 37.5),
             (1, 30),
@@ -76,7 +75,7 @@ class FunctionStart(Node):
         return self._name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         self._name = name
 
     @property
@@ -84,7 +83,7 @@ class FunctionStart(Node):
         return self._return_type
 
     @return_type.setter
-    def return_type(self, return_type: str):
+    def return_type(self, return_type: str) -> None:
         self._return_type = return_type
 
     @property
@@ -94,7 +93,7 @@ class FunctionStart(Node):
         return self._parameters
 
     @property
-    def label(self):
+    def label(self) -> str:
         return self.name
 
     @property

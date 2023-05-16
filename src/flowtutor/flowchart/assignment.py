@@ -1,36 +1,37 @@
+from __future__ import annotations
 from flowtutor.flowchart.node import Node
 
 
 class Assignment(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._var_name = ''
         self._var_offset = ''
         self._var_value = ''
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, 75)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (255, 255, 170) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 0),
             (150, 0),
@@ -51,7 +52,7 @@ class Assignment(Node):
         return self._var_name
 
     @var_name.setter
-    def var_name(self, var_name: str):
+    def var_name(self, var_name: str) -> None:
         self._var_name = var_name
 
     @property
@@ -59,7 +60,7 @@ class Assignment(Node):
         return self._var_offset
 
     @var_offset.setter
-    def var_offset(self, var_offset: str):
+    def var_offset(self, var_offset: str) -> None:
         self._var_offset = var_offset
 
     @property
@@ -67,7 +68,7 @@ class Assignment(Node):
         return self._var_value
 
     @var_value.setter
-    def var_value(self, var_value: str):
+    def var_value(self, var_value: str) -> None:
         self._var_value = var_value
 
     @property

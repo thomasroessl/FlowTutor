@@ -15,7 +15,7 @@ class SidebarDeclarations:
         self.gui = gui
         dpg.add_group(tag=SELECTED_DECLARATIONS_TAG, show=False)
 
-    def refresh(self):
+    def refresh(self) -> None:
         for child in dpg.get_item_children(SELECTED_DECLARATIONS_TAG)[1]:
             dpg.delete_item(child)
 
@@ -123,13 +123,13 @@ class SidebarDeclarations:
             dpg.add_button(label='Add Declaration', width=-1,
                            parent=SELECTED_DECLARATIONS_TAG, callback=self.on_add_declaration)
 
-    def on_add_declaration(self):
+    def on_add_declaration(self) -> None:
         if isinstance(self.gui.selected_node, Declarations):
             self.gui.selected_node.add_declaration()
         self.refresh()
         self.gui.redraw_all()
 
-    def on_delete_declaration(self, index: int):
+    def on_delete_declaration(self, index: int) -> None:
         if isinstance(self.gui.selected_node, Declarations):
             self.gui.selected_node.delete_declaration(index)
         self.refresh()

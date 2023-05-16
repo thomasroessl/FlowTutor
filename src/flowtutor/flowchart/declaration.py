@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
@@ -6,7 +6,7 @@ from flowtutor.flowchart.node import FLOWCHART_TAG, Node
 
 class Declaration(Node):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._var_name = ''
         self._var_type = 'int'
@@ -17,27 +17,27 @@ class Declaration(Node):
         self._is_static = False
 
     @property
-    def shape_width(self):
+    def shape_width(self) -> int:
         return 150
 
     @property
-    def shape_height(self):
+    def shape_height(self) -> int:
         return 75
 
     @property
-    def raw_in_points(self):
+    def raw_in_points(self) -> list[tuple[float, float]]:
         return [(75, 0)]
 
     @property
-    def raw_out_points(self):
+    def raw_out_points(self) -> list[tuple[float, float]]:
         return [(75, 75)]
 
     @property
-    def color(self):
+    def color(self) -> tuple[int, int, int]:
         return (255, 255, 170) if self.is_initialized else (255, 0, 0)
 
     @property
-    def shape_points(self):
+    def shape_points(self) -> list[tuple[float, float]]:
         return [
             (0, 0),
             (150, 0),
@@ -65,7 +65,7 @@ class Declaration(Node):
         return self._var_name
 
     @var_name.setter
-    def var_name(self, var_name: str):
+    def var_name(self, var_name: str) -> None:
         self._var_name = var_name
 
     @property
@@ -73,7 +73,7 @@ class Declaration(Node):
         return self._var_type
 
     @var_type.setter
-    def var_type(self, var_type: str):
+    def var_type(self, var_type: str) -> None:
         self._var_type = var_type
 
     @property
@@ -81,7 +81,7 @@ class Declaration(Node):
         return self._var_value
 
     @var_value.setter
-    def var_value(self, var_value: str):
+    def var_value(self, var_value: str) -> None:
         self._var_value = var_value
 
     @property
@@ -89,7 +89,7 @@ class Declaration(Node):
         return self._is_array
 
     @is_array.setter
-    def is_array(self, is_array: bool):
+    def is_array(self, is_array: bool) -> None:
         self._is_array = is_array
         if is_array:
             self.var_value = ''
@@ -101,7 +101,7 @@ class Declaration(Node):
         return self._array_size
 
     @array_size.setter
-    def array_size(self, array_size: str):
+    def array_size(self, array_size: str) -> None:
         self._array_size = array_size
 
     @property
@@ -109,7 +109,7 @@ class Declaration(Node):
         return self._is_pointer
 
     @is_pointer.setter
-    def is_pointer(self, is_pointer: bool):
+    def is_pointer(self, is_pointer: bool) -> None:
         self._is_pointer = is_pointer
 
     @property
@@ -117,10 +117,10 @@ class Declaration(Node):
         return self._is_static
 
     @is_static.setter
-    def is_static(self, is_static: bool):
+    def is_static(self, is_static: bool) -> None:
         self._is_static = is_static
 
-    def draw(self, mouse_pos: Optional[Tuple[int, int]], is_selected=False):  # pragma: no cover
+    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
         super().draw(mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
@@ -144,7 +144,7 @@ class Declaration(Node):
                 color=text_color,
                 thickness=1)
 
-    def delete(self):  # pragma: no cover
+    def delete(self) -> None:  # pragma: no cover
         super().delete()
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):

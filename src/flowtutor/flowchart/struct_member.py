@@ -12,7 +12,7 @@ class StructMember:
         return self._name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         self._name = name
 
     @property
@@ -20,7 +20,7 @@ class StructMember:
         return self._type
 
     @type.setter
-    def type(self, type: str):
+    def type(self, type: str) -> None:
         self._type = type
 
     @property
@@ -28,7 +28,7 @@ class StructMember:
         return self._is_array
 
     @is_array.setter
-    def is_array(self, is_array: bool):
+    def is_array(self, is_array: bool) -> None:
         self._is_array = is_array
         if not is_array:
             self.array_size = ''
@@ -40,7 +40,7 @@ class StructMember:
         return self._array_size
 
     @array_size.setter
-    def array_size(self, array_size: str):
+    def array_size(self, array_size: str) -> None:
         self._array_size = array_size
 
     @property
@@ -48,7 +48,7 @@ class StructMember:
         return self._is_pointer
 
     @is_pointer.setter
-    def is_pointer(self, is_pointer: bool):
+    def is_pointer(self, is_pointer: bool) -> None:
         self._is_pointer = is_pointer
         if is_pointer:
             self.is_array = False

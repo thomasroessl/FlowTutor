@@ -11,7 +11,7 @@ class TypeDefinition:
         return self._name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         self._name = name
 
     @property
@@ -19,7 +19,7 @@ class TypeDefinition:
         return self._definition
 
     @definition.setter
-    def definition(self, definition: str):
+    def definition(self, definition: str) -> None:
         self._definition = definition
 
     def __repr__(self) -> str:

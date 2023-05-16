@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
@@ -57,21 +57,21 @@ class SidebarFunctionStart:
                               callback=lambda _, data: (gui.selected_node.__setattr__('return_type', data),
                                                         gui.redraw_all()))
 
-    def parameters(self) -> List[Parameter]:
-        result: List[Parameter] = self.gui.selected_node.__getattribute__('parameters')
+    def parameters(self) -> list[Parameter]:
+        result: list[Parameter] = self.gui.selected_node.__getattribute__('parameters')
         return result
 
-    def on_delete(self):
+    def on_delete(self) -> None:
         if isinstance(self.gui.selected_node, FunctionStart):
             del self.gui.flowcharts[self.gui.selected_node.name]
             self.gui.refresh_function_tabs()
 
-    def on_rename(self):
+    def on_rename(self) -> None:
         if isinstance(self.gui.selected_node, FunctionStart):
             self.modal_service.show_input_text_modal(
                 'Rename', 'Function Name', self.gui.selected_node.name, self.rename)
 
-    def rename(self, name):
+    def rename(self, name: str) -> None:
         if isinstance(self.gui.selected_node, FunctionStart):
             fun = self.gui.flowcharts[self.gui.selected_node.name]
             del self.gui.flowcharts[self.gui.selected_node.name]
@@ -79,7 +79,7 @@ class SidebarFunctionStart:
             self.gui.flowcharts[name] = fun
             self.gui.refresh_function_tabs()
 
-    def refresh_entries(self, entries):
+    def refresh_entries(self, entries: list[Parameter]) -> None:
         # delete existing rows in the table to avoid duplicates
         for child in dpg.get_item_children(self.table)[1]:
             dpg.delete_item(child)
