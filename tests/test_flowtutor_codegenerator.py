@@ -646,7 +646,7 @@ class TestCodeGenerator:
         expected = '\n'.join([
             '#include <stdio.h>',
             '',
-            'struct Test_s {',
+            'typedef struct Test_s {',
             '  int x;',
             '  long *y;',
             '  long z[10];',
