@@ -61,6 +61,11 @@ class CodeGenerator:
         source: list[tuple[str, bool, Optional[Node]]] = [
             (f'#include <{h}.h>', False, None) for h in flowcharts[0].includes
         ]
+        for struct_definition in flowcharts[0].struct_definitions:
+            source += [('', False, None)]
+            source += [
+                (d, False, None) for d in str(struct_definition).split('\n')
+            ]
         source += [
             (f'#define {d}', False, None) for d in flowcharts[0].preprocessor_definitions
         ]

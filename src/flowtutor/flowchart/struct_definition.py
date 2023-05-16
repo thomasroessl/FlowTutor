@@ -23,4 +23,5 @@ class StructDefinition:
         return self._members
 
     def __repr__(self) -> str:
-        return f'struct {self.name} {{ \n }}'
+        members = '\n  '.join([m for m in map(lambda m: str(m), self.members)])
+        return f'struct {self.name}_s {{\n  { members }\n}} {self.name}_t;'
