@@ -359,9 +359,6 @@ class GUI:
         if isinstance(self.selected_node, Assignment):
             self.set_sidebar_title('Assignment')
             self.declared_variables = list(self.selected_flowchart.get_all_declarations())
-            if Language.has_var_declaration():
-                dpg.configure_item('selected_assignment_name',
-                                   items=list(map(lambda d: str(d['var_name']), self.declared_variables)))
             dpg.configure_item('selected_assignment_name', default_value=self.selected_node.var_name)
             dpg.configure_item('selected_assignment_offset', default_value=self.selected_node.var_offset)
             if Language.has_arrays():

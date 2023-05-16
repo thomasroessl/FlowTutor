@@ -11,27 +11,15 @@ if TYPE_CHECKING:
 class SidebarAssignment:
     def __init__(self, gui: GUI) -> None:
         with dpg.group(tag='selected_assignment', show=False):
-            if Language.has_var_declaration():
-                with dpg.group(horizontal=True):
-                    dpg.add_text('Name')
-                    dpg.add_combo([],
-                                  tag='selected_assignment_name',
-                                  indent=50,
-                                  width=-1,
-                                  callback=lambda _, data: (gui.selected_node.__setattr__('var_name',
-                                                                                          data),
-                                                            gui.on_select_node(gui.selected_node),
-                                                            gui.redraw_all()))
-            else:
-                with dpg.group(horizontal=True):
-                    dpg.add_text('Name')
-                    dpg.add_input_text(tag='selected_assignment_name',
-                                       indent=50,
-                                       width=-1,
-                                       no_spaces=True,
-                                       callback=lambda _, data: (gui.selected_node.__setattr__('var_name',
-                                                                                               data),
-                                                                 gui.redraw_all()))
+            with dpg.group(horizontal=True):
+                dpg.add_text('Name')
+                dpg.add_input_text(tag='selected_assignment_name',
+                                   indent=50,
+                                   width=-1,
+                                   no_spaces=True,
+                                   callback=lambda _, data: (gui.selected_node.__setattr__('var_name',
+                                                                                           data),
+                                                             gui.redraw_all()))
             if Language.has_arrays():
                 with dpg.group(horizontal=True, tag='selected_assignment_offset_group', show=False):
                     dpg.add_text('Index')
