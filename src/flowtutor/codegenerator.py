@@ -62,7 +62,7 @@ class CodeGenerator:
             (f'#include <{h}.h>', False, None) for h in flowcharts[0].includes
         ]
 
-        if len(flowcharts[0].type_definitions) > 1:
+        if len(flowcharts[0].type_definitions) > 0:
             source.append(('', False, None))
 
         for type_definition in flowcharts[0].type_definitions:

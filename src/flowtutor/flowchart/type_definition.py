@@ -23,4 +23,5 @@ class TypeDefinition:
         self._definition = definition
 
     def __repr__(self) -> str:
-        return f'typedef {self.definition.strip()}{"" if self.definition.endswith("*") else " "}{self.name};'
+        definition = self.definition.strip()
+        return f'typedef {definition}{"" if definition.endswith("*") else " "}{self.name};'
