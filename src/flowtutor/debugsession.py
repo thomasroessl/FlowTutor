@@ -132,17 +132,37 @@ class DebugSession:
         if self.process.stdout is None or self.process.stdin is None:
             return
         variables: dict[str, str] = {}
+        unknown_value_vars: list[str] = []
         self.process.stdin.write('-stack-list-locals --simple-values\n')
         for line in self.process.stdout:
             record = gdbmiparser.parse_response(line)
             print('VARIABLE_ASSIGNMENTS', record, file=stderr)
             if record['message'] == 'stopped':
                 break
-            elif record['type'] == 'result' and record['payload'] is not None:
-                result_locals = record['payload']['locals']
-                if result_locals is not None:
-                    for var in result_locals:
-                        variables[var['name']] = str(var['value'])
-                    print('VARIABLE_ASSIGNMENTS', variables, file=stderr)
+            elif record['type'] == 'result' and record['message'] == 'done':
+                if record['payload'] is not None:
+                    result_locals = record['payload']['locals']
+                    if result_locals is not None:
+                        for var in result_locals:
+                            if 'value' in var:
+                                variables[var['name']] = str(var['value'])
+                            else:
+                                unknown_value_vars.append(var['name'])
+                        print('VARIABLE_ASSIGNMENTS', variables, file=stderr)
                     break
+        for var_name in unknown_value_vars:
+            self.process.stdin.write(f'print {var_name}\n')
+            for line in self.process.stdout:
+                record = gdbmiparser.parse_response(line)
+                print(f'PRINT_VARIABLE {var_name}', record, file=stderr)
+                if record['message'] == 'stopped':
+                    break
+                elif record['type'] == 'result' and record['message'] == 'done':
+                    break
+                elif record['type'] == 'console':
+                    payload = str(record['payload'])
+                    match = re.search(r'^\$1 = (.*)', payload.strip())
+                    if match:
+                        variables[var_name] = str(match.group(1))
+
         signal('variables').send(self, variables=variables)
