@@ -34,4 +34,4 @@ class SidebarInput(Sidebar):
         self.gui.set_sidebar_title('Input')
         self.declared_variables = list(self.gui.selected_flowchart.get_all_declarations())
         dpg.configure_item('selected_input_name', default_value=node.var_name)
-        dpg.show_item('selected_input')
+        dpg.show_item(self.main_group)

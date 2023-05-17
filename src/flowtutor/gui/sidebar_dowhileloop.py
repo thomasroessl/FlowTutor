@@ -31,4 +31,4 @@ class SidebarDoWhileLoop(Sidebar):
             return
         self.gui.set_sidebar_title('Do While Loop')
         dpg.configure_item('selected_dowhileloop_condition', default_value=node.condition)
-        dpg.show_item('selected_dowhileloop')
+        dpg.show_item(self.main_group)

@@ -38,4 +38,4 @@ class SidebarOutput(Sidebar):
         self.gui.set_sidebar_title('Output')
         dpg.configure_item('selected_output_arguments', default_value=node.arguments)
         dpg.configure_item('selected_output_format_string', default_value=node.format_string)
-        dpg.show_item('selected_output')
+        dpg.show_item(self.main_group)

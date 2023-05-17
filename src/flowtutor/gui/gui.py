@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -80,7 +80,7 @@ class GUI:
 
     variable_table_id: Optional[int] = None
 
-    selected_flowchart_tag: str = 'main'
+    selected_flowchart_name: str = 'main'
 
     sidebar_title_tag: Optional[str | int] = None
 
@@ -90,7 +90,7 @@ class GUI:
 
     @property
     def selected_flowchart(self) -> Flowchart:
-        return self.flowcharts[self.selected_flowchart_tag]
+        return self.flowcharts[self.selected_flowchart_name]
 
     @inject
     def __init__(self,
@@ -284,13 +284,13 @@ class GUI:
         for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
             dpg.delete_item(tab)
         for func in self.flowcharts.keys():
-            dpg.add_tab(label=func, tag=func, parent=TAB_BAR_TAG)
+            dpg.add_tab(label=func, user_data=func, parent=TAB_BAR_TAG)
         dpg.add_tab_button(label='+', callback=lambda: self.on_add_function(self), parent=TAB_BAR_TAG)
 
     @staticmethod
-    def on_selected_tab_changed(self: GUI, _: Any, tab: str) -> None:
+    def on_selected_tab_changed(self: GUI, _: Any, tab: Union[int, str]) -> None:
         self.clear_flowchart()
-        self.selected_flowchart_tag = tab
+        self.selected_flowchart_name = dpg.get_item_user_data(tab)
         self.selected_node = self.selected_flowchart.root
         self.on_select_node(self.selected_flowchart.root)
         self.redraw_all()
@@ -304,7 +304,9 @@ class GUI:
                 node.has_debug_cursor = line in node.lines
                 # Switches to the flowcharts, where the break point is hit
                 if node.has_debug_cursor:
-                    dpg.set_value(TAB_BAR_TAG, func.root.name)
+                    for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
+                        if dpg.get_item_user_data(tab) == func.root.name:
+                            dpg.set_value(TAB_BAR_TAG, tab)
         self.redraw_all()
 
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
@@ -552,8 +554,8 @@ class GUI:
     def get_ordered_flowcharts(self) -> list[Flowchart]:
         '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
            (workaround for missing feature in dearpygui)'''
-        tabs = list(map(lambda i: cast(str, dpg.get_item_label(i)), dpg.get_item_children(TAB_BAR_TAG)[1]))
-        filtered_tabs = list(filter(lambda tab: tab != '+', tabs))
+        tabs = dpg.get_item_children(TAB_BAR_TAG)[1]
+        filtered_tabs = list(filter(lambda tab: dpg.get_item_user_data(tab) is not None, tabs))
         # Put the tabs in a dictionary with their x-position as key
         converter = {}
         for tab in filtered_tabs:
@@ -564,7 +566,7 @@ class GUI:
             return list(self.flowcharts.values())
         pos = [dpg.get_item_rect_min(tab)[0] for tab in filtered_tabs]
         sortedPos = sorted(pos, key=lambda pos: cast(int, pos))
-        return list(map(lambda x: self.flowcharts[converter[x]], sortedPos))
+        return list(map(lambda x: self.flowcharts[dpg.get_item_user_data(converter[x])], sortedPos))
 
     def redraw_all(self) -> None:
         self.hovered_add_button = None

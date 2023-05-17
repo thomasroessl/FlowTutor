@@ -31,4 +31,4 @@ class SidebarSnippet(Sidebar):
             return
         self.gui.set_sidebar_title('Code Snippet')
         dpg.configure_item('selected_snippet_code', default_value=node.code)
-        dpg.show_item('selected_snippet')
+        dpg.show_item(self.main_group)
