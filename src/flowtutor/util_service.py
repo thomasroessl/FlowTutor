@@ -26,6 +26,8 @@ class UtilService:
         self.tty_name = ''
         self.tty_fd = 0
         self.is_stopped = threading.Event()
+        self.is_windows = platform.system() == 'Windows'
+        self.is_mac_os = platform.system() == 'Darwin'
 
     def cleanup_temp(self) -> None:
         '''Deletes the temporary working directory.'''
@@ -41,7 +43,7 @@ class UtilService:
             return exe
         elif (exe := which('gcc')) is not None:
             return exe
-        elif platform.system() == 'Windows':
+        elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gcc.exe')
         else:
             raise FileNotFoundError('gcc could not be found on the system!')
@@ -50,7 +52,7 @@ class UtilService:
         '''Gets the path to the installed gdb, or the packaged version of mingw on Windows.'''
         if (exe := which('gdb')) is not None:
             return exe
-        elif platform.system() == 'Windows':
+        elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gdb.exe')
         else:
             raise FileNotFoundError('gdb could not be found on the system!')
@@ -65,10 +67,10 @@ class UtilService:
         gdb_commands = 'set prompt (gdb)\\n'
 
         # The following command is needed for gdb to run on MacOS with System Integrity Protection
-        if platform.system() == 'Darwin':
+        if self.is_mac_os:
             gdb_commands += '\nset startup-with-shell off'
 
-        if platform.system() == 'Windows':
+        if self.is_windows:
             gdb_commands += '\nset new-console on'
         else:
             gdb_commands += f'\ntty {self.tty_name}'

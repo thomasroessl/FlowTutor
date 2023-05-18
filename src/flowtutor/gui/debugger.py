@@ -91,7 +91,7 @@ class Debugger:
         self.child_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, autosize_y=True)
         self.filter_id = dpg.add_filter_set(parent=self.child_id)
 
-        if True:
+        if not self.utils.is_windows:
             dpg.configure_item(self.child_id, autosize_y=False, height=190)
 
             input_window_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, height=22)
