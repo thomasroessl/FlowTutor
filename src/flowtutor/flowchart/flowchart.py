@@ -207,11 +207,17 @@ class Flowchart:
             parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
 
     def move_below(self, parent: Node) -> None:  # pragma: no cover
-        for i, child in enumerate(self.deduplicate(self.get_all_children(parent, True))):
-            if child.tag not in parent.scope:
+        ''' Moves ol children of a node down, so they do not overlap.'''
+        children = list(self.deduplicate(self.get_all_children(parent, True)))
+        if not children:
+            return
+        min_pos_y = parent.pos[1] + parent.shape_height + 50
+        _, child_pos_y = children[0].pos
+        distance = min_pos_y - child_pos_y
+        if distance > 0:
+            for child in filter(lambda c: c.tag not in parent.scope, children):
                 pos_x, pos_y = child.pos
-                child.pos = (pos_x, int(pos_y + parent.shape_height + 50))
-        pass
+                child.pos = (pos_x, pos_y + distance)
 
     def clear(self) -> None:
         for node in self:
