@@ -191,7 +191,7 @@ class GUI:
                     self.section_node_extras = SectionNodeExtras(self)
 
         with dpg.item_handler_registry() as window_handler:
-            dpg.add_item_resize_handler(callback=lambda: self.on_window_resize(self))
+            dpg.add_item_resize_handler(callback=self.on_window_resize)
         dpg.bind_item_handler_registry(self.main_window, window_handler)
 
         dpg.configure_app()
@@ -215,9 +215,8 @@ class GUI:
                 with dpg.group(horizontal=True):
                     with dpg.group(width=-410):
                         with dpg.tab_bar(
-                            reorderable=True,
-                            callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab))\
-                                as self.function_tab_bar:
+                                reorderable=True,
+                                callback=self.on_selected_tab_changed) as self.function_tab_bar:
                             self.refresh_function_tabs()
                         with dpg.child_window(horizontal_scrollbar=True) as self.flowchart_container:
 
@@ -231,12 +230,12 @@ class GUI:
                                              width=self.width,
                                              height=self.height)
                             with dpg.handler_registry():
-                                dpg.add_mouse_move_handler(callback=lambda _, data: self.on_hover(self, _, data))
-                                dpg.add_mouse_drag_handler(callback=lambda: self.on_drag(self))
+                                dpg.add_mouse_move_handler(callback=self.on_hover)
+                                dpg.add_mouse_drag_handler(callback=self.on_drag)
                                 dpg.add_mouse_click_handler(callback=self.on_mouse_click)
                                 dpg.add_mouse_release_handler(callback=self.on_mouse_release)
                                 dpg.add_key_press_handler(
-                                    dpg.mvKey_Delete, callback=lambda: self.on_delete_press(self))
+                                    dpg.mvKey_Delete, callback=self.on_delete_press)
                     with dpg.group(width=400):
                         self.source_code_input = dpg.add_input_text(multiline=True, height=-1, readonly=True)
             with dpg.group(horizontal=True):
@@ -259,8 +258,7 @@ class GUI:
             dpg.add_tab(label=func, user_data=func, parent=self.function_tab_bar)
         dpg.add_tab_button(label='+', callback=self.menubar_main.on_add_function, parent=self.function_tab_bar)
 
-    @staticmethod
-    def on_selected_tab_changed(self: GUI, _: Any, tab: Union[int, str]) -> None:
+    def on_selected_tab_changed(self, _: Any, tab: Union[int, str]) -> None:
         self.clear_flowchart()
         self.selected_flowchart_name = dpg.get_item_user_data(tab)
         self.selected_nodes.clear()
@@ -293,7 +291,7 @@ class GUI:
                         dpg.add_text(variables[variable])
         self.redraw_all()
 
-    def on_program_finished(self: GUI, _: Any, **kw: dict[str, str]) -> None:
+    def on_program_finished(self, _: Any, **kw: dict[str, str]) -> None:
         for flowchart in self.flowcharts.values():
             for node in flowchart:
                 node.has_debug_cursor = False
@@ -321,16 +319,14 @@ class GUI:
             if sidebar:
                 sidebar.show(node)
 
-    @staticmethod
-    def on_window_resize(self: GUI) -> None:
+    def on_window_resize(self) -> None:
         (width, height) = dpg.get_item_rect_size(self.flowchart_container)
         self.parent_size = (width, height)
         self.resize()
         self.settings_service.set_setting('height', dpg.get_viewport_height())
         self.settings_service.set_setting('width', dpg.get_viewport_width())
 
-    @staticmethod
-    def on_hover(self: GUI, _: Any, data: tuple[int, int]) -> None:
+    def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -339,8 +335,7 @@ class GUI:
         self.mouse_position_on_canvas = self.get_point_on_canvas(data)
         self.redraw_all()
 
-    @staticmethod
-    def on_drag(self: GUI) -> None:
+    def on_drag(self) -> None:
         '''Redraws the currently dragging node to its new position.'''
         if self.mouse_position_on_canvas is None or not self.is_mouse_dragging:
             return
@@ -385,8 +380,7 @@ class GUI:
         self.is_mouse_dragging = False
         self.resize()
 
-    @staticmethod
-    def on_delete_press(self: GUI) -> None:
+    def on_delete_press(self) -> None:
         if not self.selected_node:
             return
 

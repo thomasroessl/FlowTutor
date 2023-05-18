@@ -36,24 +36,24 @@ class Debugger:
         signal('program-error').connect(self.on_program_error)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
-            self.build_button = dpg.add_image_button('hammer_image', callback=lambda: self.on_build(self))
+            self.build_button = dpg.add_image_button('hammer_image', callback=self.on_build)
 
             with dpg.group(horizontal=True):
                 self.run_button = dpg.add_image_button('run_image',
                                                        tag='debug_run_button',
-                                                       callback=lambda: self.on_debug_run(self),
+                                                       callback=self.on_debug_run,
                                                        enabled=False)
                 self.step_over_button = dpg.add_image_button('step_over_image',
                                                              tag='debug_step_over_button',
-                                                             callback=lambda: self.on_debug_step_over(self),
+                                                             callback=self.on_debug_step_over,
                                                              enabled=False)
                 self.step_into_button = dpg.add_image_button('step_into_image',
                                                              tag='debug_step_into_button',
-                                                             callback=lambda: self.on_debug_step_into(self),
+                                                             callback=self.on_debug_step_into,
                                                              enabled=False)
                 self.stop_button = dpg.add_image_button('stop_image',
                                                         tag='debug_stop_button',
-                                                        callback=lambda: self.on_debug_stop(self),
+                                                        callback=self.on_debug_stop,
                                                         enabled=False)
             with dpg.group(horizontal=True) as g1:
                 self.auto_scroll_cb = dpg.add_checkbox(label='Auto-scroll',
@@ -231,8 +231,7 @@ class Debugger:
     def load_end(self) -> None:
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
-    @staticmethod
-    def on_debug_run(self: Any) -> None:
+    def on_debug_run(self) -> None:
         if self.debug_session is None:
             # Start debugger
             self.debug_session = DebugSession(self)
@@ -240,8 +239,7 @@ class Debugger:
         else:
             self.debug_session.cont()
 
-    @staticmethod
-    def on_build(self: Any) -> None:
+    def on_build(self) -> None:
         self.disable_all()
         self.load_start()
 
@@ -281,20 +279,17 @@ class Debugger:
 
         self.load_end()
 
-    @staticmethod
-    def on_debug_step_over(self: Any) -> None:
+    def on_debug_step_over(self) -> None:
         if self.debug_session is None:
             return
         self.debug_session.next()
 
-    @staticmethod
-    def on_debug_step_into(self: Any) -> None:
+    def on_debug_step_into(self) -> None:
         if self.debug_session is None:
             return
         self.debug_session.step()
 
-    @staticmethod
-    def on_debug_stop(self: Any) -> None:
+    def on_debug_stop(self) -> None:
         if self.debug_session is None:
             return
         self.debug_session.stop()
