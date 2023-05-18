@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 class SidebarConditional(Sidebar):
 
     def __init__(self, gui: GUI) -> None:
+        self.gui = gui
         with dpg.group(show=False) as self.main_group:
             with dpg.group():
                 dpg.add_text('Condition')
@@ -29,5 +30,5 @@ class SidebarConditional(Sidebar):
         if not isinstance(node, Conditional):
             return
         self.gui.set_sidebar_title('Conditional')
-        dpg.configure_item('selected_conditional_condition', default_value=self.selected_node.condition)
+        dpg.configure_item('selected_conditional_condition', default_value=node.condition)
         dpg.show_item(self.main_group)
