@@ -122,8 +122,9 @@ class Flowchart:
             connection = node.find_connection(0)
             return None if connection is None else connection.dst_node
 
-    def find_hovered_node(self, mouse_position: tuple[int, int]) -> Optional[Node]:
-        return next(filter(lambda n: n is not None and n.is_hovered(mouse_position), self), None)
+    def find_hovered_node(self, mouse_position: Optional[tuple[int, int]]) -> Optional[Node]:
+        return next(filter(lambda n: n is not None and n.is_hovered(mouse_position), self), None) \
+            if mouse_position else None
 
     def is_initialized(self) -> bool:
         return all(map(lambda n: n.is_initialized, self))

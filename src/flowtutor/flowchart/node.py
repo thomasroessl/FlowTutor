@@ -250,10 +250,10 @@ class Node(ABC):
         for connection in self.connections:
             connection.draw(self)
 
-    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_node: Optional[Node]) -> None:
+    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_nodes: list[Node]) -> None:
         '''Deletes the node and draws a new version of it.'''
         self.delete()
-        self.draw(mouse_pos, selected_node == self)
+        self.draw(mouse_pos, self in selected_nodes)
 
     def is_hovered(self, mouse_pos: Union[tuple[int, int], None]) -> bool:
         if mouse_pos is None:

@@ -33,6 +33,7 @@ from flowtutor.gui.sidebar_dowhileloop import SidebarDoWhileLoop
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
 from flowtutor.gui.sidebar_input import SidebarInput
 from flowtutor.gui.sidebar_forloop import SidebarForLoop
+from flowtutor.gui.sidebar_multi import SidebarMulti
 from flowtutor.gui.sidebar_none import SidebarNone
 from flowtutor.gui.sidebar_whileloop import SidebarWhileLoop
 from flowtutor.gui.sidebar_output import SidebarOutput
@@ -44,6 +45,7 @@ from flowtutor.codegenerator import CodeGenerator
 from flowtutor.gui.debugger import Debugger
 from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
 from flowtutor.gui.themes import create_theme_dark, create_theme_light
+from flowtutor.util_service import UtilService
 
 
 if TYPE_CHECKING:
@@ -56,12 +58,12 @@ class GUI:
 
     hovered_add_button: Optional[str] = None
 
-    dragging_node: Optional[Node] = None
-
-    selected_node: Optional[Node] = None
+    selected_nodes: list[Node] = []
 
     # The offset of the currently dragging node to its origin before moving
-    drag_offset: tuple[int, int] = (0, 0)
+    drag_offsets: list[tuple[int, int]] = []
+
+    is_mouse_dragging: bool = False
 
     # The size of the GUI parent
     parent_size: tuple[int, int] = (0, 0)
@@ -87,6 +89,10 @@ class GUI:
     sidebar_functionstart: Optional[SidebarFunctionStart] = None
 
     @property
+    def selected_node(self) -> Optional[Node]:
+        return self.selected_nodes[0] if self.selected_nodes else None
+
+    @property
     def selected_flowchart(self) -> Flowchart:
         return self.flowcharts[self.selected_flowchart_name]
 
@@ -94,6 +100,7 @@ class GUI:
     def __init__(self,
                  width: int,
                  height: int,
+                 utils_service: UtilService = Provide['utils_service'],
                  code_generator: CodeGenerator = Provide['code_generator'],
                  modal_service: ModalService = Provide['modal_service'],
                  settings_service: SettingsService = Provide['settings_service']):
@@ -102,6 +109,7 @@ class GUI:
         self.code_generator = code_generator
         self.modal_service = modal_service
         self.settings_service = settings_service
+        self.utils_service = utils_service
         self.flowcharts = {
             'main': Flowchart('main')
         }
@@ -158,8 +166,9 @@ class GUI:
                     self.sidebar_input = SidebarInput(self)
                     self.sidebar_output = SidebarOutput(self)
                     self.sidebar_snippet = SidebarSnippet(self)
+                    self.sidebar_multi = SidebarMulti(self)
 
-                    self.sidebars: dict[Union[Type[Node], Type[None]], Sidebar] = {
+                    self.sidebars: dict[Union[Type[Node], Type[list[Any]], Type[None]], Sidebar] = {
                         type(None): self.sidebar_none,
                         Assignment: self.sidebar_assignment,
                         FunctionStart: self.sidebar_function_start,
@@ -173,7 +182,8 @@ class GUI:
                         DoWhileLoop: self.sidebar_do_while_loop,
                         Input: self.sidebar_input,
                         Output: self.sidebar_output,
-                        Snippet: self.sidebar_snippet
+                        Snippet: self.sidebar_snippet,
+                        list: self.sidebar_multi
                     }
 
                     self.window_types = WindowTypes(self)
@@ -223,8 +233,8 @@ class GUI:
                             with dpg.handler_registry():
                                 dpg.add_mouse_move_handler(callback=lambda _, data: self.on_hover(self, _, data))
                                 dpg.add_mouse_drag_handler(callback=lambda: self.on_drag(self))
-                                dpg.add_mouse_click_handler(callback=lambda: self.on_mouse_click(self))
-                                dpg.add_mouse_release_handler(callback=lambda: self.on_mouse_release(self))
+                                dpg.add_mouse_click_handler(callback=self.on_mouse_click)
+                                dpg.add_mouse_release_handler(callback=self.on_mouse_release)
                                 dpg.add_key_press_handler(
                                     dpg.mvKey_Delete, callback=lambda: self.on_delete_press(self))
                     with dpg.group(width=400):
@@ -253,7 +263,7 @@ class GUI:
     def on_selected_tab_changed(self: GUI, _: Any, tab: Union[int, str]) -> None:
         self.clear_flowchart()
         self.selected_flowchart_name = dpg.get_item_user_data(tab)
-        self.selected_node = self.selected_flowchart.root
+        self.selected_nodes.clear()
         self.on_select_node(self.selected_flowchart.root)
         self.redraw_all()
 
@@ -293,17 +303,23 @@ class GUI:
 
     def on_select_node(self, node: Optional[Node]) -> None:
 
-        self.selected_node = node
+        if node in self.selected_nodes:
+            return
 
-        self.section_node_extras.toggle(node)
+        self.selected_nodes.append(node) if node else self.selected_nodes.clear()
 
         [s.hide() for s in self.sidebars.values()]
 
         dpg.hide_item('function_management_group')
 
-        sidebar = self.sidebars.get(type(node))
-        if sidebar:
-            sidebar.show(node)
+        if len(self.selected_nodes) > 1:
+            self.section_node_extras.hide()
+            self.sidebar_multi.show(node)
+        else:
+            self.section_node_extras.toggle(node)
+            sidebar = self.sidebars.get(type(node))
+            if sidebar:
+                sidebar.show(node)
 
     @staticmethod
     def on_window_resize(self: GUI) -> None:
@@ -326,20 +342,23 @@ class GUI:
     @staticmethod
     def on_drag(self: GUI) -> None:
         '''Redraws the currently dragging node to its new position.'''
-        if self.mouse_position_on_canvas is None or self.dragging_node is None:
+        if self.mouse_position_on_canvas is None or not self.is_mouse_dragging:
             return
-        (cX, cY) = self.mouse_position_on_canvas
-        (oX, oY) = self.drag_offset
-        self.dragging_node.pos = (cX - oX, cY - oY)
-        self.dragging_node.redraw(self.mouse_position_on_canvas, self.dragging_node)
 
-    @staticmethod
-    def on_mouse_click(self: GUI) -> None:
+        (cX, cY) = self.mouse_position_on_canvas
+        for selected_node, drag_offset in zip(self.selected_nodes, self.drag_offsets):
+            (oX, oY) = drag_offset
+            selected_node.pos = (cX - oX, cY - oY)
+            selected_node.redraw(self.mouse_position_on_canvas, [selected_node])
+
+    def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
         if self.mouse_position_on_canvas is None:
             return
-        prev_selected_node = self.selected_node
-        self.on_select_node(self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas))
+        hovered_node = self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas)
+        if hovered_node not in self.selected_nodes and not self.utils_service.is_multi_modifier_down():
+            self.selected_nodes.clear()
+        self.on_select_node(hovered_node)
         if self.hovered_add_button is not None:
             m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
             if m is not None:
@@ -353,38 +372,37 @@ class GUI:
                     self.redraw_all()
                     self.resize()
             self.modal_service.show_node_type_modal(callback, self.mouse_position or (0, 0))
-        elif self.selected_node is not None:
-            self.dragging_node = self.selected_node
-            (pX, pY) = self.dragging_node.pos
+        elif self.selected_nodes:
+            self.is_mouse_dragging = True
+            self.drag_offsets.clear()
             (cX, cY) = self.mouse_position_on_canvas
-            self.drag_offset = (cX - pX, cY - pY)
-            self.dragging_node.redraw(self.mouse_position_on_canvas, self.selected_node)
+            for selected_node in self.selected_nodes:
+                (pX, pY) = selected_node.pos
+                self.drag_offsets.append((cX - pX, cY - pY))
+        self.redraw_all()
 
-        if prev_selected_node is not None:
-            prev_selected_node.redraw(self.mouse_position_on_canvas, self.selected_node)
-
-    @staticmethod
-    def on_mouse_release(self: GUI) -> None:
-        self.dragging_node = None
+    def on_mouse_release(self) -> None:
+        self.is_mouse_dragging = False
         self.resize()
 
     @staticmethod
     def on_delete_press(self: GUI) -> None:
-        if self.selected_node is None:
+        if not self.selected_node:
             return
 
         def callback() -> None:
-            if self.selected_node is not None:
+            if self.selected_nodes:
                 self.selected_flowchart.clear()
-                self.selected_flowchart.remove_node(self.selected_node)
+                for selected_node in self.selected_nodes:
+                    self.selected_flowchart.remove_node(selected_node)
                 self.on_select_node(None)
                 self.redraw_all()
                 self.resize()
 
-        if self.selected_node.has_nested_nodes():
+        if any(map(lambda n: n.has_nested_nodes(), self.selected_nodes)):
             self.modal_service.show_approval_modal(
-                'Delete Node',
-                'Deleting this node will also delete all nested nodes.',
+                'Delete Node(s)',
+                'Nested nodes will also be deleted.',
                 callback)
         else:
             callback()
@@ -393,9 +411,8 @@ class GUI:
         dpg.configure_item(self.sidebar_title_tag, default_value=title)
 
     def clear_flowchart(self) -> None:
-        self.selected_node = None
         self.on_select_node(None)
-        self.dragging_node = None
+        self.is_mouse_dragging = False
         for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
             dpg.delete_item(item)
 
@@ -421,9 +438,9 @@ class GUI:
         is_add_button_drawn = False
         for node in self.selected_flowchart:
             # The currently draggingis skipped. It gets redrawn in on_drag.
-            if node == self.dragging_node:
+            if self.is_mouse_dragging and node in self.selected_nodes:
                 continue
-            node.redraw(self.mouse_position_on_canvas, self.selected_node)
+            node.redraw(self.mouse_position_on_canvas, self.selected_nodes)
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.selected_flowchart.is_initialized():

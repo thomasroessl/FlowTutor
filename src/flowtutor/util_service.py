@@ -4,6 +4,7 @@ import pathlib
 import os
 import select
 import threading
+import dearpygui.dearpygui as dpg
 
 try:
     import termios
@@ -123,3 +124,13 @@ class UtilService:
             os.write(self.tty_fd, '\n'.encode('utf-8'))
         except OSError:
             pass  # Ignore error if tty has been stopped already
+
+    def is_multi_modifier_down(self) -> bool:
+        '''Checks if shift or ctrl (cmd for mac os) are pressed'''
+        is_multi_modifier_down: bool = dpg.is_key_down(dpg.mvKey_Shift)
+        if self.is_mac_os:
+            is_multi_modifier_down =\
+                is_multi_modifier_down or dpg.is_key_down(dpg.mvKey_LWin) or dpg.is_key_down(dpg.mvKey_RWin)
+        else:
+            is_multi_modifier_down = is_multi_modifier_down or dpg.is_key_down(dpg.mvKey_Control)
+        return is_multi_modifier_down
