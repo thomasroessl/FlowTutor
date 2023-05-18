@@ -100,7 +100,7 @@ class CodeGenerator:
                 node.lines = []
 
         for i, node in enumerate(nodes):  # type: ignore
-            if node is not None:
+            if node:
                 cast(Node, node).lines.append(i + 1)  # type: ignore
 
         source_code = '\n'.join(cast(list[str], code_lines))
@@ -180,7 +180,7 @@ class CodeGenerator:
             indent += '  '
         elif isinstance(node, Input):
             declaration = flowchart.find_declaration(node.var_name)
-            if declaration is None:
+            if not declaration:
                 yield (f'{indent}// {node.var_name} is not declared!', False, node)
             else:
                 var_type = declaration['var_type']

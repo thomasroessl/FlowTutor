@@ -267,7 +267,7 @@ class GUI:
 
     def on_hit_line(self, _: Any, **kw: int) -> None:
         line = kw['line']
-        if self.debugger is not None:
+        if self.debugger:
             self.debugger.enable_all()
         for func in self.flowcharts.values():
             for node in func:
@@ -281,7 +281,7 @@ class GUI:
 
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
         variables = kw['variables']
-        if self.debugger is not None:
+        if self.debugger:
             for row_id in dpg.get_item_children(self.variable_table_id)[1]:
                 dpg.delete_item(row_id)
             if len(variables) > 0:
@@ -295,7 +295,7 @@ class GUI:
         for flowchart in self.flowcharts.values():
             for node in flowchart:
                 node.has_debug_cursor = False
-        if self.debugger is not None:
+        if self.debugger:
             self.debugger.enable_build_and_run()
         self.redraw_all()
 
@@ -337,7 +337,7 @@ class GUI:
 
     def on_drag(self) -> None:
         '''Redraws the currently dragging node to its new position.'''
-        if self.mouse_position_on_canvas is None or not self.is_mouse_dragging:
+        if not self.mouse_position_on_canvas or not self.is_mouse_dragging:
             return
 
         (cX, cY) = self.mouse_position_on_canvas
@@ -348,21 +348,21 @@ class GUI:
 
     def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
-        if self.mouse_position_on_canvas is None:
+        if not self.mouse_position_on_canvas:
             return
         hovered_node = self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas)
         if hovered_node not in self.selected_nodes and not self.utils_service.is_multi_modifier_down():
             self.selected_nodes.clear()
         self.on_select_node(hovered_node)
-        if self.hovered_add_button is not None:
+        if self.hovered_add_button:
             m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
-            if m is not None:
+            if m:
                 parent_tag = m.group(1)
                 src_index = m.group(2)
                 parent = self.selected_flowchart.find_node(parent_tag)
 
             def callback(node: Node) -> None:
-                if parent is not None:
+                if parent:
                     self.selected_flowchart.add_node(parent, node, int(src_index))
                     self.redraw_all()
                     self.resize()
@@ -414,7 +414,7 @@ class GUI:
         '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
            (workaround for missing feature in dearpygui)'''
         tabs = dpg.get_item_children(self.function_tab_bar)[1]
-        filtered_tabs = list(filter(lambda tab: dpg.get_item_user_data(tab) is not None, tabs))
+        filtered_tabs = list(filter(lambda tab: dpg.get_item_user_data(tab), tabs))
         # Put the tabs in a dictionary with their x-position as key
         converter = {}
         for tab in filtered_tabs:
@@ -439,12 +439,12 @@ class GUI:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.selected_flowchart.is_initialized():
             source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
-            if source_code is not None:
+            if source_code:
                 dpg.configure_item(self.source_code_input, default_value=source_code)
-                if self.debugger is not None:
+                if self.debugger:
                     self.debugger.enable_build_only()
         else:
-            if self.debugger is not None:
+            if self.debugger:
                 self.debugger.disable_all()
             dpg.configure_item(self.source_code_input, default_value='There are uninitialized nodes in the\nflowchart.')
 
@@ -453,11 +453,11 @@ class GUI:
            Returns True if an add button was drawn.
         '''
         close_point = None
-        if self.mouse_position_on_canvas is not None:
+        if self.mouse_position_on_canvas:
             close_point = next(
                 filter(
                     lambda p: Point(p).distance(Point(self.mouse_position_on_canvas)) < 12, node.out_points), None)
-        if close_point is not None:
+        if close_point:
             with dpg.draw_node(parent=node.tag):
                 dpg.draw_circle(close_point, 12, fill=(255, 255, 255))
                 dpg.draw_circle(close_point, 12, color=(0, 0, 0))

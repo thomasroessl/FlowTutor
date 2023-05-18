@@ -101,7 +101,7 @@ class Flowchart:
                 yield node.get_declaration()
 
     def find_declaration(self, var_name: str) -> Optional[dict[str, Any]]:
-        return next(filter(lambda n: n is not None and n['var_name'] == var_name, self.get_all_declarations()), None)
+        return next(filter(lambda n: n and n['var_name'] == var_name, self.get_all_declarations()), None)
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)
@@ -113,14 +113,14 @@ class Flowchart:
         if isinstance(node, Conditional):
             connector = next(filter(lambda n: isinstance(n, Connector)
                              and n.scope and n.scope[-1] == node.tag, self), None)
-            if connector is not None:
+            if connector:
                 connection = connector.find_connection(0)
-                return None if connection is None else connection.dst_node
+                return None if not connection else connection.dst_node
             else:
                 return None
         else:
             connection = node.find_connection(0)
-            return None if connection is None else connection.dst_node
+            return None if not connection else connection.dst_node
 
     def find_hovered_node(self, mouse_position: Optional[tuple[int, int]]) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.is_hovered(mouse_position), self), None) \
@@ -145,7 +145,7 @@ class Flowchart:
             parent.connections.append(Connection(child, 1, False))
         else:
             existing_connection = parent.find_connection(src_ind)
-            if existing_connection is None:
+            if not existing_connection:
                 parent.connections.append(Connection(child, src_ind, True))
             else:
                 parent.connections.remove(existing_connection)
@@ -156,7 +156,7 @@ class Flowchart:
             if isinstance(child, Conditional):
                 connector_node = Connector()
                 self.add_node(child, connector_node)
-                if existing_connection is not None:
+                if existing_connection:
                     connector_node.connections.append(
                         Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
@@ -192,17 +192,17 @@ class Flowchart:
         if isinstance(node, Connector) or isinstance(node, FunctionStart) or isinstance(node, FunctionEnd):
             return
         parent = self.find_parent(node)
-        if parent is None:
+        if not parent:
             return
         successor = self.find_successor(node)
         old_src_connection = next(filter(lambda c: c is not None and c.dst_node == node, parent.connections), None)
-        if old_src_connection is None:
+        if not old_src_connection:
             return
         parent.connections.remove(old_src_connection)
-        if successor is None:
+        if not successor:
             return
         old_dst_connection = next(filter(lambda c: c is not None and c.dst_node == successor, node.connections), None)
-        if old_dst_connection is None:
+        if not old_dst_connection:
             parent.connections.append(Connection(successor, old_src_connection.src_ind, True))
         else:
             parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))

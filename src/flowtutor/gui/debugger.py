@@ -175,7 +175,7 @@ class Debugger:
         # For log-level 0 the messages are processed per character
         # For all other levels the message is processed per line
         if level == 0:
-            if self.log_last_line is None:
+            if not self.log_last_line:
                 self.log_last_line = dpg.add_text(message, parent=self.filter_id, filter_key=message)
             else:
                 line_value = dpg.get_value(self.log_last_line)
@@ -198,7 +198,7 @@ class Debugger:
                 message = '[ERROR]  \t' + message
                 theme = self.error_theme
             new_log = dpg.add_text(message, parent=self.filter_id, filter_key=message)
-            if theme is not None:
+            if theme:
                 dpg.bind_item_theme(new_log, theme)
 
         if self._auto_scroll:
@@ -232,7 +232,7 @@ class Debugger:
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
     def on_debug_run(self) -> None:
-        if self.debug_session is None:
+        if not self.debug_session:
             # Start debugger
             self.debug_session = DebugSession(self)
             self.debug_session.run()
@@ -280,17 +280,17 @@ class Debugger:
         self.load_end()
 
     def on_debug_step_over(self) -> None:
-        if self.debug_session is None:
+        if not self.debug_session:
             return
         self.debug_session.next()
 
     def on_debug_step_into(self) -> None:
-        if self.debug_session is None:
+        if not self.debug_session:
             return
         self.debug_session.step()
 
     def on_debug_stop(self) -> None:
-        if self.debug_session is None:
+        if not self.debug_session:
             return
         self.debug_session.stop()
 

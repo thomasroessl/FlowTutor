@@ -66,10 +66,10 @@ class TestFlowchart:
         flowchart.add_node(node1, node2)
         assert len(flowchart) == 4, 'After adding 2 nodes, there should be 4 nodes in the flowchart'
         root_connection_0 = flowchart.root.find_connection(0)
-        assert root_connection_0 is not None
+        assert root_connection_0
         assert root_connection_0.dst_node == node1, 'There should be a connection from root to node1'
         node1_connection_0 = node1.find_connection(0)
-        assert node1_connection_0 is not None
+        assert node1_connection_0
         assert node1_connection_0.dst_node == node2, 'There should be a connection from node1 to node2'
 
     def test_flowchart_add_loop(self):
@@ -78,10 +78,10 @@ class TestFlowchart:
         flowchart.add_node(flowchart.root, loop1)
         assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
         root_connection_0 = flowchart.root.find_connection(0)
-        assert root_connection_0 is not None
+        assert root_connection_0
         assert root_connection_0.dst_node == loop1, 'There should be a connection from root to the loop'
         loop1_connection_1 = loop1.find_connection(1)
-        assert loop1_connection_1 is not None
+        assert loop1_connection_1
         assert loop1_connection_1.dst_node == loop1, 'There should be a connection from the loop to itself'
 
     def test_flowchart_add_conditional(self):
@@ -91,14 +91,14 @@ class TestFlowchart:
         assert len(flowchart) == 4, ('After adding a conditional, there should be 4 nodes in the flowchart'
                                      ' (including the conditional connector)')
         root_connection_0 = flowchart.root.find_connection(0)
-        assert root_connection_0 is not None
+        assert root_connection_0
         assert root_connection_0.dst_node == node1, 'There should be a connection from root to the conditional'
         node1_connection_0 = node1.find_connection(0)
-        assert node1_connection_0 is not None
+        assert node1_connection_0
         connector_0 = node1_connection_0.dst_node
         assert isinstance(connector_0, Connector), 'There should be a connection from the conditional to the connector'
         node1_connection_1 = node1.find_connection(1)
-        assert node1_connection_1 is not None
+        assert node1_connection_1
         connector_1 = node1_connection_1.dst_node
         assert isinstance(connector_1, Connector), ('There should be a second connection '
                                                     'from the conditional to the connector')
@@ -133,11 +133,11 @@ class TestFlowchart:
         assert len(flowchart) == 4, ('After adding a loop and a node in the loop body, '
                                      'there should be 4 nodes in the flowchart')
         loop_connection_1 = loop1.find_connection(1)
-        assert loop_connection_1 is not None
+        assert loop_connection_1
         assert loop_connection_1.dst_node == node1, 'There should be a connection from the loop to the node'
         assert loop1.tag == node1.scope[-1], 'The scope of the node should be the loop'
         node1_connection_0 = node1.find_connection(0)
-        assert node1_connection_0 is not None
+        assert node1_connection_0
         assert node1_connection_0.dst_node == loop1, 'There should be a connection from the node to the loop'
 
     @pytest.mark.parametrize('node_class', SIMPLE_NODES)
@@ -152,7 +152,7 @@ class TestFlowchart:
         flowchart.add_node(conditional1, conditional2, 1)
         assert len(flowchart) == 6, 'After adding a second conditional, there should be 6 nodes in the flowchart'
         conditional1_connection_1 = conditional1.find_connection(1)
-        assert conditional1_connection_1 is not None
+        assert conditional1_connection_1
         assert conditional1_connection_1.dst_node == conditional2, ('There should be a connection '
                                                                     'from the first to the second conditional')
 

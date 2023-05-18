@@ -55,7 +55,7 @@ class SidebarAssignment(Sidebar):
         dpg.configure_item('selected_assignment_name', default_value=node.var_name)
         dpg.configure_item('selected_assignment_offset', default_value=node.var_offset)
         declaration = self.gui.selected_flowchart.find_declaration(node.var_name)
-        if declaration is not None and declaration['is_array']:
+        if declaration and declaration['is_array']:
             dpg.show_item('selected_assignment_offset_group')
         else:
             node.var_offset = ''

@@ -68,7 +68,7 @@ class MenubarMain:
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     def on_save(self) -> None:
-        if self.gui.file_path is not None:
+        if self.gui.file_path:
             with open(self.gui.file_path, 'wb') as file:
                 dump(self.gui.flowcharts, file)
         else:

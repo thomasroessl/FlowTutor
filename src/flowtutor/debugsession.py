@@ -38,7 +38,7 @@ class DebugSession:
                                                 text=True,
                                                 bufsize=1)
 
-            if gdb_init_process.stdout is None or gdb_init_process.stdin is None:
+            if not gdb_init_process.stdout or not gdb_init_process.stdin:
                 return
 
             for line in gdb_init_process.stdout:
@@ -56,7 +56,7 @@ class DebugSession:
                                              stdin=subprocess.PIPE,
                                              text=True,
                                              bufsize=1)
-        if self.process.stdout is None or self.process.stdin is None:
+        if not self.process.stdout or not self.process.stdin:
             return
 
         for line in self.process.stdout:
@@ -129,7 +129,7 @@ class DebugSession:
         self.process.stdin.write(f'source {self.utils.get_break_points_path()}\n')
 
     def get_variable_assignments(self) -> None:
-        if self.process.stdout is None or self.process.stdin is None:
+        if not self.process.stdout or not self.process.stdin:
             return
         variables: dict[str, str] = {}
         unknown_value_vars: list[str] = []
@@ -140,9 +140,9 @@ class DebugSession:
             if record['message'] == 'stopped':
                 break
             elif record['type'] == 'result' and record['message'] == 'done':
-                if record['payload'] is not None:
+                if record['payload']:
                     result_locals = record['payload']['locals']
-                    if result_locals is not None:
+                    if result_locals:
                         for var in result_locals:
                             if 'value' in var:
                                 variables[var['name']] = str(var['value'])

@@ -40,9 +40,9 @@ class UtilService:
 
     def get_gcc_exe(self) -> str:
         '''Gets the path to the installed gcc, or the packaged version of mingw on Windows.'''
-        if (exe := which('gcc-12')) is not None:
+        if exe := which('gcc-12'):
             return exe
-        elif (exe := which('gcc')) is not None:
+        elif exe := which('gcc'):
             return exe
         elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gcc.exe')
@@ -51,7 +51,7 @@ class UtilService:
 
     def get_gdb_exe(self) -> str:
         '''Gets the path to the installed gdb, or the packaged version of mingw on Windows.'''
-        if (exe := which('gdb')) is not None:
+        if exe := which('gdb'):
             return exe
         elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gdb.exe')

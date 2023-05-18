@@ -256,7 +256,7 @@ class Node(ABC):
         self.draw(mouse_pos, self in selected_nodes)
 
     def is_hovered(self, mouse_pos: Union[tuple[int, int], None]) -> bool:
-        if mouse_pos is None:
+        if not mouse_pos:
             return False
         point = Point(*mouse_pos)
         result: bool = self.shape.contains(point)
