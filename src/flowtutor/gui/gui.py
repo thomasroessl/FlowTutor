@@ -5,7 +5,6 @@ import os.path
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
-from pickle import dump, load
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
@@ -22,6 +21,7 @@ from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.gui.menubar_main import MenubarMain
 from flowtutor.gui.section_node_extras import SectionNodeExtras
 from flowtutor.gui.sidebar import Sidebar
 from flowtutor.gui.sidebar_assignment import SidebarAssignment
@@ -43,16 +43,13 @@ from flowtutor.settings_service import SettingsService
 from flowtutor.codegenerator import CodeGenerator
 from flowtutor.gui.debugger import Debugger
 from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
-
 from flowtutor.gui.themes import create_theme_dark, create_theme_light
+
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'
-FLOWCHART_CONTAINER_TAG = 'flowchart_container'
-SOURCE_CODE_TAG = 'source_code'
-TAB_BAR_TAG = 'func_tab_bar'
 
 
 class GUI:
@@ -128,28 +125,10 @@ class GUI:
                          '../../../assets/inconsolata.ttf'), 22, tag='header_font')
         dpg.bind_font(default_font)
 
-        with dpg.viewport_menu_bar(tag='menu_bar'):
-            with dpg.menu(label='File'):
-                dpg.add_menu_item(label='New Program', callback=lambda: self.on_new(self))
-                dpg.add_separator()
-                dpg.add_menu_item(label='Open...', callback=lambda: self.on_open(self))
-                dpg.add_separator()
-                dpg.add_menu_item(label='Save', callback=lambda: self.on_save(self))
-                dpg.add_menu_item(label='Save As...', callback=lambda: self.on_save_as(self))
-            with dpg.menu(label='Edit'):
-                dpg.add_menu_item(label='Add Function', callback=lambda: self.on_add_function(self))
-                dpg.add_separator()
-                dpg.add_menu_item(label='Clear Current Function', callback=lambda: self.on_clear(self))
+        self.menubar_main = MenubarMain(self)
 
-            with dpg.menu(label='View'):
-                with dpg.menu(label='Theme'):
-                    dpg.add_menu_item(label='Light', callback=lambda: self.on_light_theme_menu_item_click(self))
-                    dpg.add_menu_item(label='Dark', callback=lambda: self.on_dark_theme_menu_item_click(self))
-            with dpg.menu(label='Help'):
-                dpg.add_menu_item(label='About')
-
-        with dpg.window(tag='main_window'):
-            with dpg.group(tag='main_group', horizontal=True):
+        with dpg.window() as self.main_window:
+            with dpg.group(horizontal=True) as self.main_group:
                 with dpg.child_window(width=217, pos=[7, 30], menubar=True, show=True):
 
                     with dpg.menu_bar():
@@ -201,9 +180,9 @@ class GUI:
 
                     self.section_node_extras = SectionNodeExtras(self)
 
-        with dpg.item_handler_registry(tag='window_handler'):
+        with dpg.item_handler_registry() as window_handler:
             dpg.add_item_resize_handler(callback=lambda: self.on_window_resize(self))
-        dpg.bind_item_handler_registry('main_window', 'window_handler')
+        dpg.bind_item_handler_registry(self.main_window, window_handler)
 
         dpg.configure_app()
 
@@ -219,24 +198,24 @@ class GUI:
 
         dpg.setup_dearpygui()
         dpg.show_viewport()
-        dpg.set_primary_window('main_window', True)
+        dpg.set_primary_window(self.main_window, True)
 
-        with dpg.child_window(parent='main_group', border=False, width=-1):
+        with dpg.child_window(parent=self.main_group, border=False, width=-1):
             with dpg.child_window(border=False, height=-254):
                 with dpg.group(horizontal=True):
                     with dpg.group(width=-410):
                         with dpg.tab_bar(
-                                tag=TAB_BAR_TAG,
-                                reorderable=True,
-                                callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab)):
+                            reorderable=True,
+                            callback=lambda _, tab: self.on_selected_tab_changed(self, _, tab))\
+                                as self.function_tab_bar:
                             self.refresh_function_tabs()
-                        with dpg.child_window(tag=FLOWCHART_CONTAINER_TAG, horizontal_scrollbar=True):
+                        with dpg.child_window(horizontal_scrollbar=True) as self.flowchart_container:
 
                             # Remove the padding of the flowchart container
                             with dpg.theme() as item_theme:
                                 with dpg.theme_component(dpg.mvChildWindow):
                                     dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 0.0, category=dpg.mvThemeCat_Core)
-                            dpg.bind_item_theme(FLOWCHART_CONTAINER_TAG, item_theme)
+                            dpg.bind_item_theme(self.flowchart_container, item_theme)
 
                             dpg.add_drawlist(tag=FLOWCHART_TAG,
                                              width=self.width,
@@ -249,7 +228,7 @@ class GUI:
                                 dpg.add_key_press_handler(
                                     dpg.mvKey_Delete, callback=lambda: self.on_delete_press(self))
                     with dpg.group(width=400):
-                        dpg.add_input_text(tag=SOURCE_CODE_TAG, multiline=True, height=-1, readonly=True)
+                        self.source_code_input = dpg.add_input_text(multiline=True, height=-1, readonly=True)
             with dpg.group(horizontal=True):
                 with dpg.child_window(width=-410, border=False, height=250) as debugger_window:
                     self.debugger = Debugger(debugger_window)
@@ -264,11 +243,11 @@ class GUI:
                         dpg.add_table_column(label='Value')
 
     def refresh_function_tabs(self) -> None:
-        for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
+        for tab in dpg.get_item_children(self.function_tab_bar)[1]:
             dpg.delete_item(tab)
         for func in self.flowcharts.keys():
-            dpg.add_tab(label=func, user_data=func, parent=TAB_BAR_TAG)
-        dpg.add_tab_button(label='+', callback=lambda: self.on_add_function(self), parent=TAB_BAR_TAG)
+            dpg.add_tab(label=func, user_data=func, parent=self.function_tab_bar)
+        dpg.add_tab_button(label='+', callback=self.menubar_main.on_add_function, parent=self.function_tab_bar)
 
     @staticmethod
     def on_selected_tab_changed(self: GUI, _: Any, tab: Union[int, str]) -> None:
@@ -287,9 +266,9 @@ class GUI:
                 node.has_debug_cursor = line in node.lines
                 # Switches to the flowcharts, where the break point is hit
                 if node.has_debug_cursor:
-                    for tab in dpg.get_item_children(TAB_BAR_TAG)[1]:
+                    for tab in dpg.get_item_children(self.function_tab_bar)[1]:
                         if dpg.get_item_user_data(tab) == func.root.name:
-                            dpg.set_value(TAB_BAR_TAG, tab)
+                            dpg.set_value(self.function_tab_bar, tab)
         self.redraw_all()
 
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
@@ -312,22 +291,6 @@ class GUI:
             self.debugger.enable_build_and_run()
         self.redraw_all()
 
-    @staticmethod
-    def on_add_function(self: GUI) -> None:
-        def callback(name: str) -> None:
-            self.flowcharts[name] = Flowchart(name)
-            self.refresh_function_tabs()
-        i = len(self.flowcharts.values())
-        new_name = f'fun_{i}'
-        while new_name in self.flowcharts.keys():
-            i += 1
-            new_name = f'fun_{i}'
-        self.modal_service.show_input_text_modal(
-            'New Function',
-            'Name',
-            new_name,
-            callback)
-
     def on_select_node(self, node: Optional[Node]) -> None:
 
         self.selected_node = node
@@ -343,73 +306,8 @@ class GUI:
             sidebar.show(node)
 
     @staticmethod
-    def on_open(self: GUI) -> None:
-        def callback(file_path: str) -> None:
-            with open(file_path, 'rb') as file:
-                self.file_path = file_path
-                dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                self.flowcharts = load(file)
-                self.window_types.refresh()
-                self.sidebar_none.refresh()
-                self.redraw_all()
-                self.refresh_function_tabs()
-        self.modal_service.show_open_modal(callback)
-
-    @staticmethod
-    def on_new(self: GUI) -> None:
-        def callback() -> None:
-            self.file_path = None
-            dpg.set_viewport_title('FlowTutor')
-            self.clear_flowchart()
-            self.flowcharts = {
-                'main': Flowchart('main')
-            }
-            self.redraw_all()
-            self.refresh_function_tabs()
-        self.modal_service.show_approval_modal(
-            'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
-
-    @staticmethod
-    def on_clear(self: GUI) -> None:
-        def callback() -> None:
-            self.selected_flowchart.reset()
-            self.clear_flowchart()
-            self.redraw_all()
-        self.modal_service.show_approval_modal(
-            'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
-
-    @staticmethod
-    def on_save(self: GUI) -> None:
-        if self.file_path is not None:
-            with open(self.file_path, 'wb') as file:
-                dump(self.flowcharts, file)
-        else:
-            GUI.on_save_as(self)
-
-    @staticmethod
-    def on_save_as(self: GUI) -> None:
-        def callback(file_path: str) -> None:
-            with open(file_path, 'wb') as file:
-                self.file_path = file_path
-                dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                dump(self.flowcharts, file)
-        self.modal_service.show_save_as_modal(callback)
-
-    @staticmethod
-    def on_light_theme_menu_item_click(self: GUI) -> None:
-        dpg.bind_theme(create_theme_light())
-        self.redraw_all()
-        self.settings_service.set_setting('theme', 'light')
-
-    @staticmethod
-    def on_dark_theme_menu_item_click(self: GUI) -> None:
-        dpg.bind_theme(create_theme_dark())
-        self.redraw_all()
-        self.settings_service.set_setting('theme', 'dark')
-
-    @staticmethod
     def on_window_resize(self: GUI) -> None:
-        (width, height) = dpg.get_item_rect_size(FLOWCHART_CONTAINER_TAG)
+        (width, height) = dpg.get_item_rect_size(self.flowchart_container)
         self.parent_size = (width, height)
         self.resize()
         self.settings_service.set_setting('height', dpg.get_viewport_height())
@@ -504,7 +402,7 @@ class GUI:
     def get_ordered_flowcharts(self) -> list[Flowchart]:
         '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
            (workaround for missing feature in dearpygui)'''
-        tabs = dpg.get_item_children(TAB_BAR_TAG)[1]
+        tabs = dpg.get_item_children(self.function_tab_bar)[1]
         filtered_tabs = list(filter(lambda tab: dpg.get_item_user_data(tab) is not None, tabs))
         # Put the tabs in a dictionary with their x-position as key
         converter = {}
@@ -531,13 +429,13 @@ class GUI:
         if self.selected_flowchart.is_initialized():
             source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
             if source_code is not None:
-                dpg.configure_item(SOURCE_CODE_TAG, default_value=source_code)
+                dpg.configure_item(self.source_code_input, default_value=source_code)
                 if self.debugger is not None:
                     self.debugger.enable_build_only()
         else:
             if self.debugger is not None:
                 self.debugger.disable_all()
-            dpg.configure_item(SOURCE_CODE_TAG, default_value='There are uninitialized nodes in the\nflowchart.')
+            dpg.configure_item(self.source_code_input, default_value='There are uninitialized nodes in the\nflowchart.')
 
     def draw_add_button(self, node: Node) -> bool:
         '''Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
