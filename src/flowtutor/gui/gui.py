@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Type, Union, cast
 import re
 import os.path
 import dearpygui.dearpygui as dpg
@@ -22,6 +22,7 @@ from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.gui.section_node_extras import SectionNodeExtras
 from flowtutor.gui.sidebar import Sidebar
 from flowtutor.gui.sidebar_assignment import SidebarAssignment
 from flowtutor.gui.sidebar_call import SidebarCall
@@ -178,45 +179,27 @@ class GUI:
                     self.sidebar_input = SidebarInput(self)
                     self.sidebar_output = SidebarOutput(self)
                     self.sidebar_snippet = SidebarSnippet(self)
+
+                    self.sidebars: dict[Union[Type[Node], Type[None]], Sidebar] = {
+                        type(None): self.sidebar_none,
+                        Assignment: self.sidebar_assignment,
+                        FunctionStart: self.sidebar_function_start,
+                        FunctionEnd: self.sidebar_function_end,
+                        Call: self.sidebar_call,
+                        Declaration: self.sidebar_declaration,
+                        Declarations: self.sidebar_declarations,
+                        Conditional: self.sidebar_conditional,
+                        ForLoop: self.sidebar_for_loop,
+                        WhileLoop: self.sidebar_while_loop,
+                        DoWhileLoop: self.sidebar_do_while_loop,
+                        Input: self.sidebar_input,
+                        Output: self.sidebar_output,
+                        Snippet: self.sidebar_snippet
+                    }
+
                     self.window_types = WindowTypes(self)
 
-                    self.sidebars: list[Sidebar] = [
-                        self.sidebar_none,
-                        self.sidebar_assignment,
-                        self.sidebar_function_start,
-                        self.sidebar_function_end,
-                        self.sidebar_call,
-                        self.sidebar_declaration,
-                        self.sidebar_declarations,
-                        self.sidebar_conditional,
-                        self.sidebar_for_loop,
-                        self.sidebar_while_loop,
-                        self.sidebar_do_while_loop,
-                        self.sidebar_input,
-                        self.sidebar_output,
-                        self.sidebar_snippet
-                    ]
-
-                    with dpg.group(tag='selected_node_separator_group', show=False):
-                        dpg.add_spacer(height=5)
-                        dpg.add_separator()
-
-                    with dpg.group(tag='selected_node_comment_group', show=False):
-                        dpg.add_text('Comment')
-                        dpg.add_input_text(tag='selected_node_comment',
-                                           width=-1,
-                                           callback=lambda _, data: (self.selected_node.__setattr__('comment', data),
-                                                                     self.redraw_all()))
-                    with dpg.group(tag='selected_node_break_point_group', show=False):
-                        dpg.add_text('Break Point')
-                        dpg.add_checkbox(tag='selected_node_break_point',
-                                         callback=lambda _, data: (self.selected_node.__setattr__('break_point', data),
-                                                                   self.redraw_all()))
-                    with dpg.group(tag='selected_node_is_comment_group', show=False):
-                        dpg.add_text('Disabled')
-                        dpg.add_checkbox(tag='selected_node_is_comment',
-                                         callback=lambda _, data: (self.selected_node.__setattr__('is_comment', data),
-                                                                   self.redraw_all()))
+                    self.section_node_extras = SectionNodeExtras(self)
 
         with dpg.item_handler_registry(tag='window_handler'):
             dpg.add_item_resize_handler(callback=lambda: self.on_window_resize(self))
@@ -346,51 +329,18 @@ class GUI:
             callback)
 
     def on_select_node(self, node: Optional[Node]) -> None:
-        if node is None:
-            dpg.hide_item('selected_node_comment_group')
-            dpg.hide_item('selected_node_break_point_group')
-            dpg.hide_item('selected_node_is_comment_group')
-            dpg.hide_item('selected_node_separator_group')
-        else:
-            dpg.show_item('selected_node_comment_group')
-            dpg.show_item('selected_node_break_point_group')
-            dpg.show_item('selected_node_is_comment_group')
-            dpg.show_item('selected_node_separator_group')
-            dpg.configure_item('selected_node_comment', default_value=node.comment)
-            dpg.configure_item('selected_node_break_point', default_value=node.break_point)
-            dpg.configure_item('selected_node_is_comment', default_value=node.is_comment)
+
         self.selected_node = node
-        for sidebar in self.sidebars:
-            sidebar.hide()
+
+        self.section_node_extras.toggle(node)
+
+        [s.hide() for s in self.sidebars.values()]
+
         dpg.hide_item('function_management_group')
-        if isinstance(node, Assignment):
-            self.sidebar_assignment.show(node)
-        elif isinstance(node, Call):
-            self.sidebar_call.show(node)
-        elif isinstance(node, Declaration):
-            self.sidebar_declaration.show(node)
-        elif isinstance(node, Declarations):
-            self.sidebar_declarations.show(node)
-        elif isinstance(node, Conditional):
-            self.sidebar_conditional.show(node)
-        elif isinstance(node, FunctionStart):
-            self.sidebar_function_start.show(node)
-        elif isinstance(node, FunctionEnd):
-            self.sidebar_function_end.show(node)
-        elif isinstance(node, ForLoop):
-            self.sidebar_for_loop.show(node)
-        elif isinstance(node, WhileLoop):
-            self.sidebar_while_loop.show(node)
-        elif isinstance(node, DoWhileLoop):
-            self.sidebar_do_while_loop.show(node)
-        elif isinstance(node, Input):
-            self.sidebar_input.show(node)
-        elif isinstance(node, Output):
-            self.sidebar_output.show(node)
-        elif isinstance(node, Snippet):
-            self.sidebar_snippet.show(node)
-        else:
-            self.sidebar_none.show(None)
+
+        sidebar = self.sidebars.get(type(node))
+        if sidebar:
+            sidebar.show(node)
 
     @staticmethod
     def on_open(self: GUI) -> None:

@@ -31,5 +31,5 @@ class SidebarFunctionEnd(Sidebar):
             return
         self.gui.set_sidebar_title('Function')
         dpg.configure_item('selected_function_return_value', default_value=node.return_value)
-        dpg.hide_item('selected_node_is_comment_group')
+        dpg.hide_item(self.gui.section_node_extras.node_is_comment_group)
         dpg.show_item(self.main_group)

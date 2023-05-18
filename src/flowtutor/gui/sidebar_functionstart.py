@@ -134,8 +134,7 @@ class SidebarFunctionStart(Sidebar):
         if node.name == 'main':
             dpg.hide_item('selected_function_return_type_group')
             dpg.hide_item('selected_function_parameters_group')
-            dpg.hide_item('selected_node_separator_group')
-            dpg.hide_item('selected_node_is_comment_group')
+            dpg.hide_item(self.gui.section_node_extras.node_is_comment_group)
         else:
             dpg.show_item('selected_function_return_type_group')
             dpg.show_item('selected_function_parameters_group')
