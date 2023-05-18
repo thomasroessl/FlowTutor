@@ -10,25 +10,22 @@ if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
 
 
-HEADER_TAG = 'struct_header'
-
-
 class SectionStructs:
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
         with dpg.theme() as self.delete_button_theme:
             with dpg.theme_component(dpg.mvImageButton):
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 3, 3, category=dpg.mvThemeCat_Core)
-        dpg.add_collapsing_header(label='Structures', tag=HEADER_TAG)
+        self.main_header = dpg.add_collapsing_header(label='Structures')
         self.refresh()
 
     def refresh(self) -> None:
-        for child in dpg.get_item_children(HEADER_TAG)[1]:
+        for child in dpg.get_item_children(self.main_header)[1]:
             dpg.delete_item(child)
         for [i, d] in enumerate(self.struct_definitions()):
             if i > 0:
-                dpg.add_spacer(height=5, parent=HEADER_TAG)
-            with dpg.group(horizontal=True, parent=HEADER_TAG):
+                dpg.add_spacer(height=5, parent=self.main_header)
+            with dpg.group(horizontal=True, parent=self.main_header):
                 dpg.add_text('Name')
                 dpg.add_input_text(indent=50,
                                    width=-33,
@@ -43,7 +40,7 @@ class SectionStructs:
                     'trash_image', height=18, width=18, user_data=i,
                     callback=lambda s: self.on_delete_definition(dpg.get_item_user_data(s)))
                 dpg.bind_item_theme(delete_button, self.delete_button_theme)
-            with dpg.group(parent=HEADER_TAG):
+            with dpg.group(parent=self.main_header):
                 with dpg.table(header_row=True, sortable=False, hideable=False, reorderable=False,
                                borders_innerH=True, borders_outerH=True, borders_innerV=True,
                                borders_outerV=True) as table:
@@ -69,10 +66,10 @@ class SectionStructs:
                                                                         dpg.get_item_user_data(s)[1],
                                                                         self.members(dpg.get_item_user_data(s)[0]))))
 
-            dpg.add_spacer(height=5, parent=HEADER_TAG)
-            dpg.add_separator(parent=HEADER_TAG)
-        dpg.add_spacer(height=5, parent=HEADER_TAG)
-        dpg.add_button(label='Add Structure', parent=HEADER_TAG, width=-1, callback=self.on_add_definition)
+            dpg.add_spacer(height=5, parent=self.main_header)
+            dpg.add_separator(parent=self.main_header)
+        dpg.add_spacer(height=5, parent=self.main_header)
+        dpg.add_button(label='Add Structure', parent=self.main_header, width=-1, callback=self.on_add_definition)
 
     def on_add_definition(self) -> None:
         self.struct_definitions().append(StructDefinition())
