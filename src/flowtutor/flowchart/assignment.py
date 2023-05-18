@@ -73,4 +73,4 @@ class Assignment(Node):
 
     @property
     def is_initialized(self) -> bool:
-        return len(self.var_name) > 0 and len(self.var_value) > 0
+        return self.is_comment or (len(self.var_name) > 0 and len(self.var_value) > 0)
