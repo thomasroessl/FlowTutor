@@ -130,7 +130,7 @@ class CodeGenerator:
                 f' = {node.var_value}' if len(node.var_value) > 0 else '',
                 ';'
             ]), node.break_point, node)
-        if isinstance(node, Declarations):
+        elif isinstance(node, Declarations):
             yield ('\n'.join(map(lambda d: ''.join([
                 prefix,
                 indent,
@@ -213,5 +213,7 @@ class CodeGenerator:
                     indent = indent[:len(indent) - 2]
                     yield (f'{prefix}{indent}}} while({node.condition});', False, node)
                     prefix = ''
+            else:
+                prefix = ''
             if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self._generate_code(flowchart, connection.dst_node, indent, prefix)
