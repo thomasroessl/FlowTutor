@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Generator, Optional
+from shapely.geometry import box
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -118,6 +119,10 @@ class Flowchart:
             else:
                 current_parent = self.find_parent(current_parent)
         return None
+
+    def find_nodes_in_selection(self, pmin: tuple[float, float], pmax: tuple[float, float]) -> list[Node]:
+        selection_box = box(*pmin, *pmax)
+        return list(filter(lambda n: n.shape.intersects(selection_box), self))
 
     def find_successor(self, node: Node) -> Optional[Node]:
         if isinstance(node, Conditional):

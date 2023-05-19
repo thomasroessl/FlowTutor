@@ -65,6 +65,10 @@ class GUI:
 
     is_mouse_dragging: bool = False
 
+    is_selecting: bool = False
+
+    drag_origin: tuple[int, int] = (0, 0)
+
     # The size of the GUI parent
     parent_size: tuple[int, int] = (0, 0)
 
@@ -87,6 +91,8 @@ class GUI:
     file_path: Optional[str] = None
 
     sidebar_functionstart: Optional[SidebarFunctionStart] = None
+
+    selection_rect: Union[int, str] = 0
 
     @property
     def selected_node(self) -> Optional[Node]:
@@ -340,20 +346,40 @@ class GUI:
         if not self.mouse_position_on_canvas or not self.is_mouse_dragging:
             return
 
-        (cX, cY) = self.mouse_position_on_canvas
-        for selected_node, drag_offset in zip(self.selected_nodes, self.drag_offsets):
-            (oX, oY) = drag_offset
-            selected_node.pos = (cX - oX, cY - oY)
-            selected_node.redraw(self.selected_flowchart, self.mouse_position_on_canvas, [selected_node])
+        if self.is_selecting:
+            if self.selection_rect and dpg.does_item_exist(self.selection_rect):
+                dpg.configure_item(self.selection_rect, show=True, pmin=self.drag_origin,
+                                   pmax=self.mouse_position_on_canvas)
+            else:
+                self.selection_rect = dpg.draw_rectangle(self.drag_origin,
+                                                         self.mouse_position_on_canvas,
+                                                         parent=FLOWCHART_TAG,
+                                                         fill=(66, 150, 250, 51),
+                                                         color=(66, 150, 250, 128))
+            nodes_in_selection = self.selected_flowchart.find_nodes_in_selection(
+                self.drag_origin,
+                self.mouse_position_on_canvas)
+            self.selected_nodes.clear()
+            if nodes_in_selection:
+                for selected_node in nodes_in_selection:
+                    self.on_select_node(selected_node)
+        elif self.selected_nodes:
+            (cX, cY) = self.mouse_position_on_canvas
+            for selected_node, drag_offset in zip(self.selected_nodes, self.drag_offsets):
+                (oX, oY) = drag_offset
+                selected_node.pos = (cX - oX, cY - oY)
 
     def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
         if not self.mouse_position_on_canvas:
             return
         hovered_node = self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas)
+        self.drag_origin = self.mouse_position_on_canvas
         if hovered_node not in self.selected_nodes and not self.utils_service.is_multi_modifier_down():
             self.selected_nodes.clear()
         self.on_select_node(hovered_node)
+        if not hovered_node:
+            self.is_selecting = True
         if self.hovered_add_button:
             m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
             if m:
@@ -374,10 +400,15 @@ class GUI:
             for selected_node in self.selected_nodes:
                 (pX, pY) = selected_node.pos
                 self.drag_offsets.append((cX - pX, cY - pY))
+        else:
+            self.is_mouse_dragging = True
         self.redraw_all()
 
     def on_mouse_release(self) -> None:
+        if dpg.does_item_exist(self.selection_rect):
+            dpg.configure_item(self.selection_rect, show=False)
         self.is_mouse_dragging = False
+        self.is_selecting = False
         self.resize()
 
     def on_delete_press(self) -> None:
@@ -431,11 +462,8 @@ class GUI:
         self.hovered_add_button = None
         is_add_button_drawn = False
         for node in self.selected_flowchart:
-            # The currently draggingis skipped. It gets redrawn in on_drag.
-            if self.is_mouse_dragging and node in self.selected_nodes:
-                continue
             node.redraw(self.selected_flowchart, self.mouse_position_on_canvas, self.selected_nodes)
-            if not is_add_button_drawn:
+            if not is_add_button_drawn and not self.is_selecting:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.selected_flowchart.is_initialized():
             source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
