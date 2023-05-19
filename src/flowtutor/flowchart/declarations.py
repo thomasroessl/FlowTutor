@@ -1,9 +1,12 @@
 from __future__ import annotations
 import math
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
+
+if TYPE_CHECKING:
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class Declarations(Node):
@@ -68,8 +71,11 @@ class Declarations(Node):
         else:
             return self.__class__.__name__
 
-    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
-        super().draw(mouse_pos, is_selected)
+    def draw(self,
+             flowchart: Flowchart,
+             mouse_pos: Optional[tuple[int, int]],
+             is_selected: bool = False) -> None:  # pragma: no cover
+        super().draw(flowchart, mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):

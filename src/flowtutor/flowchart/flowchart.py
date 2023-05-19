@@ -109,6 +109,16 @@ class Flowchart:
     def find_parent(self, node: Node) -> Optional[Node]:
         return next(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self), None)
 
+    def find_containing_node(self, child: Node) -> Optional[Node]:
+        '''Gets the node, that contains the child node (loop, conditional, etc.)'''
+        current_parent = self.find_parent(child)
+        while current_parent:
+            if current_parent.tag in child.scope:
+                return current_parent
+            else:
+                current_parent = self.find_parent(current_parent)
+        return None
+
     def find_successor(self, node: Node) -> Optional[Node]:
         if isinstance(node, Conditional):
             connector = next(filter(lambda n: isinstance(n, Connector)
@@ -132,10 +142,12 @@ class Flowchart:
     def add_node(self, parent: Node, child: Node, src_ind: int = 0) -> None:
         child.scope = parent.scope.copy()
         if isinstance(parent, Conditional) or\
-                isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) and\
-                src_ind == 1:
+            (isinstance(parent, ForLoop) or
+             isinstance(parent, WhileLoop) or
+             isinstance(parent, DoWhileLoop))\
+                and src_ind == 1:
             child.scope.append(parent.tag)
-        elif isinstance(parent, Connector):
+        elif isinstance(parent, Connector) and child.scope:
             child.scope.pop()
 
         self.set_start_position(child, parent, src_ind)

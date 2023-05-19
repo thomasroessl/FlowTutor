@@ -344,7 +344,7 @@ class GUI:
         for selected_node, drag_offset in zip(self.selected_nodes, self.drag_offsets):
             (oX, oY) = drag_offset
             selected_node.pos = (cX - oX, cY - oY)
-            selected_node.redraw(self.mouse_position_on_canvas, [selected_node])
+            selected_node.redraw(self.selected_flowchart, self.mouse_position_on_canvas, [selected_node])
 
     def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
@@ -434,7 +434,7 @@ class GUI:
             # The currently draggingis skipped. It gets redrawn in on_drag.
             if self.is_mouse_dragging and node in self.selected_nodes:
                 continue
-            node.redraw(self.mouse_position_on_canvas, self.selected_nodes)
+            node.redraw(self.selected_flowchart, self.mouse_position_on_canvas, self.selected_nodes)
             if not is_add_button_drawn:
                 is_add_button_drawn = self.draw_add_button(node)
         if self.selected_flowchart.is_initialized():

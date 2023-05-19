@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
 from flowtutor.gui.themes import theme_colors
+
+if TYPE_CHECKING:
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class ForLoop(Node):
@@ -89,8 +92,11 @@ class ForLoop(Node):
     def update(self, update: str) -> None:
         self._update = update
 
-    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
-        super().draw(mouse_pos, is_selected)
+    def draw(self,
+             flowchart: Flowchart,
+             mouse_pos: Optional[tuple[int, int]],
+             is_selected: bool = False) -> None:  # pragma: no cover
+        super().draw(flowchart, mouse_pos, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):

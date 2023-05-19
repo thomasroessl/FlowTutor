@@ -113,7 +113,7 @@ class CodeGenerator:
 
     def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '', prefix: str = '') -> \
             Generator[tuple[str, bool, Node], None, None]:
-        if node.is_comment:
+        if node.is_comment or node.get_disabled_inherited(flowchart):
             prefix = '// '
         if len(node.comment) > 0:
             yield (f'{prefix}{indent}// {node.comment}', False, node)
@@ -202,7 +202,7 @@ class CodeGenerator:
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):
                 if connection.src_ind == 0 and not isinstance(connection.dst_node, Connector):
-                    yield (f'{indent[:len(indent) - 2]}{prefix}}} else {{', False, node)
+                    yield (f'{prefix}{indent[:len(indent) - 2]}}} else {{', False, node)
             elif isinstance(node, ForLoop) or isinstance(node, WhileLoop):
                 if connection.src_ind == 0 and not connection.dst_node == node:
                     indent = indent[:len(indent) - 2]

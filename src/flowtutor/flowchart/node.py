@@ -10,6 +10,7 @@ from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.connection import Connection
+    from flowtutor.flowchart.flowchart import Flowchart
 
 FLOWCHART_TAG = 'flowchart'
 
@@ -183,6 +184,14 @@ class Node(ABC):
     def is_comment(self, is_comment: bool) -> None:
         self._is_comment = is_comment
 
+    def get_disabled_inherited(self, flowchart: Optional[Flowchart]) -> bool:
+        if not flowchart:
+            return False
+        containing_node = flowchart.find_containing_node(self)
+        if not containing_node:
+            return False
+        return containing_node.is_comment or containing_node.get_disabled_inherited(flowchart)
+
     def get_left_x(self) -> int:
         return self.shape_width//2 - self.width//2
 
@@ -192,8 +201,11 @@ class Node(ABC):
     def find_connection(self, index: int) -> Optional[Connection]:
         return next(filter(lambda c: c is not None and c.src_ind == index, self.connections), None)
 
-    def draw(self, mouse_pos: Optional[tuple[int, int]], is_selected: bool = False) -> None:  # pragma: no cover
-        color = (150, 150, 150) if self.is_comment else self.color
+    def draw(self,
+             flowchart: Flowchart,
+             mouse_pos: Optional[tuple[int, int]],
+             is_selected: bool = False) -> None:  # pragma: no cover
+        color = (150, 150, 150) if self.is_comment or self.get_disabled_inherited(flowchart) else self.color
         pos_x, pos_y = self.pos
         with dpg.draw_node(
                 tag=self.tag,
@@ -250,10 +262,10 @@ class Node(ABC):
         for connection in self.connections:
             connection.draw(self)
 
-    def redraw(self, mouse_pos: Optional[tuple[int, int]], selected_nodes: list[Node]) -> None:
+    def redraw(self, flowchart: Flowchart, mouse_pos: Optional[tuple[int, int]], selected_nodes: list[Node]) -> None:
         '''Deletes the node and draws a new version of it.'''
         self.delete()
-        self.draw(mouse_pos, self in selected_nodes)
+        self.draw(flowchart, mouse_pos, self in selected_nodes)
 
     def is_hovered(self, mouse_pos: Union[tuple[int, int], None]) -> bool:
         if not mouse_pos:
