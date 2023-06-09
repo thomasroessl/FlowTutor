@@ -4,21 +4,18 @@ from multiprocessing import Process, Queue
 from typing import Callable, Optional
 import tkinter as tk
 from tkinter import filedialog as fd
+from dependency_injector.wiring import Provide, inject
 
-from flowtutor.flowchart.assignment import Assignment
-from flowtutor.flowchart.call import Call
-from flowtutor.flowchart.conditional import Conditional
-from flowtutor.flowchart.declarations import Declarations
-from flowtutor.flowchart.dowhileloop import DoWhileLoop
-from flowtutor.flowchart.forloop import ForLoop
-from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.output import Output
-from flowtutor.flowchart.snippet import Snippet
-from flowtutor.flowchart.whileloop import WhileLoop
+from flowtutor.nodes_service import NodesService
 
 
 class ModalService:
+
+    @inject
+    def __init__(self,
+                 nodes_service: NodesService = Provide['nodes_service']):
+        self.nodes_service = nodes_service
 
     def show_approval_modal(self, label: str, message: str, callback: Callable[[], None]) -> None:
         with dpg.window(
@@ -73,46 +70,15 @@ class ModalService:
                 no_resize=True,
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
-                dpg.add_button(
-                    label='Assignment',
-                    width=-1,
-                    callback=lambda: (callback(Assignment()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Call',
-                    width=-1,
-                    callback=lambda: (callback(Call()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Declaration',
-                    width=-1,
-                    callback=lambda: (callback(Declarations()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Conditional',
-                    width=-1,
-                    callback=lambda: (callback(Conditional()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='For Loop',
-                    width=-1,
-                    callback=lambda: (callback(ForLoop()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='While Loop',
-                    width=-1,
-                    callback=lambda: (callback(WhileLoop()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Do-While Loop',
-                    width=-1,
-                    callback=lambda: (callback(DoWhileLoop()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Input',
-                    width=-1,
-                    callback=lambda: (callback(Input()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Output',
-                    width=-1,
-                    callback=lambda: (callback(Output()), dpg.delete_item('node_type_modal')))
-                dpg.add_button(
-                    label='Code Snippet',
-                    width=-1,
-                    callback=lambda: (callback(Snippet()), dpg.delete_item('node_type_modal')))
+
+                for label, node_class, args in self.nodes_service.get_node_types():
+                    dpg.add_button(
+                        label=label,
+                        width=-1,
+                        user_data=(node_class, args),
+                        callback=lambda s: (user_data := dpg.get_item_user_data(s),
+                                            callback(user_data[0](user_data[1]) if user_data[1] else user_data[0]()),
+                                            dpg.delete_item('node_type_modal')))
 
     def open(self, queue: Queue[dict[str, Optional[str]]]) -> None:
         tk_root = tk.Tk()

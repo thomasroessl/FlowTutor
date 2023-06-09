@@ -6,6 +6,8 @@ from flowtutor.modal_service import ModalService
 from flowtutor.util_service import UtilService
 from flowtutor.settings_service import SettingsService
 
+from flowtutor.nodes_service import NodesService
+
 
 class Container(containers.DeclarativeContainer):
 
@@ -23,4 +25,8 @@ class Container(containers.DeclarativeContainer):
 
     settings_service = providers.Singleton(
         SettingsService
+    )
+
+    nodes_service = providers.Singleton(
+        NodesService
     )
