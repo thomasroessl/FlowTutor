@@ -20,6 +20,7 @@ from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.snippet import Snippet
 from flowtutor.flowchart.whileloop import WhileLoop
+from flowtutor.flowchart.template import Template
 from flowtutor.language import Language
 from flowtutor.util_service import UtilService
 
@@ -198,6 +199,8 @@ class CodeGenerator:
         elif isinstance(node, Snippet):
             if len(node.code) > 0:
                 yield (indent + f'\n{prefix}{indent}'.join(node.code.splitlines()), node.break_point, node)
+        elif isinstance(node, Template):
+            yield (indent + f'\n{prefix}{indent}'.join(node.body.splitlines()), node.break_point, node)
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):

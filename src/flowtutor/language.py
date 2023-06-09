@@ -56,3 +56,14 @@ class Language:
             '%lf',
             '%Lf'
         ]
+
+    @staticmethod
+    def get_node_shape_data(node_type: str) -> tuple[list[tuple[float, float]], tuple[int, int, int]]:
+        return {
+            'io': ([(20.0, 0.0),
+                    (150.0, 0.0),
+                    (130.0, 75.0),
+                    (0.0, 75.0),
+                    (20.0, 0.0)],
+                   (147, 171, 255))
+        }[node_type]

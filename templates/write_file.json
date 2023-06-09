@@ -1,0 +1,16 @@
+{
+    "label": "Write File",
+    "shape_id": "io",
+    "color": "(147, 171, 255)",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        },
+        {
+            "name": "VALUE",
+            "label": "Value"
+        }
+    ],
+    "body": "fprintf(${VAR_NAME}, ${VALUE});"
+}

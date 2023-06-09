@@ -1,0 +1,32 @@
+{
+    "label": "Open File",
+    "shape_id": "io",
+    "color": "(147, 171, 255)",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        },
+        {
+            "name": "FILE",
+            "label": "File Path"
+        },
+        {
+            "name": "MODE",
+            "label": "Mode",
+            "default": "r",
+            "options": [
+                "r",
+                "r+",
+                "w",
+                "w+",
+                "a",
+                "a+"
+            ]
+        }
+    ],
+    "body": [
+        "FILE *${VAR_NAME};",
+        "${VAR_NAME} = fopen(${FILE}, \"${MODE}\");"
+    ]
+}
