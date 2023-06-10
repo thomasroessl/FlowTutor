@@ -18,6 +18,7 @@ from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.output import Output
 from flowtutor.flowchart.parameter import Parameter
 from flowtutor.flowchart.snippet import Snippet
+from flowtutor.flowchart.template import Template
 
 from flowtutor.language import Language
 from flowtutor.flowchart.node import dpg as node_dpg
@@ -657,3 +658,62 @@ class TestCodeGenerator:
             '}'])
         print(expected)
         assert code == expected, 'Structure definitions should be included in the source file.'
+
+    def test_code_from_template(self, code_generator: CodeGenerator):
+        flowchart = Flowchart('main')
+
+        template = Template(
+            {
+                'label': 'Open File',
+                'shape_id': 'data',
+                'color': '(147, 171, 255)',
+                'parameters': [
+                    {
+                        'name': 'VAR_NAME',
+                        'label': 'Name'
+                    },
+                    {
+                        'name': 'FILE',
+                        'label': 'File Path'
+                    },
+                    {
+                        'name': 'MODE',
+                        'label': 'Mode',
+                        'default': 'r',
+                        'options': [
+                            'r',
+                            'r+',
+                            'w',
+                            'w+',
+                            'a',
+                            'a+'
+                        ]
+                    }
+                ],
+                'body': [
+                    'FILE *${VAR_NAME};',
+                    '${VAR_NAME} = fopen(${FILE}, \"${MODE}\");'
+                ]
+            }
+        )
+
+        template.values['VAR_NAME'] = 'x'
+        template.values['FILE'] = '"/test/path/to/file"'
+        template.values['MODE'] = 'w+'
+
+        flowchart.add_node(flowchart.root, template)
+
+        code, _ = code_generator.generate_code([flowchart])
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  FILE *x;',
+            '  x = fopen("/test/path/to/file", "w+");',
+            '  return 0;',
+            '}'])
+        print(code)
+        print(expected)
+        print(repr(code))
+        print(repr(expected))
+        assert code == expected, 'Template.'
