@@ -8,14 +8,50 @@ from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.node import Node
 from flowtutor.nodes_service import NodesService
+from flowtutor.util_service import UtilService
 
 
 class ModalService:
 
     @inject
     def __init__(self,
+                 utils_service: UtilService = Provide['utils_service'],
                  nodes_service: NodesService = Provide['nodes_service']):
         self.nodes_service = nodes_service
+        self.utils_service = utils_service
+
+    def show_paths_window(self) -> None:
+        with dpg.window(
+                label="FlowTutor",
+                modal=True,
+                tag='paths_window',
+                width=600,
+                height=-1,
+                pos=(250, 100),
+                on_close=lambda: dpg.delete_item('paths_window')):
+            with dpg.table(
+                    header_row=False,
+                    borders_innerH=True,
+                    borders_outerH=True,
+                    borders_innerV=True,
+                    borders_outerV=True):
+                dpg.add_table_column(width_fixed=True, init_width_or_weight=120)
+                dpg.add_table_column()
+                with dpg.table_row():
+                    dpg.add_text('FlowTutor')
+                    dpg.add_input_text(default_value=self.utils_service.get_root_dir(), width=-1, readonly=True)
+                with dpg.table_row():
+                    dpg.add_text('GCC executable')
+                    dpg.add_input_text(default_value=self.utils_service.get_gcc_exe(), width=-1, readonly=True)
+                with dpg.table_row():
+                    dpg.add_text('GDB executable')
+                    dpg.add_input_text(default_value=self.utils_service.get_gdb_exe(), width=-1, readonly=True)
+                with dpg.table_row():
+                    dpg.add_text('Templates')
+                    dpg.add_input_text(default_value=self.utils_service.get_templates_path(), width=-1, readonly=True)
+                with dpg.table_row():
+                    dpg.add_text('Source File')
+                    dpg.add_input_text(default_value=self.utils_service.get_c_source_path(), width=-1, readonly=True)
 
     def show_approval_modal(self, label: str, message: str, callback: Callable[[], None]) -> None:
         with dpg.window(

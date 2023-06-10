@@ -32,7 +32,7 @@ class MenubarMain:
                     dpg.add_menu_item(label='Light', callback=self.on_light_theme_menu_item_click)
                     dpg.add_menu_item(label='Dark', callback=self.on_dark_theme_menu_item_click)
             with dpg.menu(label='Help'):
-                dpg.add_menu_item(label='About')
+                dpg.add_menu_item(label='Paths', callback=self.gui.modal_service.show_paths_window)
 
     def on_new(self) -> None:
         def callback() -> None:
