@@ -40,14 +40,16 @@ class UtilService:
 
     def get_gcc_exe(self) -> str:
         '''Gets the path to the installed gcc, or the packaged version of mingw on Windows.'''
-        if exe := which('gcc-12'):
+        if exe := which('gcc-13'):
+            return exe
+        elif exe := which('gcc-12'):
             return exe
         elif exe := which('gcc'):
             return exe
         elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gcc.exe')
         else:
-            raise FileNotFoundError('gcc could not be found on the system!')
+            raise FileNotFoundError('GCC could not be found on the system!')
 
     def get_gdb_exe(self) -> str:
         '''Gets the path to the installed gdb, or the packaged version of mingw on Windows.'''
@@ -56,7 +58,7 @@ class UtilService:
         elif self.is_windows:
             return path.join(self.root, 'mingw64', 'bin', 'gdb.exe')
         else:
-            raise FileNotFoundError('gdb could not be found on the system!')
+            raise FileNotFoundError('GDB could not be found on the system!')
 
     def get_exe_path(self) -> str:
         '''Gets the path to the executable compiled by flowtutor (through gcc).'''

@@ -1,9 +1,8 @@
 from __future__ import annotations
 from blinker import signal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from sys import stderr
 import re
-import platform
 import subprocess
 import threading
 from pygdbmi import gdbmiparser
@@ -21,33 +20,17 @@ class DebugSession:
     def __init__(self, debugger: Debugger, utils_service: UtilService = Provide['utils_service']):
         self.debugger = debugger
         self.utils = utils_service
-        self.gdb_args = [self.utils.get_gdb_exe(),
-                         '-q',
-                         '-x',
-                         self.utils.get_gdb_commands_path(),
-                         '--interpreter=mi',
-                         self.utils.get_exe_path()]
-
-        if platform.system() == 'Darwin':
-            # Start GDB, try to run the executable
-            # and kill the process (bug workaround)
-            gdb_init_process = subprocess.Popen(self.gdb_args,
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.STDOUT,
-                                                stdin=subprocess.PIPE,
-                                                text=True,
-                                                bufsize=1)
-
-            if not gdb_init_process.stdout or not gdb_init_process.stdin:
-                return
-
-            for line in gdb_init_process.stdout:
-                print('INIT', line, end='', file=stderr)
-                if (re.search(r'\(gdb\)\s*$', line)):
-                    gdb_init_process.stdin.write('-exec-run\n')
-                elif line.startswith('~"[New Thread'):
-                    gdb_init_process.kill()
-                    break
+        self._gdb_process = None
+        try:
+            self.gdb_args = [self.utils.get_gdb_exe(),
+                             '-q',
+                             '-x',
+                             self.utils.get_gdb_commands_path(),
+                             '--interpreter=mi',
+                             self.utils.get_exe_path()]
+        except FileNotFoundError as error:
+            self.debugger.log_error(str(error))
+            return
 
         print('GDB ARGS', self.gdb_args, file=stderr)
         self._gdb_process = subprocess.Popen(self.gdb_args,
@@ -56,7 +39,8 @@ class DebugSession:
                                              stdin=subprocess.PIPE,
                                              text=True,
                                              bufsize=1)
-        if not self.process.stdout or not self.process.stdin:
+
+        if not self.process or not self.process.stdout or not self.process.stdin:
             return
 
         for line in self.process.stdout:
@@ -65,20 +49,29 @@ class DebugSession:
                 break
 
     def __del__(self) -> None:
+        if not self._gdb_process:
+            return
         self._gdb_process.kill()
 
     @property
-    def process(self) -> subprocess.Popen[str]:
+    def process(self) -> Optional[subprocess.Popen[str]]:
         return self._gdb_process
 
     def execute(self, command: str) -> None:
+        if not self.process:
+            return
+
         def t(self: DebugSession) -> None:
-            if not self.process.stdin or not self.process.stdout:
+            if not self.process or not self.process.stdin or not self.process.stdout:
                 return
             print('START EXECUTE:', command, file=stderr)
             self.process.stdin.write(f'{command}\n')
 
             for line in self.process.stdout:
+                if line.startswith('^error,msg="Unable to find Mach'):
+                    self.process.kill()
+                    self._gdb_process = None
+                    self.debugger.log_error('GDB is not code-signed on this machine.')
                 record = gdbmiparser.parse_response(line)
                 print(f'EXECUTE {command}', record, file=stderr)
                 if record['message'] == 'stopped':
@@ -111,7 +104,7 @@ class DebugSession:
         self.execute('-exec-continue')
 
     def stop(self) -> None:
-        if not self.process.stdin:
+        if not self.process or not self.process.stdin:
             return
         self.process.stdin.write('kill\n')
         signal('program-finished').send(self)
@@ -123,13 +116,13 @@ class DebugSession:
         self.execute('-exec-next')
 
     def refresh_break_points(self) -> None:
-        if not self.process.stdin:
+        if not self.process or not self.process.stdin:
             return
         self.process.stdin.write('-break-delete\n')
         self.process.stdin.write(f'source {self.utils.get_break_points_path()}\n')
 
     def get_variable_assignments(self) -> None:
-        if not self.process.stdout or not self.process.stdin:
+        if not self.process or not self.process.stdout or not self.process.stdin:
             return
         variables: dict[str, str] = {}
         unknown_value_vars: list[str] = []

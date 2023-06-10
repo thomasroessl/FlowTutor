@@ -243,7 +243,13 @@ class Debugger:
         self.disable_all()
         self.load_start()
 
-        gcc_exe = self.utils.get_gcc_exe()
+        try:
+            gcc_exe = self.utils.get_gcc_exe()
+        except FileNotFoundError as error:
+            self.log_error(str(error))
+            self.load_end()
+            return
+
         print(gcc_exe, file=sys.stderr)
 
         # Build the executable
