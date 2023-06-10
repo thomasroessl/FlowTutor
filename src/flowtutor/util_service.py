@@ -93,7 +93,11 @@ class UtilService:
 
     def get_templates_path(self) -> str:
         '''Gets the path to the directory containing templates for predefined nodes.'''
-        return path.abspath(path.join(self.root, '..', '..', 'templates'))
+        if (sys.modules['__main__'].__file__ or '').endswith('.pyw'):
+            return path.join(self.root, 'templates')
+        else:
+            return path.abspath(path.join(self.root, '..', '..', 'templates'))
+
 
     def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''
