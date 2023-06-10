@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Optional
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import FLOWCHART_TAG, Node
+from flowtutor.language import Language
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
@@ -12,6 +13,7 @@ class Call(Node):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shape_points, _ = Language.get_node_shape_data('process')
         self._expression = ''
 
     @property
@@ -36,13 +38,7 @@ class Call(Node):
 
     @property
     def shape_points(self) -> list[tuple[float, float]]:
-        return [
-            (0, 0),
-            (150, 0),
-            (150, 75),
-            (0, 75),
-            (0, 0)
-        ]
+        return self._shape_points
 
     @property
     def label(self) -> str:

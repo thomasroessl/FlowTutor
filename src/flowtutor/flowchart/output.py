@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 from flowtutor.flowchart.node import Node
+from flowtutor.language import Language
 
 
 class Output(Node):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shape_points, self.default_color = Language.get_node_shape_data('data')
         self._format_string = ''
         self._arguments = ''
 
@@ -27,17 +30,11 @@ class Output(Node):
 
     @property
     def color(self) -> tuple[int, int, int]:
-        return (147, 255, 149) if self.is_initialized else (255, 0, 0)
+        return self.default_color if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self) -> list[tuple[float, float]]:
-        return [
-            (20, 0),
-            (150, 0),
-            (130, 75),
-            (0, 75),
-            (20, 0)
-        ]
+        return self.shape_points
 
     @property
     def arguments(self) -> str:

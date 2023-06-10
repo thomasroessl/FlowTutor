@@ -4,6 +4,7 @@ import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.node import Node, FLOWCHART_TAG
 from flowtutor.gui.themes import theme_colors
+from flowtutor.language import Language
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
@@ -13,6 +14,7 @@ class WhileLoop(Node):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shape_points, self.default_color = Language.get_node_shape_data('data')
         self._condition = ''
 
     @property
@@ -33,19 +35,11 @@ class WhileLoop(Node):
 
     @property
     def color(self) -> tuple[int, int, int]:
-        return (255, 208, 147) if self.is_initialized else (255, 0, 0)
+        return self.default_color if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self) -> list[tuple[float, float]]:
-        return [
-            (0, 37.5),
-            (20, 75),
-            (130, 75),
-            (150, 37.5),
-            (130, 0),
-            (20, 0),
-            (0, 37.5)
-        ]
+        return self._shape_points
 
     @property
     def label(self) -> str:

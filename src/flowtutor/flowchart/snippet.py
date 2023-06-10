@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 from flowtutor.flowchart.node import Node
+from flowtutor.language import Language
 
 
 class Snippet(Node):
 
     def __init__(self) -> None:
         super().__init__()
+        self._shape_points, self.default_color = Language.get_node_shape_data('process')
         self._code = ''
 
     @property
@@ -26,17 +29,11 @@ class Snippet(Node):
 
     @property
     def color(self) -> tuple[int, int, int]:
-        return (255, 255, 170) if self.is_initialized else (255, 0, 0)
+        return self.default_color if self.is_initialized else (255, 0, 0)
 
     @property
     def shape_points(self) -> list[tuple[float, float]]:
-        return [
-            (0, 0),
-            (150, 0),
-            (150, 75),
-            (0, 75),
-            (0, 0)
-        ]
+        return self._shape_points
 
     @property
     def code(self) -> str:

@@ -1,6 +1,6 @@
 {
     "label": "Write File",
-    "shape_id": "io",
+    "shape_id": "preparation",
     "color": "(147, 171, 255)",
     "parameters": [
         {

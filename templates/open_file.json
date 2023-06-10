@@ -1,6 +1,6 @@
 {
     "label": "Open File",
-    "shape_id": "io",
+    "shape_id": "data",
     "color": "(147, 171, 255)",
     "parameters": [
         {
