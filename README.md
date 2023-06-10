@@ -1,6 +1,50 @@
 # FlowTutor
 
+## Prerequisites
+
+The following programs have to be available on the system for FlowTutor to be able to run:
+
+- [Python] >= 3.9
+- [tkinter] - For system file dialogs
+- [GCC] - C-Compiler
+- [GDB] - Debugger
+
+## Running the Python project from source
+
+1. Create a virtual environment:
+    ```sh
+    python -m venv venv
+    ```
+
+2. Activate the virtual environment:
+    ```sh
+    source venv/bin/activate
+    ```
+
+3. Install the dependencies:
+    ```sh
+    python -m pip install -r requirements.txt
+    ```
+
+4. (Optional) Install the dev-dependencies (needed only for development):
+    ```sh
+    python -m pip install -r requirements_dev.txt
+    ```
+
+5. Install the FlowTutor package:
+    ```sh
+    python -m pip install -e .
+    ```
+
+6. Run FlowTutor:
+    ```sh
+    python src/flowtutor/main.py
+    ```
+
 ## Running on macOS
+
+> **Warning** 
+> As of June 2023 there exists a bug in MacOS/GDB, that prevents the debugging functionality of FlowTutor from functioning correctly.
 
 Flowtutor uses GDB for its debugging functionality.
 Modern Darwin kernels (used in macOS) restrict the capability to assume control over another process, which GDB needs to debug the program.
@@ -11,7 +55,7 @@ Run the script `macos-setup-codesign.sh` from the `gdb-codesign` folder.
 This sets up a certificate in the System Keychain and trusts the certificate for code signing.
 
 ### 2. Sign and entitle the gdb binary
-Execute the following command with `gdb-entitlement.xml` from the `gdb-codesign` folder.
+Execute the following command with `gdb-entitlement.xml` from the `gdb-codesign` folder:
 ```sh
 codesign --entitlements gdb-entitlement.xml -fs gdb-cert $(which gdb)
 ```
@@ -29,8 +73,9 @@ For the currently used version of Python the [necessary files], namely `_tkinter
 
 Should the bundled Python version change, these files have to be replaced accordingly.
 
-
-
+[Python]: <https://www.python.org/>
+[tkinter]: <https://docs.python.org/3/library/tkinter.html>
+[GCC]: <https://gcc.gnu.org/>
+[GDB]: <https://www.sourceware.org/gdb/>
 [code signed]: <https://sourceware.org/gdb/wiki/PermissionsDarwin>
-
 [necessary files]: <https://pynsist.readthedocs.io/en/latest/faq.html#packaging-with-tkinter>
