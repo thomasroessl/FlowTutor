@@ -98,7 +98,6 @@ class UtilService:
         else:
             return path.abspath(path.join(self.root, '..', '..', 'templates'))
 
-
     def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''
 
