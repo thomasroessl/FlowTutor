@@ -14,7 +14,7 @@ class WhileLoop(Node):
 
     def __init__(self) -> None:
         super().__init__()
-        self._shape_points, self.default_color = Language.get_node_shape_data('data')
+        self._shape_points, self.default_color = Language.get_node_shape_data('preparation')
         self._condition = ''
 
     @property

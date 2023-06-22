@@ -34,7 +34,7 @@ class Output(Node):
 
     @property
     def shape_points(self) -> list[tuple[float, float]]:
-        return self.shape_points
+        return self._shape_points
 
     @property
     def arguments(self) -> str:
