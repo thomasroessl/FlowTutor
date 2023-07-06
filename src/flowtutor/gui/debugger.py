@@ -1,6 +1,7 @@
 import re
 import subprocess
 import sys
+from time import sleep
 from typing import Any, Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
@@ -301,6 +302,7 @@ class Debugger:
         self.debug_session.stop()
 
     def on_program_finished(self, _: Any, **kw: Any) -> None:
+        sleep(1.0)
         self.log_info('Program ended.')
         self.debug_session = None
 
