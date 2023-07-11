@@ -1,6 +1,6 @@
 from __future__ import annotations
 from blinker import signal
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 from sys import stderr
 import re
 import subprocess
@@ -137,7 +137,9 @@ class DebugSession:
                     result_locals = record['payload']['locals']
                     if result_locals:
                         for var in result_locals:
-                            if 'value' in var:
+                            if cast(str, var['type']).endswith('*'):
+                                unknown_value_vars.append(f'*{var["name"]}')
+                            elif 'value' in var:
                                 variables[var['name']] = str(var['value'])
                             else:
                                 unknown_value_vars.append(var['name'])
