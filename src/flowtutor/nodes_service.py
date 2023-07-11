@@ -5,7 +5,7 @@ from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.assignment import Assignment
 from flowtutor.flowchart.call import Call
-from flowtutor.flowchart.declaration import Declaration
+from flowtutor.flowchart.declarations import Declarations
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.whileloop import WhileLoop
@@ -28,7 +28,7 @@ class NodesService:
         return [
             ('Assignment', Assignment, None),
             ('Call', Call, None),
-            ('Declaration', Declaration, None),
+            ('Declaration', Declarations, None),
             ('Conditional', Conditional, None),
             ('For Loop', ForLoop, None),
             ('While Loop', WhileLoop, None),
