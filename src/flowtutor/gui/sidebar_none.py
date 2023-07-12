@@ -89,7 +89,7 @@ class SidebarNone(Sidebar):
                                    callback=lambda s, data: (self.preprocessor_definitions()
                                                              .__setitem__(dpg.get_item_user_data(s), data),
                                                              self.gui.redraw_all()),
-                                   no_spaces=True, default_value=entry)
+                                   default_value=entry)
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
                     self.preprocessor_definitions().pop(dpg.get_item_user_data(s)),
