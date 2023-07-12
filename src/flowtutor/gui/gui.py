@@ -510,7 +510,7 @@ class GUI:
             if max_x > width:
                 width = max_x
             if max_y > height:
-                height = max_y
+                height = max_y + 100
         dpg.set_item_height(FLOWCHART_TAG, height)
         dpg.set_item_width(FLOWCHART_TAG, width)
 
