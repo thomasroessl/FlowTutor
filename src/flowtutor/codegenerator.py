@@ -80,7 +80,7 @@ class CodeGenerator:
             (f'#define {d}', False, None) for d in flowcharts[0].preprocessor_definitions
         ]
         source += [
-            (c, False, None) for c in filter(lambda c: c, flowcharts[0].preprocessor_custom.split('\n'))
+            (c, False, None) for c in flowcharts[0].preprocessor_custom.split('\n')
         ]
 
         if len(flowcharts) > 1:
@@ -106,7 +106,7 @@ class CodeGenerator:
 
         source_code = '\n'.join(cast(list[str], code_lines))
         break_point_definitions = '\n'.join(
-            map(lambda e: f'break flowtutor.c:{e[0] + 1}',
+            map(lambda e: f'break flowtutor.c:{e[0] + 2}',
                 filter(lambda e: e[1],
                        enumerate(break_points))))
 
