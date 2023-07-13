@@ -21,24 +21,14 @@ The following programs have to be available on the system for FlowTutor to be ab
     source venv/bin/activate
     ```
 
-3. Install the dependencies:
+3. Install the FlowTutor package:
     ```sh
-    python -m pip install -r requirements.txt
-    ```
-
-4. (Optional) Install the dev-dependencies (needed only for development):
-    ```sh
-    python -m pip install -r requirements_dev.txt
-    ```
-
-5. Install the FlowTutor package:
-    ```sh
-    python -m pip install -e .
+    python -m pip install .
     ```
 
 6. Run FlowTutor:
     ```sh
-    python src/flowtutor/main.py
+    flowtutor
     ```
 
 ## Running on macOS
