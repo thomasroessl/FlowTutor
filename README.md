@@ -11,6 +11,7 @@
 <p align="center">
   <a href=""><img src="https://img.shields.io/pypi/pyversions/flowtutor" alt="Python versions"></a>
   <a href="https://pypi.org/project/flowtutor/"><img src="https://img.shields.io/pypi/v/flowtutor" alt="PYPI"></a>
+  <a href="https://cd.roessl.org/job/FlowTutor/"><img src="https://cd.roessl.org/job/FlowTutor/badge/icon" alt="Jenkins"></a>
 </p>
 
 ## Prerequisites
