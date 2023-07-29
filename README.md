@@ -1,10 +1,17 @@
-<h1 align="center">FlowTutor</h1>
+<h1 align="center">
+    <br>
+    <img src="https://raw.githubusercontent.com/thomasroessl/FlowTutor/master/logo.png" alt="flowtutor-logo" width="512px" height="141px"/>
+</h1>
+
+<h4 align="center">
+    A graphical programming environment using flowcharts.
+</h4>
+
+<h1></h1>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/thomasroessl/FlowTutor/master/logo.png" alt="flowtutor-logo" width="512px" height="141px"/>
-  <br>
-  <em>FlowTutor is a graphical programming environment designed to cater to the needs of engineering students.</em>
-  <br>
+  <a href=""><img src="https://img.shields.io/pypi/pyversions/flowtutor" alt="Python versions"></a>
+  <a href="https://pypi.org/project/flowtutor/"><img src="https://img.shields.io/pypi/v/flowtutor" alt="PYPI"></a>
 </p>
 
 ## Prerequisites
