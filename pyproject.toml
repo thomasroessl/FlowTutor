@@ -1,3 +1,31 @@
+[project]
+name = "FlowTutor"
+description = "A graphical programming environment using flowcharts."
+version = "0.9.10"
+readme = "README.md"
+authors = [
+  {name = "Thomas Rößl", email = "e11775192@student.tuwien.ac.at"}
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Education",
+    "Topic :: Software Development",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"
+]
+
+[project.urls]
+documentation = "https://github.com/thomasroessl/FlowTutor/wiki"
+source = "https://github.com/thomasroessl/FlowTutor"
+changelog = "https://github.com/thomasroessl/FlowTutor/releases"
+
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
