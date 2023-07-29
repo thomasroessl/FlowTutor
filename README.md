@@ -1,5 +1,4 @@
 <h1 align="center">
-    <br>
     <img src="https://raw.githubusercontent.com/thomasroessl/FlowTutor/master/logo.png" alt="flowtutor-logo" width="512px" height="141px"/>
 </h1>
 
