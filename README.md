@@ -1,7 +1,7 @@
 <h1 align="center">FlowTutor</h1>
 
 <p align="center">
-  <img src="logo.png" alt="flowtutor-logo" width="120px" height="120px"/>
+  <img src="logo.png" alt="flowtutor-logo" width="512px" height="141px"/>
   <br>
   <em>FlowTutor is a graphical programming environment designed to cater to the needs of engineering students.</em>
   <br>
