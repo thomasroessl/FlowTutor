@@ -9,6 +9,10 @@ The following programs have to be available on the system for FlowTutor to be ab
 - [GCC] - C-Compiler
 - [GDB] - Debugger
 
+## Documentation
+
+An overview of FlowTutors functionality can be found in the projects [Wiki]
+
 ## Running the Python project from source
 
 1. Create a virtual environment:
@@ -69,3 +73,4 @@ Should the bundled Python version change, these files have to be replaced accord
 [GDB]: <https://www.sourceware.org/gdb/>
 [code signed]: <https://sourceware.org/gdb/wiki/PermissionsDarwin>
 [necessary files]: <https://pynsist.readthedocs.io/en/latest/faq.html#packaging-with-tkinter>
+[Wiki]: <https://github.com/thomasroessl/FlowTutor/wiki>
