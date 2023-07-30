@@ -23,6 +23,7 @@ class SidebarAssignment(Sidebar):
                                    no_spaces=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__('var_name',
                                                                                            data),
+                                                             self.gui.selected_node.__setattr__('needs_refresh', True),
                                                              gui.redraw_all()))
 
             with dpg.group(horizontal=True, tag='selected_assignment_offset_group', show=False):
@@ -33,6 +34,7 @@ class SidebarAssignment(Sidebar):
                                    no_spaces=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'var_offset', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
             with dpg.group(horizontal=True):
@@ -42,6 +44,7 @@ class SidebarAssignment(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'var_value', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:

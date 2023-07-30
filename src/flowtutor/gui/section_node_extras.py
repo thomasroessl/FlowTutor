@@ -20,16 +20,19 @@ class SectionNodeExtras:
                 self.node_comment = dpg.add_input_text(
                     width=-1,
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('comment', data),
+                                              self.gui.selected_node.__setattr__('needs_refresh', True),
                                               self.gui.redraw_all()))
             with dpg.group():
                 dpg.add_text('Break Point')
                 self.node_break_point = dpg.add_checkbox(
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('break_point', data),
+                                              self.gui.selected_node.__setattr__('needs_refresh', True),
                                               self.gui.redraw_all()))
             with dpg.group() as self.node_is_comment_group:
                 dpg.add_text('Disabled')
                 self.node_is_comment = dpg.add_checkbox(
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('is_comment', data),
+                                              self.gui.selected_node.__setattr__('needs_refresh', True),
                                               self.gui.redraw_all()))
 
     def toggle(self, node: Optional[Node]) -> None:

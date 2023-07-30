@@ -46,6 +46,7 @@ class SidebarFunctionStart(Sidebar):
                                                  .append(Parameter()),
                                                  self.refresh_entries(
                                    gui.selected_node.__getattribute__('parameters')),
+                                   self.gui.selected_node.__setattr__('needs_refresh', True),
                                    gui.redraw_all()))
 
                 dpg.add_spacer(height=5)
@@ -57,6 +58,7 @@ class SidebarFunctionStart(Sidebar):
                               tag='selected_function_return_type',
                               width=-1,
                               callback=lambda _, data: (gui.selected_node.__setattr__('return_type', data),
+                                                        self.gui.selected_node.__setattr__('needs_refresh', True),
                                                         gui.redraw_all()))
 
     def parameters(self) -> list[Parameter]:
@@ -93,19 +95,19 @@ class SidebarFunctionStart(Sidebar):
                                    user_data=i,
                                    callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                              .__setattr__('name', data),
-                                                             self.gui.redraw_all()),
+                                                             self.gui.redraw_all(True)),
                                    no_spaces=True, default_value=entry.name)
                 dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
                               user_data=i,
                               callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                         .__setattr__('type', data),
-                                                        self.gui.redraw_all()),
+                                                        self.gui.redraw_all(True)),
                               width=-1, default_value=entry.type)
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
                     self.parameters().pop(dpg.get_item_user_data(s)),
                     self.refresh_entries(self.parameters()),
-                    self.gui.redraw_all()
+                    self.gui.redraw_all(True)
                 ))
                 with dpg.theme() as delete_button_theme:
                     with dpg.theme_component(dpg.mvImageButton):

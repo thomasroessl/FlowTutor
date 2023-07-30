@@ -21,6 +21,7 @@ class SidebarFunctionEnd(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (
                                        gui.selected_node.__setattr__('return_value', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:

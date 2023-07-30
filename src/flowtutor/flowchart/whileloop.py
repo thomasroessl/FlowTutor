@@ -58,9 +58,8 @@ class WhileLoop(Node):
 
     def draw(self,
              flowchart: Flowchart,
-             mouse_pos: Optional[tuple[int, int]],
              is_selected: bool = False) -> None:  # pragma: no cover
-        super().draw(flowchart, mouse_pos, is_selected)
+        super().draw(flowchart, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):

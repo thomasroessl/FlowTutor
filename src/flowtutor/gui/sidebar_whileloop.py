@@ -21,6 +21,7 @@ class SidebarWhileLoop(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'condition', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:

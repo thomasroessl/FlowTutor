@@ -25,6 +25,8 @@ class Node(ABC):
         self._comment = ''
         self._break_point = False
         self._is_comment = False
+        self._needs_refresh = False
+        self._is_hovered = False
         self._lines: list[int] = []
         self._has_debug_cursor = False
 
@@ -184,6 +186,22 @@ class Node(ABC):
     def is_comment(self, is_comment: bool) -> None:
         self._is_comment = is_comment
 
+    @property
+    def needs_refresh(self) -> bool:
+        return self._needs_refresh
+
+    @needs_refresh.setter
+    def needs_refresh(self, needs_refresh: bool) -> None:
+        self._needs_refresh = needs_refresh
+
+    @property
+    def is_hovered(self) -> bool:
+        return self._is_hovered
+
+    @is_hovered.setter
+    def is_hovered(self, is_hovered: bool) -> None:
+        self._is_hovered = is_hovered
+
     def get_disabled_inherited(self, flowchart: Optional[Flowchart]) -> bool:
         if not flowchart:
             return False
@@ -203,7 +221,6 @@ class Node(ABC):
 
     def draw(self,
              flowchart: Flowchart,
-             mouse_pos: Optional[tuple[int, int]],
              is_selected: bool = False) -> None:  # pragma: no cover
         color = (150, 150, 150) if self.is_comment or self.get_disabled_inherited(flowchart) else self.color
         pos_x, pos_y = self.pos
@@ -211,8 +228,7 @@ class Node(ABC):
                 tag=self.tag,
                 parent=FLOWCHART_TAG):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
-            thickness = 3 if is_selected else 2 if self.is_hovered(
-                mouse_pos) else 1
+            thickness = 3 if is_selected else 2 if self.is_hovered else 1
 
             dpg.draw_polygon(list(self.shape.exterior.coords),
                              fill=color)
@@ -262,17 +278,10 @@ class Node(ABC):
         for connection in self.connections:
             connection.draw(self)
 
-    def redraw(self, flowchart: Flowchart, mouse_pos: Optional[tuple[int, int]], selected_nodes: list[Node]) -> None:
+    def redraw(self, flowchart: Flowchart, selected_nodes: list[Node]) -> None:
         '''Deletes the node and draws a new version of it.'''
         self.delete()
-        self.draw(flowchart, mouse_pos, self in selected_nodes)
-
-    def is_hovered(self, mouse_pos: Union[tuple[int, int], None]) -> bool:
-        if not mouse_pos:
-            return False
-        point = Point(*mouse_pos)
-        result: bool = self.shape.contains(point)
-        return result
+        self.draw(flowchart, self in selected_nodes)
 
     def has_nested_nodes(self) -> bool:
         return False

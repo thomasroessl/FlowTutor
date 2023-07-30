@@ -23,6 +23,7 @@ class SidebarDeclaration(Sidebar):
                                    no_spaces=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'var_name', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
             with dpg.group(horizontal=True):
                 dpg.add_text('Type')
@@ -31,6 +32,7 @@ class SidebarDeclaration(Sidebar):
                               indent=50,
                               width=-1,
                               callback=lambda _, data: (gui.selected_node.__setattr__('var_type', data),
+                                                        self.gui.selected_node.__setattr__('needs_refresh', True),
                                                         gui.redraw_all()))
 
             with dpg.group(horizontal=True):
@@ -40,6 +42,7 @@ class SidebarDeclaration(Sidebar):
                                  callback=lambda _, data: (gui.selected_node.__setattr__('is_pointer',
                                                                                          data),
                                                            gui.on_select_node(gui.selected_node),
+                                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                                            gui.redraw_all()))
 
             with dpg.group(horizontal=True):
@@ -49,6 +52,7 @@ class SidebarDeclaration(Sidebar):
                                  callback=lambda _, data: (gui.selected_node.__setattr__('is_array',
                                                                                          data),
                                                            gui.on_select_node(gui.selected_node),
+                                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                                            gui.redraw_all()))
 
             with dpg.group(horizontal=True, tag='selected_declaration_array_size_group', show=False):
@@ -67,6 +71,7 @@ class SidebarDeclaration(Sidebar):
                                  callback=lambda _, data: (gui.selected_node.__setattr__('is_static',
                                                                                          data),
                                                            gui.on_select_node(gui.selected_node),
+                                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                                            gui.redraw_all()))
             with dpg.group(horizontal=True, tag='selected_declaration_var_value_group'):
                 dpg.add_text('Value')
@@ -75,6 +80,7 @@ class SidebarDeclaration(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'var_value', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:

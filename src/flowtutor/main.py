@@ -16,7 +16,7 @@ def start(utils_service: UtilService = Provide['utils_service']) -> None:
     # Calls the redraw function after the first frame is rendered
     if dpg.is_dearpygui_running():
         dpg.render_dearpygui_frame()
-        gui.redraw_all()
+        gui.redraw_all(True)
     dpg.start_dearpygui()
     if platform.system() != 'Windows':
         utils_service.stop_tty()

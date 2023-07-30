@@ -43,7 +43,7 @@ class SidebarNone(Sidebar):
                                callback=lambda: (self.preprocessor_definitions().append(''),
                                                  self.refresh_definitions(
                                    self.preprocessor_definitions()),
-                                   gui.redraw_all()))
+                                   gui.redraw_all(True)))
 
             with dpg.collapsing_header(label='Custom'):
                 dpg.add_input_text(tag='selected_preprocessor_custom',
@@ -52,12 +52,12 @@ class SidebarNone(Sidebar):
                                    multiline=True,
                                    callback=lambda _, data:
                                    (self.main_node().__setattr__('preprocessor_custom', data),
-                                    gui.redraw_all()))
+                                    gui.redraw_all(True)))
             dpg.add_spacer(height=3)
             dpg.add_separator()
             dpg.add_spacer(height=3)
             dpg.add_button(label='Types', width=-1,
-                           callback=lambda: (dpg.show_item('type_window'), gui.redraw_all()))
+                           callback=lambda: (dpg.show_item('type_window'), gui.redraw_all(True)))
 
     def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']
@@ -76,7 +76,7 @@ class SidebarNone(Sidebar):
             self.includes().append(header)
         else:
             self.includes().remove(header)
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def refresh_definitions(self, entries: list[str]) -> None:
         # delete existing rows in the table to avoid duplicates
@@ -88,13 +88,13 @@ class SidebarNone(Sidebar):
                 dpg.add_input_text(width=-1, height=-1, user_data=i,
                                    callback=lambda s, data: (self.preprocessor_definitions()
                                                              .__setitem__(dpg.get_item_user_data(s), data),
-                                                             self.gui.redraw_all()),
+                                                             self.gui.redraw_all(True)),
                                    default_value=entry)
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
                     self.preprocessor_definitions().pop(dpg.get_item_user_data(s)),
                     self.refresh_definitions(self.preprocessor_definitions()),
-                    self.gui.redraw_all()
+                    self.gui.redraw_all(True)
                 ))
                 with dpg.theme() as delete_button_theme:
                     with dpg.theme_component(dpg.mvImageButton):

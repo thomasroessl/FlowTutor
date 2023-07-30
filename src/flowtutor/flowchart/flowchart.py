@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Generator, Optional
-from shapely.geometry import box
+from shapely.geometry import box, Point
 
 from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
@@ -109,6 +109,9 @@ class Flowchart:
 
     def find_parent(self, node: Node) -> Optional[Node]:
         return next(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self), None)
+    
+    def find_parents(self, node: Node) -> list[Node]:
+        return list(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self))
 
     def find_containing_node(self, child: Node) -> Optional[Node]:
         '''Gets the node, that contains the child node (loop, conditional, etc.)'''
@@ -138,7 +141,7 @@ class Flowchart:
             return None if not connection else connection.dst_node
 
     def find_hovered_node(self, mouse_position: Optional[tuple[int, int]]) -> Optional[Node]:
-        return next(filter(lambda n: n is not None and n.is_hovered(mouse_position), self), None) \
+        return next(filter(lambda n: n is not None and n.shape.contains(Point(*mouse_position)), self), None) \
             if mouse_position else None
 
     def is_initialized(self) -> bool:
@@ -156,6 +159,8 @@ class Flowchart:
             child.scope.pop()
 
         self.set_start_position(child, parent, src_ind)
+        parent.needs_refresh = True
+        child.needs_refresh = True
         if isinstance(child, Connector):
             # A connector node always has two connections to its parent
             parent.connections.append(Connection(child, 0, True))
@@ -236,6 +241,10 @@ class Flowchart:
             for child in filter(lambda c: c.tag not in parent.scope, children):
                 pos_x, pos_y = child.pos
                 child.pos = (pos_x, pos_y + distance)
+                child.needs_refresh = True
+                parents = self.find_parents(child)
+                for parent in parents:
+                    parent.needs_refresh = True
 
     def clear(self) -> None:
         for node in self:

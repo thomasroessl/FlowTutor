@@ -42,7 +42,7 @@ class MenubarMain:
             self.gui.flowcharts = {
                 'main': Flowchart('main')
             }
-            self.gui.redraw_all()
+            self.gui.redraw_all(True)
             self.gui.refresh_function_tabs()
         self.gui.modal_service.show_approval_modal(
             'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
@@ -55,7 +55,7 @@ class MenubarMain:
                 self.gui.flowcharts = load(file)
                 self.gui.window_types.refresh()
                 self.gui.sidebar_none.refresh()
-                self.gui.redraw_all()
+                self.gui.redraw_all(True)
                 self.gui.refresh_function_tabs()
         self.gui.modal_service.show_open_modal(callback)
 
@@ -63,7 +63,7 @@ class MenubarMain:
         def callback() -> None:
             self.gui.selected_flowchart.reset()
             self.gui.clear_flowchart()
-            self.gui.redraw_all()
+            self.gui.redraw_all(True)
         self.gui.modal_service.show_approval_modal(
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
@@ -84,12 +84,12 @@ class MenubarMain:
 
     def on_light_theme_menu_item_click(self) -> None:
         dpg.bind_theme(create_theme_light())
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'light')
 
     def on_dark_theme_menu_item_click(self) -> None:
         dpg.bind_theme(create_theme_dark())
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'dark')
 
     def on_add_function(self) -> None:

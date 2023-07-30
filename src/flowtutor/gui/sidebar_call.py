@@ -21,6 +21,7 @@ class SidebarCall(Sidebar):
                                        width=-1,
                                        callback=lambda _, data: (
                                            gui.selected_node.__setattr__('expression', data),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            gui.redraw_all()))
                     # dpg.add_button(label='...')
 

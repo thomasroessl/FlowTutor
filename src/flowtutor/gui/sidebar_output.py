@@ -20,6 +20,7 @@ class SidebarOutput(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'format_string', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
             with dpg.group():
                 dpg.add_text('Arguments')
@@ -27,6 +28,7 @@ class SidebarOutput(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'arguments', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:

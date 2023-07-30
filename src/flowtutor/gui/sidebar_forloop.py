@@ -22,6 +22,7 @@ class SidebarForLoop(Sidebar):
                                    no_spaces=True,
                                        callback=lambda _, data: (gui.selected_node.__setattr__(
                                            'var_name', data),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            gui.redraw_all()))
                 dpg.add_text('Start Value')
                 dpg.add_input_text(tag='selected_forloop_start_value',
@@ -29,6 +30,7 @@ class SidebarForLoop(Sidebar):
                                    no_spaces=True,
                                        callback=lambda _, data: (
                                            gui.selected_node.__setattr__('start_value', data),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            gui.redraw_all())
                                    )
             with dpg.group():
@@ -37,6 +39,7 @@ class SidebarForLoop(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'condition', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
             with dpg.group(horizontal=True):
@@ -45,6 +48,7 @@ class SidebarForLoop(Sidebar):
                                    width=-1,
                                    callback=lambda _, data: (gui.selected_node.__setattr__('update',
                                                                                            data),
+                                                             self.gui.selected_node.__setattr__('needs_refresh', True),
                                                              gui.redraw_all()))
 
     def hide(self) -> None:

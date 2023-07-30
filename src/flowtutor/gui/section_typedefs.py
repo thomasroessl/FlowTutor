@@ -33,7 +33,7 @@ class SectionTypedefs:
                                    callback=lambda s, data: (
                                        self.type_definitions()[dpg.get_item_user_data(
                                            s)].__setattr__('name', data),
-                                       self.gui.redraw_all()))
+                                       self.gui.redraw_all(True)))
                 delete_button = dpg.add_image_button(
                     'trash_image', height=18, width=18, user_data=i,
                     callback=lambda s: self.on_delete_definition(dpg.get_item_user_data(s)))
@@ -47,7 +47,7 @@ class SectionTypedefs:
                                    callback=lambda s, data: (
                                        self.type_definitions()[dpg.get_item_user_data(
                                            s)].__setattr__('definition', data),
-                                       self.gui.redraw_all()))
+                                       self.gui.redraw_all(True)))
 
             dpg.add_spacer(height=5, parent=self.main_header)
             dpg.add_separator(parent=self.main_header)
@@ -57,12 +57,12 @@ class SectionTypedefs:
     def on_add_definition(self) -> None:
         self.type_definitions().append(TypeDefinition())
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def on_delete_definition(self, index: int) -> None:
         del self.type_definitions()[index]
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']

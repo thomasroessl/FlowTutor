@@ -38,14 +38,14 @@ class SidebarTemplate(Sidebar):
                                       user_data=parameter,
                                       callback=lambda s, data:
                                       (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
-                                       self.gui.redraw_all()))
+                                       self.gui.redraw_all(True)))
                     else:
                         dpg.add_input_text(width=-1,
                                            default_value=node.values.__getitem__(parameter['name']) or '',
                                            user_data=parameter,
                                            callback=lambda s, data:
                                            (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
-                                            self.gui.redraw_all()))
+                                            self.gui.redraw_all(True)))
                 self.input_groups.append(input_group)
 
         dpg.show_item(self.main_group)

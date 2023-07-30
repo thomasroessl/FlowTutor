@@ -23,6 +23,7 @@ class SidebarInput(Sidebar):
                                    no_spaces=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__('var_name',
                                                                                            data),
+                                                             self.gui.selected_node.__setattr__('needs_refresh', True),
                                                              gui.redraw_all()))
 
     def hide(self) -> None:

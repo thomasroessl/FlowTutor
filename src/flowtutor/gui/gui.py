@@ -6,6 +6,7 @@ import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
+from itertools import repeat, chain
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.assignment import Assignment
@@ -54,6 +55,7 @@ if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'
+ADD_BUTTON_TAG = 'add_button'
 
 
 class GUI:
@@ -271,9 +273,9 @@ class GUI:
     def on_selected_tab_changed(self, _: Any, tab: Union[int, str]) -> None:
         self.clear_flowchart()
         self.selected_flowchart_name = dpg.get_item_user_data(tab)
-        self.selected_nodes.clear()
+        self.clear_selected_nodes()
         self.on_select_node(self.selected_flowchart.root)
-        self.redraw_all()
+        self.redraw_all(True)
 
     def on_hit_line(self, _: Any, **kw: int) -> None:
         line = kw['line']
@@ -287,7 +289,7 @@ class GUI:
                     for tab in dpg.get_item_children(self.function_tab_bar)[1]:
                         if dpg.get_item_user_data(tab) == func.root.name:
                             dpg.set_value(self.function_tab_bar, tab)
-        self.redraw_all()
+        self.redraw_all(True)
 
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
         variables = kw['variables']
@@ -299,7 +301,7 @@ class GUI:
                     with dpg.table_row(parent=self.variable_table_id):
                         dpg.add_text(variable)
                         dpg.add_text(variables[variable])
-        self.redraw_all()
+        self.redraw_all(True)
 
     def on_program_finished(self, _: Any, **kw: dict[str, str]) -> None:
         for flowchart in self.flowcharts.values():
@@ -307,14 +309,18 @@ class GUI:
                 node.has_debug_cursor = False
         if self.debugger:
             self.debugger.enable_build_and_run()
-        self.redraw_all()
+        self.redraw_all(True)
 
     def on_select_node(self, node: Optional[Node]) -> None:
 
         if node in self.selected_nodes:
             return
 
-        self.selected_nodes.append(node) if node else self.selected_nodes.clear()
+        if node:
+            node.needs_refresh = True
+            self.selected_nodes.append(node)
+        else:
+            self.clear_selected_nodes()
 
         [s.hide() for s in self.sidebars.values()]
 
@@ -328,6 +334,8 @@ class GUI:
             sidebar = self.sidebars.get(type(node))
             if sidebar:
                 sidebar.show(node)
+
+        self.redraw_all()
 
     def on_window_resize(self) -> None:
         (width, height) = dpg.get_item_rect_size(self.flowchart_container)
@@ -343,6 +351,12 @@ class GUI:
             self.mouse_position_on_canvas = None
             return
         self.mouse_position_on_canvas = self.get_point_on_canvas(data)
+        for node in self.selected_flowchart:
+            is_hovered_before = node.is_hovered
+            node.is_hovered = node.shape.contains(Point(*self.mouse_position_on_canvas))
+            node.needs_refresh = is_hovered_before != node.is_hovered
+            if node.needs_refresh:
+                node.redraw(self.selected_flowchart, self.selected_nodes)
         self.redraw_all()
 
     def on_drag(self) -> None:
@@ -363,7 +377,7 @@ class GUI:
             nodes_in_selection = self.selected_flowchart.find_nodes_in_selection(
                 self.drag_origin,
                 self.mouse_position_on_canvas)
-            self.selected_nodes.clear()
+            self.clear_selected_nodes()
             if nodes_in_selection:
                 for selected_node in nodes_in_selection:
                     self.on_select_node(selected_node)
@@ -371,7 +385,12 @@ class GUI:
             (cX, cY) = self.mouse_position_on_canvas
             for selected_node, drag_offset in zip(self.selected_nodes, self.drag_offsets):
                 (oX, oY) = drag_offset
+                parents = self.selected_flowchart.find_parents(selected_node)
+                for parent in parents:
+                    parent.needs_refresh = True
+                selected_node._needs_refresh = True
                 selected_node.pos = (cX - oX, cY - oY)
+        self.redraw_all()
 
     def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
@@ -380,7 +399,7 @@ class GUI:
         hovered_node = self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas)
         self.drag_origin = self.mouse_position_on_canvas
         if hovered_node not in self.selected_nodes and not self.utils_service.is_multi_modifier_down():
-            self.selected_nodes.clear()
+            self.clear_selected_nodes()
         self.on_select_node(hovered_node)
         if not hovered_node:
             self.is_selecting = True
@@ -394,6 +413,7 @@ class GUI:
             def callback(node: Node) -> None:
                 if parent:
                     self.selected_flowchart.add_node(parent, node, int(src_index))
+                    self.mouse_position_on_canvas = None
                     self.redraw_all()
                     self.resize()
             self.modal_service.show_node_type_modal(callback, self.mouse_position or (0, 0))
@@ -425,7 +445,7 @@ class GUI:
                 for selected_node in self.selected_nodes:
                     self.selected_flowchart.remove_node(selected_node)
                 self.on_select_node(None)
-                self.redraw_all()
+                self.redraw_all(True)
                 self.resize()
 
         if any(map(lambda n: n.has_nested_nodes(), self.selected_nodes)):
@@ -445,6 +465,11 @@ class GUI:
         for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
             dpg.delete_item(item)
 
+    def clear_selected_nodes(self) -> None:
+        for selected_node in self.selected_nodes:
+            selected_node.needs_refresh = True
+        self.selected_nodes.clear()
+
     def get_ordered_flowcharts(self) -> list[Flowchart]:
         '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
            (workaround for missing feature in dearpygui)'''
@@ -462,13 +487,12 @@ class GUI:
         sortedPos = sorted(pos, key=lambda pos: cast(int, pos))
         return list(map(lambda x: self.flowcharts[dpg.get_item_user_data(converter[x])], sortedPos))
 
-    def redraw_all(self) -> None:
+    def redraw_all(self, force: bool = False) -> None:
         self.hovered_add_button = None
-        is_add_button_drawn = False
-        for node in self.selected_flowchart:
-            node.redraw(self.selected_flowchart, self.mouse_position_on_canvas, self.selected_nodes)
-            if not is_add_button_drawn and not self.is_selecting:
-                is_add_button_drawn = self.draw_add_button(node)
+        for node in [n for n in self.selected_flowchart if force or n.needs_refresh]:
+            node.needs_refresh = False
+            node.redraw(self.selected_flowchart, self.selected_nodes)
+        self.redraw_add_button()
         if self.selected_flowchart.is_initialized():
             source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
             if source_code:
@@ -480,26 +504,32 @@ class GUI:
                 self.debugger.disable_all()
             dpg.configure_item(self.source_code_input, default_value='There are uninitialized nodes in the\nflowchart.')
 
-    def draw_add_button(self, node: Node) -> bool:
+    def redraw_add_button(self) -> None:
         '''Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
-           Returns True if an add button was drawn.
         '''
-        close_point = None
-        if self.mouse_position_on_canvas:
-            close_point = next(
-                filter(
-                    lambda p: Point(p).distance(Point(self.mouse_position_on_canvas)) < 12, node.out_points), None)
-        if close_point:
-            with dpg.draw_node(parent=node.tag):
+
+        if not self.mouse_position_on_canvas:
+            if dpg.does_item_exist(ADD_BUTTON_TAG):
+                dpg.delete_item(ADD_BUTTON_TAG)
+            return
+
+        all_out_points = list(chain.from_iterable([zip(n.out_points, repeat(n)) for n in self.selected_flowchart]))
+
+        close_point, close_node = next(filter(lambda t: Point(t[0]).distance(
+            Point(self.mouse_position_on_canvas)) < 12, all_out_points), (None, None))
+
+        if dpg.does_item_exist(ADD_BUTTON_TAG):
+            dpg.delete_item(ADD_BUTTON_TAG)
+
+        if close_point and close_node:
+            with dpg.draw_node(tag=ADD_BUTTON_TAG, parent=FLOWCHART_TAG):
                 dpg.draw_circle(close_point, 12, fill=(255, 255, 255))
                 dpg.draw_circle(close_point, 12, color=(0, 0, 0))
                 x, y = close_point
                 dpg.draw_text((x - 5.5, y - 12), '+',
                               color=(0, 0, 0), size=24)
-                src_ind = node.out_points.index(close_point)
-                self.hovered_add_button = f'{node.tag}[{src_ind}]'
-            return True
-        return False
+                src_ind = close_node.out_points.index(close_point)
+                self.hovered_add_button = f'{close_node.tag}[{src_ind}]'
 
     def resize(self) -> None:
         '''Sets the size of the drawing area.'''

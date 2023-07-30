@@ -35,7 +35,7 @@ class SectionStructs:
                                    callback=lambda s, data: (
                                        self.struct_definitions()[dpg.get_item_user_data(
                                            s)].__setattr__('name', data),
-                                       self.gui.redraw_all()))
+                                       self.gui.redraw_all(True)))
                 delete_button = dpg.add_image_button(
                     'trash_image', height=18, width=18, user_data=i,
                     callback=lambda s: self.on_delete_definition(dpg.get_item_user_data(s)))
@@ -74,12 +74,12 @@ class SectionStructs:
     def on_add_definition(self) -> None:
         self.struct_definitions().append(StructDefinition())
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def on_delete_definition(self, index: int) -> None:
         del self.struct_definitions()[index]
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']
@@ -122,7 +122,7 @@ class SectionStructs:
                                    user_data=(i, j),
                                    callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                              .__setattr__('name', data),
-                                                             self.gui.redraw_all()),
+                                                             self.gui.redraw_all(True)),
                                    no_spaces=True, default_value=member.name)
 
                 dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
@@ -130,7 +130,7 @@ class SectionStructs:
                               user_data=(i, j),
                               callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                         .__setattr__('type', data),
-                                                        self.gui.redraw_all()),
+                                                        self.gui.redraw_all(True)),
                               default_value=member.type)
 
                 dpg.add_checkbox(user_data=(i, j),
@@ -138,7 +138,7 @@ class SectionStructs:
                                  callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                            .__setattr__('is_pointer', data),
                                                            self.toggle_is_pointer(s),
-                                                           self.gui.redraw_all()),
+                                                           self.gui.redraw_all(True)),
                                  default_value=member.is_pointer)
 
                 dpg.add_checkbox(user_data=(i, j),
@@ -146,7 +146,7 @@ class SectionStructs:
                                  callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                            .__setattr__('is_array', data),
                                                            self.toggle_is_array(data, s),
-                                                           self.gui.redraw_all()),
+                                                           self.gui.redraw_all(True)),
                                  default_value=member.is_array)
 
                 dpg.add_input_text(user_data=(i, j),
@@ -154,7 +154,7 @@ class SectionStructs:
                                    width=-1,
                                    callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
                                                              .__setattr__('array_size', data),
-                                                             self.gui.redraw_all()),
+                                                             self.gui.redraw_all(True)),
                                    default_value=member.array_size,
                                    show=member.is_array)
 
@@ -167,7 +167,7 @@ class SectionStructs:
                             dpg.get_item_user_data(s)[0],
                             table,
                             self.members(dpg.get_item_user_data(s)[0])),
-                        self.gui.redraw_all()))
+                        self.gui.redraw_all(True)))
 
                 with dpg.theme() as delete_button_theme:
                     with dpg.theme_component(dpg.mvImageButton):

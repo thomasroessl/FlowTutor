@@ -38,6 +38,7 @@ class SidebarDeclarations(Sidebar):
                                        callback=lambda s, data: (
                                            self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                            .update({'var_name': data}),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            self.gui.redraw_all()))
                     if i > 0:
                         delete_button = dpg.add_image_button(
@@ -54,6 +55,7 @@ class SidebarDeclarations(Sidebar):
                                   user_data=i,
                                   callback=lambda s, data: (
                         self.gui.selected_node.declarations[dpg.get_item_user_data(s)].update({'var_type': data}),
+                        self.gui.selected_node.__setattr__('needs_refresh', True),
                         self.gui.redraw_all()))
 
                 with dpg.group(horizontal=True, parent=self.main_group):
@@ -66,6 +68,7 @@ class SidebarDeclarations(Sidebar):
                                          self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                          .update({'is_pointer': data}),
                                          self.gui.on_select_node(self.gui.selected_node),
+                                         self.gui.selected_node.__setattr__('needs_refresh', True),
                                          self.gui.redraw_all()))
 
                 with dpg.group(horizontal=True, parent=self.main_group):
@@ -78,6 +81,7 @@ class SidebarDeclarations(Sidebar):
                                          self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                          .update({'is_array': data}),
                                          self.gui.on_select_node(self.gui.selected_node),
+                                         self.gui.selected_node.__setattr__('needs_refresh', True),
                                          self.gui.redraw_all()))
 
                 with dpg.group(horizontal=True, tag=f'selected_declaration[{i}]_array_size_group',
@@ -92,6 +96,7 @@ class SidebarDeclarations(Sidebar):
                                        callback=lambda s, data: (
                                            self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                            .update({'array_size': data}),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            self.gui.redraw_all()))
 
                 with dpg.group(horizontal=True, parent=self.main_group):
@@ -104,6 +109,7 @@ class SidebarDeclarations(Sidebar):
                                          self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                          .update({'is_static': data}),
                                          self.gui.on_select_node(self.gui.selected_node),
+                                         self.gui.selected_node.__setattr__('needs_refresh', True),
                                          self.gui.redraw_all()))
                 with dpg.group(horizontal=True, tag=f'selected_declaration[{i}]_var_value_group',
                                show=not declaration['is_array'], parent=self.main_group):
@@ -116,6 +122,7 @@ class SidebarDeclarations(Sidebar):
                                        callback=lambda s, data: (
                                            self.gui.selected_node.declarations[dpg.get_item_user_data(s)]
                                            .update({'var_value': data}),
+                                           self.gui.selected_node.__setattr__('needs_refresh', True),
                                            self.gui.redraw_all()))
 
                 dpg.add_spacer(height=5, parent=self.main_group)
@@ -128,13 +135,13 @@ class SidebarDeclarations(Sidebar):
         if isinstance(self.gui.selected_node, Declarations):
             self.gui.selected_node.add_declaration()
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def on_delete_declaration(self, index: int) -> None:
         if isinstance(self.gui.selected_node, Declarations):
             self.gui.selected_node.delete_declaration(index)
         self.refresh()
-        self.gui.redraw_all()
+        self.gui.redraw_all(True)
 
     def hide(self) -> None:
         dpg.hide_item(self.main_group)

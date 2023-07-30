@@ -21,6 +21,7 @@ class SidebarSnippet(Sidebar):
                                    multiline=True,
                                    callback=lambda _, data: (gui.selected_node.__setattr__(
                                        'code', data),
+                                       self.gui.selected_node.__setattr__('needs_refresh', True),
                                        gui.redraw_all()))
 
     def hide(self) -> None:
