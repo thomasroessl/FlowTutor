@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/thomasroessl/FlowTutor/master/logo.png" alt="flowtutor-logo" width="512px" height="141px"/>
+    <img src="https://raw.githubusercontent.com/thomasroessl/FlowTutor/master/logo.png" alt="flowtutor-logo" style="max-width=512px;max-height:141px;"/>
 </h1>
 
 <h4 align="center">
