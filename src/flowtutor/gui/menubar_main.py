@@ -56,6 +56,7 @@ class MenubarMain:
                 self.gui.window_types.refresh()
                 self.gui.sidebar_none.refresh()
                 self.gui.redraw_all(True)
+                self.gui.resize()
                 self.gui.refresh_function_tabs()
         self.gui.modal_service.show_open_modal(callback)
 
