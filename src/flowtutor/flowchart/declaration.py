@@ -13,7 +13,8 @@ class Declaration(Node):
 
     def __init__(self) -> None:
         super().__init__()
-        self._shape_points, self.default_color = Language.get_node_shape_data('process')
+        self._shape_data, self.default_color = Language.get_node_shape_data('process')
+        self._shape_points = self._shape_data[0]
         self._var_name = ''
         self._var_type = 'int'
         self._var_value = ''
@@ -41,10 +42,6 @@ class Declaration(Node):
     @property
     def color(self) -> tuple[int, int, int]:
         return self.default_color if self.is_initialized else (255, 0, 0)
-
-    @property
-    def shape_points(self) -> list[tuple[float, float]]:
-        return self._shape_points
 
     @property
     def label(self) -> str:

@@ -11,7 +11,8 @@ class Template(Node):
     def __init__(self, data: Any) -> None:
         super().__init__()
         self._data = data
-        self._shape_points, default_color = Language.get_node_shape_data(data['shape_id'])
+        self._shape_data, default_color = Language.get_node_shape_data(data['shape_id'])
+        self._shape_points = self.shape_data[0]
         self._color: tuple[int, int, int] = literal_eval(data['color']) if 'color' in data else default_color
         self._values: dict[str, str] = {}
         if 'parameters' in data:
@@ -67,10 +68,6 @@ class Template(Node):
     @property
     def color(self) -> tuple[int, int, int]:
         return self._color if self.is_initialized else (255, 0, 0)
-
-    @property
-    def shape_points(self) -> list[tuple[float, float]]:
-        return self._shape_points
 
     @property
     def code(self) -> str:

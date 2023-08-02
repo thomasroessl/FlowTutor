@@ -7,7 +7,8 @@ class FunctionStart(Node):
 
     def __init__(self, name: str = '') -> None:
         super().__init__()
-        self._shape_points, self.default_color = Language.get_node_shape_data('terminator')
+        self._shape_data, self.default_color = Language.get_node_shape_data('terminator')
+        self._shape_points = self._shape_data[0]
         self._name = name
         self._return_type = 'int'
         self._parameters: list[Parameter] = []
@@ -31,10 +32,6 @@ class FunctionStart(Node):
     @property
     def color(self) -> tuple[int, int, int]:
         return self.default_color
-
-    @property
-    def shape_points(self) -> list[tuple[float, float]]:
-        return self._shape_points
 
     @property
     def name(self) -> str:

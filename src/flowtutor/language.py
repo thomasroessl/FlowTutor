@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
@@ -59,35 +59,45 @@ class Language:
         ]
 
     @staticmethod
-    def get_node_shape_data(node_type: str) -> tuple[list[tuple[float, float]], tuple[int, int, int]]:
-        return {
-            'data': ([(20.0, 0.0),
+    def get_node_shape_data(node_type: str) -> tuple[list[list[tuple[float, float]]], tuple[int, int, int]]:
+        return cast(tuple[list[list[tuple[float, float]]], tuple[int, int, int]], {
+            'data': ([[(20.0, 0.0),
                       (150.0, 0.0),
                       (130.0, 75.0),
                       (0.0, 75.0),
-                      (20.0, 0.0)],
+                      (20.0, 0.0)]],
                      (147, 171, 255)),
-            'process': ([(0.0, 0.0),
+            'process': ([[(0.0, 0.0),
                          (150, 0),
                          (150, 75),
                          (0, 75),
-                         (0, 0)],
+                         (0, 0)]],
                         (255, 255, 170)),
-            'preparation': ([(0.0, 37.5),
+            'predefined_process': ([[(0.0, 0.0),
+                                    (150, 0),
+                                    (150, 75),
+                                    (0, 75),
+                                    (0, 0)],
+                                    [(10, 0),
+                                    (10, 75)],
+                                    [(140, 75),
+                                    (140, 0)]],
+                                   (255, 255, 170)),
+            'preparation': ([[(0.0, 37.5),
                              (20, 75),
                              (130, 75),
                              (150, 37.5),
                              (130, 0),
                              (20, 0),
-                             (0, 37.5)],
+                             (0, 37.5)]],
                             (255, 208, 147)),
-            'decision': ([(75.0, 0.0),
+            'decision': ([[(75.0, 0.0),
                           (0, 50),
                           (75, 100),
                           (150, 50),
-                          (75, 0)],
+                          (75, 0)]],
                          (255, 170, 170)),
-            'terminator': ([(0.0, 37.5),
+            'terminator': ([[(0.0, 37.5),
                             (1, 30),
                             (3, 23),
                             (6, 17),
@@ -121,6 +131,6 @@ class Language:
                             (6, 58),
                             (3, 52),
                             (1, 45),
-                            (0, 37.5)],
+                            (0, 37.5)]],
                            (200, 170, 255))
-        }[node_type]
+        }[node_type])

@@ -8,7 +8,8 @@ class Assignment(Node):
 
     def __init__(self) -> None:
         super().__init__()
-        self._shape_points, self.default_color = Language.get_node_shape_data('process')
+        self._shape_data, self.default_color = Language.get_node_shape_data('process')
+        self._shape_points = self._shape_data[0]
         self._var_name = ''
         self._var_offset = ''
         self._var_value = ''

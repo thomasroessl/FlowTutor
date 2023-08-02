@@ -10,7 +10,8 @@ class Input(Node):
 
     def __init__(self) -> None:
         super().__init__()
-        self._shape_points, self.default_color = Language.get_node_shape_data('data')
+        self._shape_data, self.default_color = Language.get_node_shape_data('data')
+        self._shape_points = self._shape_data[0]
         self._var_name = ''
 
     @property
@@ -40,10 +41,6 @@ class Input(Node):
     @var_name.setter
     def var_name(self, var_name: str) -> None:
         self._var_name = var_name
-
-    @property
-    def shape_points(self) -> list[tuple[float, float]]:
-        return self._shape_points
 
     @property
     def label(self) -> str:

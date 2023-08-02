@@ -19,6 +19,8 @@ class Node(ABC):
 
     def __init__(self) -> None:
         self._tag = str(uuid4())
+        self._shape_data: list[list[tuple[float, float]]] = []
+        self._shape_points: list[tuple[float, float]] = []
         self._connections: list[Connection] = []
         self._scope: list[str] = []
         self._pos = (0, 0)
@@ -50,14 +52,17 @@ class Node(ABC):
         self._scope = scope
 
     @property
-    def shape(self) -> Polygon:  # pragma: no cover
+    def shape(self) -> Polygon:
+        return Polygon(self.transform_shape_points(self.shape_points))
+    
+    def transform_shape_points(self, shape_points: list[tuple[float, float]]) -> list[tuple[float, float]]: # pragma: no cover
         pos_x, pos_y = self.pos
 
         delta = self.width - self.shape_width
 
         if delta > 0:
             points = []
-            for p in self.shape_points:
+            for p in shape_points:
                 x, y = p
                 if x < self.shape_width / 2:
                     points.append((x - delta//2, y))
@@ -66,9 +71,8 @@ class Node(ABC):
                 else:
                     points.append((x, y))
         else:
-            points = self.shape_points.copy()
-
-        return Polygon(list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points)))
+            points = shape_points.copy()
+        return list(map(lambda p: (p[0] + pos_x, p[1] + pos_y), points))
 
     @property
     def width(self) -> int:
@@ -140,9 +144,12 @@ class Node(ABC):
         pass
 
     @property
-    @abstractmethod
     def shape_points(self) -> list[tuple[float, float]]:
-        pass
+        return self._shape_points
+
+    @property
+    def shape_data(self) -> list[list[tuple[float, float]]]:
+        return self._shape_data
 
     @property
     @abstractmethod
@@ -230,11 +237,20 @@ class Node(ABC):
             text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
             thickness = 3 if is_selected else 2 if self.is_hovered else 1
 
-            dpg.draw_polygon(list(self.shape.exterior.coords),
+            if self.shape_data:
+                dpg.draw_polygon(self.transform_shape_points(self.shape_data[0]),
                              fill=color)
-            dpg.draw_polygon(list(self.shape.exterior.coords),
-                             color=(255, 0, 0) if self.break_point else text_color,
-                             thickness=thickness)
+                for shape in self.shape_data:
+                    dpg.draw_polygon(self.transform_shape_points(shape),
+                                     color=(255, 0, 0) if self.break_point else text_color,
+                                    thickness=thickness)
+            else:
+                dpg.draw_polygon(list(self.shape.exterior.coords),
+                             fill=color)
+                dpg.draw_polygon(list(self.shape.exterior.coords),
+                                 color=(255, 0, 0) if self.break_point else text_color,
+                                 thickness=thickness)
+            
 
             text_width, text_height = dpg.get_text_size(self.label)
 
