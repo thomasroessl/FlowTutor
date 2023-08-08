@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ast import literal_eval
 from typing import TYPE_CHECKING, Optional, Union
 import dearpygui.dearpygui as dpg
 from flowtutor.flowchart.node import Node
@@ -29,23 +30,33 @@ class SidebarTemplate(Sidebar):
 
         with dpg.group(parent=self.main_group):
             for parameter in node.parameters:
+                var_type = parameter['type'] if 'type' in parameter else 'text'
                 with dpg.group(horizontal=True) as input_group:
-                    dpg.add_text(parameter['label'])
-                    if 'options' in parameter:
-                        dpg.add_combo(parameter['options'],
-                                      width=-1,
-                                      default_value=node.values.__getitem__(parameter['name']) or '',
-                                      user_data=parameter,
-                                      callback=lambda s, data:
-                                      (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
-                                       self.gui.redraw_all(True)))
+                    if var_type == 'checkbox':
+                        dpg.add_checkbox(label=parameter['label'],
+                                         default_value=literal_eval(
+                                             node.values.__getitem__(parameter['name']) or 'False'),
+                                         user_data=parameter,
+                                         callback=lambda s, data:
+                                         (node.values.__setitem__(dpg.get_item_user_data(s)['name'], str(data)),
+                                          self.gui.redraw_all(True)))
                     else:
-                        dpg.add_input_text(width=-1,
-                                           default_value=node.values.__getitem__(parameter['name']) or '',
-                                           user_data=parameter,
-                                           callback=lambda s, data:
-                                           (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
-                                            self.gui.redraw_all(True)))
+                        dpg.add_text(parameter['label'])
+                        if 'options' in parameter:
+                            dpg.add_combo(parameter['options'],
+                                          width=-1,
+                                          default_value=node.values.__getitem__(parameter['name']) or '',
+                                          user_data=parameter,
+                                          callback=lambda s, data:
+                                          (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
+                                           self.gui.redraw_all(True)))
+                        else:
+                            dpg.add_input_text(width=-1,
+                                               default_value=node.values.__getitem__(parameter['name']) or '',
+                                               user_data=parameter,
+                                               callback=lambda s, data:
+                                               (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
+                                                self.gui.redraw_all(True)))
                 self.input_groups.append(input_group)
 
         dpg.show_item(self.main_group)
