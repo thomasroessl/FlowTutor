@@ -12,5 +12,5 @@
             "label": "Value"
         }
     ],
-    "body": "fprintf(${VAR_NAME}, ${VALUE});"
+    "body": "fprintf({{VAR_NAME}}, {{VALUE}});"
 }

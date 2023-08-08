@@ -45,7 +45,10 @@ class NodesService:
             template_file_paths.extend([path.join(dirpath, f) for f in file_names])
         templates: list[tuple[str, Type[Node], Any]] = []
         for template_file_path in template_file_paths:
+            if not template_file_path.endswith('template.json'):
+                continue
             with open(template_file_path, 'r') as template_file:
                 data = json.load(template_file)
+                data['file_name'] = template_file.name
                 templates.append((str(data['label']), Template, data))
         return templates

@@ -8,5 +8,5 @@
             "label": "Name"
         }
     ],
-    "body": "fclose(${VAR_NAME});"
+    "body": "fclose({{VAR_NAME}});"
 }

@@ -8,6 +8,8 @@ from flowtutor.settings_service import SettingsService
 
 from flowtutor.nodes_service import NodesService
 
+from flowtutor.template_service import TemplateService
+
 
 class Container(containers.DeclarativeContainer):
 
@@ -29,4 +31,8 @@ class Container(containers.DeclarativeContainer):
 
     nodes_service = providers.Singleton(
         NodesService
+    )
+
+    template_service = providers.Singleton(
+        TemplateService
     )

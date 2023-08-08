@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ast import literal_eval
-from typing import Any
+from typing import Any, Union
 from flowtutor.flowchart.node import Node
 
 from flowtutor.language import Language
@@ -11,6 +11,7 @@ class Template(Node):
     def __init__(self, data: Any) -> None:
         super().__init__()
         self._data = data
+        self._body: Union[str, list[str], None] =  data['body'] if 'body' in data else None 
         self._shape_data, default_color = Language.get_node_shape_data(data['shape_id'])
         self._shape_points = self.shape_data[0]
         self._color: tuple[int, int, int] = literal_eval(data['color']) if 'color' in data else default_color
@@ -36,18 +37,8 @@ class Template(Node):
         return self._values
 
     @property
-    def body(self) -> str:
-        body = self.data['body']
-        result = ''
-        if isinstance(body, list):
-            result = '\n'.join(body)
-        else:
-            result = str(body)
-
-        for k, v in self.values.items():
-            result = result.replace(f'${{{k}}}', v)
-
-        return result
+    def body(self) -> Union[str, list[str], None]:
+        return self._body
 
     @property
     def shape_width(self) -> int:

@@ -1,0 +1,15 @@
+{
+    "label": "Assignment",
+    "shape_id": "process",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        },
+        {
+            "name": "VAR_VALUE",
+            "label": "Value"
+        }
+    ],
+    "body": ["{{VAR_NAME}} = {{VAR_VALUE}};"]
+}

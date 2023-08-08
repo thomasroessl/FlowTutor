@@ -23,16 +23,20 @@ from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.template import Template
 from flowtutor.language import Language
 from flowtutor.util_service import UtilService
+from flowtutor.template_service import TemplateService
 
 
 class CodeGenerator:
 
     @inject
-    def __init__(self, utils_service: UtilService = Provide['utils_service']):
+    def __init__(self, 
+                utils_service: UtilService = Provide['utils_service'],
+                template_service: TemplateService = Provide['template_service']):
         self.prev_source_code = ''
         self.prev_break_points = ''
         self.utils = utils_service
         self.break_point_path = self.utils.get_break_points_path()
+        self.template_service = template_service
         try:
             remove(self.break_point_path)
         except FileNotFoundError:
@@ -201,7 +205,8 @@ class CodeGenerator:
             if len(node.code) > 0:
                 yield (indent + f'\n{prefix}{indent}'.join(node.code.splitlines()), node.break_point, node)
         elif isinstance(node, Template):
-            yield (indent + f'\n{prefix}{indent}'.join(node.body.splitlines()), node.break_point, node)
+            body = self.template_service.render(node)
+            yield (indent + f'\n{prefix}{indent}'.join(body.splitlines()), node.break_point, node)
 
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if isinstance(node, Conditional):
