@@ -1,6 +1,5 @@
 from __future__ import annotations
-from ast import literal_eval
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 import dearpygui.dearpygui as dpg
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
@@ -25,6 +24,8 @@ class SidebarTemplate(Sidebar):
         if not isinstance(node, Template):
             return
         self.gui.set_sidebar_title(node.data['label'])
+        dpg.show_item(self.main_group)
+        label_inputs = []
         with dpg.group(parent=self.main_group):
             for parameter in node.parameters:
                 if 'visible' in parameter and not eval(f"{parameter['visible']}", node.values):
@@ -41,7 +42,8 @@ class SidebarTemplate(Sidebar):
                                           self.hide(),
                                           self.show(node)))
                     else:
-                        dpg.add_text(parameter['label'])
+                        label = dpg.add_text(parameter['label'])
+                        label_inputs.append((label, input_group))
                         if 'options' in parameter:
                             dpg.add_combo(parameter['options'],
                                           width=-1,
@@ -57,5 +59,7 @@ class SidebarTemplate(Sidebar):
                                                callback=lambda s, data:
                                                (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
                                                 self.gui.redraw_all(True)))
-
-        dpg.show_item(self.main_group)
+        dpg.split_frame()
+        for label, input_group in label_inputs:
+            if dpg.get_item_rect_size(label)[0] > dpg.get_item_rect_size(input_group)[0] / 2:
+                dpg.configure_item(input_group, horizontal=False)
