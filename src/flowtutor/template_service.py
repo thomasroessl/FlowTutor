@@ -12,7 +12,9 @@ class TemplateService:
     def __init__(self, utils_service: UtilService = Provide['utils_service']) -> None:
         self.utils_service = utils_service
         self.jinja_env = Environment(
-            loader=FileSystemLoader(self.utils_service.get_templates_path()))
+            loader=FileSystemLoader(self.utils_service.get_templates_path()),
+            lstrip_blocks=True,
+            trim_blocks=True)
 
     def render(self, template: Template) -> str:
         template_body = template.body
