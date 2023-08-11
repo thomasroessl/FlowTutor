@@ -1,7 +1,6 @@
 {
     "label": "Input",
     "shape_id": "data",
-    "color": "(147, 171, 255)",
     "parameters": [
         {
             "name": "VAR_NAME",

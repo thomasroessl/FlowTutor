@@ -1,0 +1,15 @@
+{
+    "label": "Output",
+    "shape_id": "data",
+    "parameters": [
+        {
+            "name": "TEMPLATE",
+            "label": "Template"
+        },
+        {
+            "name": "ARGUMENTS",
+            "label": "Arguments"
+        }
+    ],
+    "body": "printf(\"{{TEMPLATE}}\"{% if ARGUMENTS %}, {{ARGUMENTS}}{% endif %});"
+}
