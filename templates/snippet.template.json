@@ -1,0 +1,12 @@
+{
+    "label": "Snippet",
+    "shape_id": "process",
+    "parameters": [
+        {
+            "name": "CODE",
+            "label": "Code",
+            "type": "textarea"
+        }
+    ],
+    "body": "{{CODE}}"
+}

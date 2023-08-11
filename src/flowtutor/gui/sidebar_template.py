@@ -41,6 +41,17 @@ class SidebarTemplate(Sidebar):
                                           self.gui.redraw_all(True),
                                           self.hide(),
                                           self.show(node)))
+                    elif var_type == 'textarea':
+                        label = dpg.add_text(parameter['label'])
+                        dpg.configure_item(input_group, horizontal=False)
+                        dpg.add_input_text(width=-1,
+                                           height=-200,
+                                           multiline=True,
+                                           default_value=node.values.__getitem__(parameter['name']) or '',
+                                           user_data=parameter,
+                                           callback=lambda s, data:
+                                           (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
+                                            self.gui.redraw_all(True)))
                     else:
                         label = dpg.add_text(parameter['label'])
                         label_inputs.append((label, input_group))
