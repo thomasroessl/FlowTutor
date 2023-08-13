@@ -33,7 +33,7 @@ class Node(ABC):
         self._has_debug_cursor = False
 
     def __repr__(self) -> str:
-        return f'({self.tag})'
+        return f'({self.tag}: {self.__class__.__name__})'
 
     @property
     def tag(self) -> str:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generator, Optional, cast
+from typing import Any, Generator, Optional, cast
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
@@ -97,7 +97,7 @@ class CodeGenerator:
 
         for i, flowchart in enumerate(flowcharts):
             source.append(('', False, None))
-            source.extend(self._generate_code(flowchart, flowchart.root))
+            source.extend(self._generate_code_(flowchart.root, set()))
 
         code_lines, break_points, nodes = map(list, zip(*source))
 
@@ -116,113 +116,19 @@ class CodeGenerator:
                        enumerate(break_points))))
 
         return (source_code, break_point_definitions)
-
-    def _generate_code(self, flowchart: Flowchart, node: Node, indent: str = '', prefix: str = '') -> \
-            Generator[tuple[str, bool, Node], None, None]:
-        if node.is_comment or node.get_disabled_inherited(flowchart):
-            prefix = '// '
-        if len(node.comment) > 0:
-            yield (f'{prefix}{indent}// {node.comment}', False, node)
-        if isinstance(node, Declaration):
-            yield (''.join([
-                prefix,
-                indent,
-                'static ' if node.is_static else '',
-                node.var_type,
-                ' ',
-                '*' if node.is_pointer else '',
-                node.var_name,
-                f'[{node.array_size}]' if node.is_array else '',
-                f' = {node.var_value}' if len(node.var_value) > 0 else '',
-                ';'
-            ]), node.break_point, node)
-        elif isinstance(node, Declarations):
-            yield ('\n'.join(map(lambda d: ''.join([
-                prefix,
-                indent,
-                'static ' if d['is_static'] else '',
-                d['var_type'],
-                ' ',
-                '*' if d['is_pointer'] else '',
-                d['var_name'],
-                f'[{d["array_size"]}]' if d['is_array'] else '',
-                f' = {d["var_value"]}' if len(d['var_value']) > 0 else '',
-                ';']), node.declarations)), node.break_point, node)
-        elif isinstance(node, Call):
-            yield (''.join([
-                prefix,
-                indent,
-                node.expression,
-                ';'
-            ]), node.break_point, node)
-        elif isinstance(node, Assignment):
-            yield (''.join([f'{prefix}{indent}{node.var_name}',
-                            f'[{node.var_offset}]' if len(node.var_offset) > 0 else '',
-                           f' = {node.var_value};']), node.break_point, node)
-        elif isinstance(node, Conditional):
-            yield (f'{prefix}{indent}if({node.condition}) {{', node.break_point, node)
-            indent += '  '
-        elif isinstance(node, Connector):
-            indent = indent[:len(indent) - 2]
-            yield (f'{prefix}{indent}}}', False, node)
+    
+    def _generate_code_(self, node: Node, visited_nodes: set[Node]) -> Generator[tuple[str, bool, Optional[Node]], None, None]:
+        visited_nodes.add(node)
+        if isinstance(node, Template):
+            loop_body: Any = sum([list(self._generate_code_(c.dst_node, visited_nodes)) for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes], [])
+            yield from self.template_service.render(node, loop_body)
         elif isinstance(node, FunctionStart):
             parameters = ', '.join([str(p) for p in node.parameters])
-            yield (f'{prefix}{indent}{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
-            indent += '  '
+            yield (f'{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
         elif isinstance(node, FunctionEnd):
-            yield (f'{prefix}{indent}return {node.return_value};', node.break_point, node)
-            indent = indent[:len(indent) - 2]
+            yield (f'  return {node.return_value};', node.break_point, node)
             yield ('}', False, node)
-            return
-        elif isinstance(node, ForLoop):
-            yield (f'{prefix}{indent}for(int {node.var_name} = {node.start_value}; {node.condition}; {node.update}) {{',
-                   node.break_point, node)
-            indent += '  '
-        elif isinstance(node, WhileLoop):
-            yield (f'{prefix}{indent}while({node.condition}) {{', node.break_point, node)
-            indent += '  '
-        elif isinstance(node, DoWhileLoop):
-            yield (f'{prefix}{indent}do {{', node.break_point, node)
-            indent += '  '
-        elif isinstance(node, Input):
-            declaration = flowchart.find_declaration(node.var_name)
-            if not declaration:
-                yield (f'{indent}// {node.var_name} is not declared!', False, node)
-            else:
-                var_type = declaration['var_type']
-                if var_type == 'char' and declaration['is_array']:
-                    format_specifier = '%s'
-                else:
-                    type_formats = list(zip(Language.get_data_types(), Language.get_format_specifiers()))
-                    _, format_specifier = next(t for t in type_formats if t[0] == var_type)
-                yield (f'{prefix}{indent}scanf("{format_specifier}", &{node.var_name});', node.break_point, node)
-        elif isinstance(node, Output):
-            if len(node.arguments) > 0:
-                yield (f'{prefix}{indent}printf("{node.format_string}", {node.arguments});', node.break_point, node)
-            else:
-                yield (f'{prefix}{indent}printf("{node.format_string}");', node.break_point, node)
-        elif isinstance(node, Snippet):
-            if len(node.code) > 0:
-                yield (indent + f'\n{prefix}{indent}'.join(node.code.splitlines()), node.break_point, node)
-        elif isinstance(node, Template):
-            body = self.template_service.render(node)
-            yield (indent + f'\n{prefix}{indent}'.join(body.splitlines()), node.break_point, node)
-
-        for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
-            if isinstance(node, Conditional):
-                if connection.src_ind == 0 and not isinstance(connection.dst_node, Connector):
-                    yield (f'{prefix}{indent[:len(indent) - 2]}}} else {{', False, node)
-            elif isinstance(node, ForLoop) or isinstance(node, WhileLoop):
-                if connection.src_ind == 0 and not connection.dst_node == node:
-                    indent = indent[:len(indent) - 2]
-                    yield (f'{prefix}{indent}}}', False, node)
-                    prefix = ''
-            elif isinstance(node, DoWhileLoop):
-                if connection.src_ind == 0 and not connection.dst_node == node:
-                    indent = indent[:len(indent) - 2]
-                    yield (f'{prefix}{indent}}} while({node.condition});', False, node)
-                    prefix = ''
-            else:
-                prefix = ''
-            if (connection.span and connection.dst_node.tag not in node.scope and node != connection.dst_node):
-                yield from self._generate_code(flowchart, connection.dst_node, indent, prefix)
+        else:
+            yield ('', False, None)
+        for code in [self._generate_code_(c.dst_node, visited_nodes) for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
+            yield from code
