@@ -2,18 +2,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Generator, Optional
 from shapely.geometry import box, Point
 
-from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connection import Connection
 from flowtutor.flowchart.connector import Connector
-from flowtutor.flowchart.declaration import Declaration
-from flowtutor.flowchart.declarations import Declarations
-from flowtutor.flowchart.dowhileloop import DoWhileLoop
-from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.struct_definition import StructDefinition
 from flowtutor.flowchart.type_definition import TypeDefinition
-from flowtutor.flowchart.whileloop import WhileLoop
 
 from flowtutor.flowchart.template import Template
 
@@ -93,19 +87,6 @@ class Flowchart:
         parameters = ', '.join([str(p) for p in self.root.parameters])
         return f'{self.root.return_type} {self.root.name}({parameters});'
 
-    def get_all_declarations(self) -> Generator[dict[str, Any], None, None]:
-        for node in self:
-            if isinstance(node, Declaration):
-                yield node.get_declaration()
-            elif isinstance(node, Declarations):
-                for declaration in node.declarations:
-                    yield declaration
-            elif isinstance(node, ForLoop):
-                yield node.get_declaration()
-
-    def find_declaration(self, var_name: str) -> Optional[dict[str, Any]]:
-        return next(filter(lambda n: n and n['var_name'] == var_name, self.get_all_declarations()), None)
-
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)
 
@@ -130,7 +111,7 @@ class Flowchart:
         return list(filter(lambda n: n.shape.intersects(selection_box), self))
 
     def find_successor(self, node: Node) -> Optional[Node]:
-        if isinstance(node, Conditional) or (isinstance(node, Template) and node.control_flow == 'decision'):
+        if isinstance(node, Template) and node.control_flow == 'decision':
             connector = next(filter(lambda n: isinstance(n, Connector)
                              and n.scope and n.scope[-1] == node.tag, self), None)
             if connector:
@@ -151,11 +132,7 @@ class Flowchart:
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0) -> None:
         child.scope = parent.scope.copy()
-        if isinstance(parent, Conditional) or\
-           isinstance(parent, ForLoop) or\
-           isinstance(parent, WhileLoop) or\
-           isinstance(parent, DoWhileLoop) or\
-           (isinstance(parent, Template) and parent.control_flow == 'decision') or\
+        if (isinstance(parent, Template) and parent.control_flow == 'decision') or\
            (isinstance(parent, Template) and (parent.control_flow == 'loop' or parent.control_flow == 'post-loop'))\
                 and src_ind == 1:
             
@@ -177,17 +154,17 @@ class Flowchart:
             else:
                 parent.connections.remove(existing_connection)
                 parent.connections.append(Connection(child, src_ind, True))
-                if not isinstance(child, Conditional) and not (isinstance(child, Template) and child.control_flow == 'decision'):
+                if not (isinstance(child, Template) and child.control_flow == 'decision'):
                     child.connections.append(Connection(existing_connection.dst_node, 0, existing_connection.span))
 
-            if isinstance(child, Conditional) or (isinstance(child, Template) and child.control_flow == 'decision'):
+            if isinstance(child, Template) and child.control_flow == 'decision':
                 connector_node = Connector()
                 self.add_node(child, connector_node)
                 if existing_connection:
                     connector_node.connections.append(
                         Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
-            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop) or isinstance(child, DoWhileLoop) or (isinstance(child, Template) and (child.control_flow == 'loop'or child.control_flow == 'post-loop')):
+            elif isinstance(child, Template) and (child.control_flow == 'loop'or child.control_flow == 'post-loop'):
                 child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 
@@ -198,15 +175,15 @@ class Flowchart:
                    int(pos_y))
         else:
             _, connection_point_y = parent.out_points[int(src_ind)]
-            if isinstance(parent, Conditional) or (isinstance(parent, Template) and parent.control_flow == 'decision'):
+            if isinstance(parent, Template) and parent.control_flow == 'decision':
                 if int(src_ind) == 0:
                     pos = (parent.pos[0] - 125, int(connection_point_y + 50))
                 else:
                     pos = (parent.pos[0] + 125, int(connection_point_y + 50))
-            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop'))) and\
+            elif (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop')) and\
                     int(src_ind) == 1:
                 pos = (parent.pos[0] + 160, int(connection_point_y + 25))
-            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop'))):
+            elif (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop')):
                 pos = (parent.pos[0] - 35, int(connection_point_y + 50))
             elif isinstance(parent, Connector):
                 pos = (parent.pos[0] - parent.shape_width, int(connection_point_y + 50))

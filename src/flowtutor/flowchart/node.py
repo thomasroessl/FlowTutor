@@ -253,7 +253,7 @@ class Node(ABC):
 
             text_width, text_height = dpg.get_text_size(self.label)
 
-            if self.__class__.__name__ == 'DoWhileLoop' or (self.__class__.__name__ == 'Template' and cast(Any, self).control_flow == 'post-loop'):
+            if self.__class__.__name__ == 'Template' and cast(Any, self).control_flow == 'post-loop':
                 dpg.draw_circle((pos_x + 75, pos_y + 25), 25, fill=self.color)
                 dpg.draw_circle((pos_x + 75, pos_y + 25), 25, thickness=2, color=text_color)
                 dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,

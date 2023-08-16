@@ -9,37 +9,15 @@ from dependency_injector.wiring import Provide, inject
 from itertools import repeat, chain
 
 from flowtutor.flowchart.flowchart import Flowchart
-from flowtutor.flowchart.assignment import Assignment
-from flowtutor.flowchart.call import Call
-from flowtutor.flowchart.declaration import Declaration
-from flowtutor.flowchart.declarations import Declarations
-from flowtutor.flowchart.dowhileloop import DoWhileLoop
-from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
-from flowtutor.flowchart.input import Input
-from flowtutor.flowchart.forloop import ForLoop
-from flowtutor.flowchart.whileloop import WhileLoop
-from flowtutor.flowchart.output import Output
-from flowtutor.flowchart.snippet import Snippet
 from flowtutor.flowchart.template import Template
 from flowtutor.gui.menubar_main import MenubarMain
 from flowtutor.gui.section_node_extras import SectionNodeExtras
 from flowtutor.gui.sidebar import Sidebar
-from flowtutor.gui.sidebar_assignment import SidebarAssignment
-from flowtutor.gui.sidebar_call import SidebarCall
-from flowtutor.gui.sidebar_conditional import SidebarConditional
-from flowtutor.gui.sidebar_declaration import SidebarDeclaration
-from flowtutor.gui.sidebar_declarations import SidebarDeclarations
-from flowtutor.gui.sidebar_dowhileloop import SidebarDoWhileLoop
 from flowtutor.gui.sidebar_functionend import SidebarFunctionEnd
-from flowtutor.gui.sidebar_input import SidebarInput
-from flowtutor.gui.sidebar_forloop import SidebarForLoop
 from flowtutor.gui.sidebar_multi import SidebarMulti
 from flowtutor.gui.sidebar_none import SidebarNone
-from flowtutor.gui.sidebar_whileloop import SidebarWhileLoop
-from flowtutor.gui.sidebar_output import SidebarOutput
-from flowtutor.gui.sidebar_snippet import SidebarSnippet
 from flowtutor.gui.sidebar_template import SidebarTemplate
 from flowtutor.gui.window_types import WindowTypes
 from flowtutor.modal_service import ModalService
@@ -163,37 +141,15 @@ class GUI:
                         dpg.bind_item_theme(self.delete_button, tool_button_theme)
 
                     self.sidebar_none = SidebarNone(self)
-                    self.sidebar_assignment = SidebarAssignment(self)
                     self.sidebar_function_start = SidebarFunctionStart(self)
                     self.sidebar_function_end = SidebarFunctionEnd(self)
-                    self.sidebar_call = SidebarCall(self)
-                    self.sidebar_declaration = SidebarDeclaration(self)
-                    self.sidebar_declarations = SidebarDeclarations(self)
-                    self.sidebar_conditional = SidebarConditional(self)
-                    self.sidebar_for_loop = SidebarForLoop(self)
-                    self.sidebar_while_loop = SidebarWhileLoop(self)
-                    self.sidebar_do_while_loop = SidebarDoWhileLoop(self)
-                    self.sidebar_input = SidebarInput(self)
-                    self.sidebar_output = SidebarOutput(self)
-                    self.sidebar_snippet = SidebarSnippet(self)
                     self.sidebar_template = SidebarTemplate(self)
                     self.sidebar_multi = SidebarMulti(self)
 
                     self.sidebars: dict[Union[Type[Node], Type[list[Any]], Type[None]], Sidebar] = {
                         type(None): self.sidebar_none,
-                        Assignment: self.sidebar_assignment,
                         FunctionStart: self.sidebar_function_start,
                         FunctionEnd: self.sidebar_function_end,
-                        Call: self.sidebar_call,
-                        Declaration: self.sidebar_declaration,
-                        Declarations: self.sidebar_declarations,
-                        Conditional: self.sidebar_conditional,
-                        ForLoop: self.sidebar_for_loop,
-                        WhileLoop: self.sidebar_while_loop,
-                        DoWhileLoop: self.sidebar_do_while_loop,
-                        Input: self.sidebar_input,
-                        Output: self.sidebar_output,
-                        Snippet: self.sidebar_snippet,
                         Template: self.sidebar_template,
                         list: self.sidebar_multi
                     }
