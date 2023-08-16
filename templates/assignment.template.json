@@ -11,5 +11,5 @@
             "label": "Value"
         }
     ],
-    "body": ["{{VAR_NAME}} = {{VAR_VALUE}};"]
+    "body": "{{VAR_NAME}} = {{VAR_VALUE}};"
 }

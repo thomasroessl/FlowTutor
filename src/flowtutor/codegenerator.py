@@ -3,25 +3,12 @@ from typing import Any, Generator, Optional, cast
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
-
-from flowtutor.flowchart.assignment import Assignment
-from flowtutor.flowchart.call import Call
-from flowtutor.flowchart.conditional import Conditional
 from flowtutor.flowchart.connector import Connector
-from flowtutor.flowchart.declaration import Declaration
-from flowtutor.flowchart.declarations import Declarations
-from flowtutor.flowchart.dowhileloop import DoWhileLoop
 from flowtutor.flowchart.flowchart import Flowchart
-from flowtutor.flowchart.forloop import ForLoop
 from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
-from flowtutor.flowchart.input import Input
 from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.output import Output
-from flowtutor.flowchart.snippet import Snippet
-from flowtutor.flowchart.whileloop import WhileLoop
 from flowtutor.flowchart.template import Template
-from flowtutor.language import Language
 from flowtutor.util_service import UtilService
 from flowtutor.template_service import TemplateService
 
@@ -29,9 +16,9 @@ from flowtutor.template_service import TemplateService
 class CodeGenerator:
 
     @inject
-    def __init__(self, 
-                utils_service: UtilService = Provide['utils_service'],
-                template_service: TemplateService = Provide['template_service']):
+    def __init__(self,
+                 utils_service: UtilService = Provide['utils_service'],
+                 template_service: TemplateService = Provide['template_service']):
         self.prev_source_code = ''
         self.prev_break_points = ''
         self.utils = utils_service
@@ -63,72 +50,91 @@ class CodeGenerator:
             return None
 
     def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
-        source: list[tuple[str, bool, Optional[Node]]] = [
-            (f'#include <{h}.h>', False, None) for h in flowcharts[0].includes
+        source: list[tuple[str, Optional[Node]]] = [
+            (f'#include <{h}.h>', None) for h in flowcharts[0].includes
         ]
 
         if len(flowcharts[0].type_definitions) > 0:
-            source.append(('', False, None))
+            source.append(('', None))
 
         for type_definition in flowcharts[0].type_definitions:
             source += [
-                (str(type_definition), False, None)
+                (str(type_definition), None)
             ]
 
         for struct_definition in flowcharts[0].struct_definitions:
-            source += [('', False, None)]
+            source += [('', None)]
             source += [
-                (d, False, None) for d in str(struct_definition).split('\n')
+                (d, None) for d in str(struct_definition).split('\n')
             ]
         source += [
-            (f'#define {d}', False, None) for d in flowcharts[0].preprocessor_definitions
+            (f'#define {d}', None) for d in flowcharts[0].preprocessor_definitions
         ]
         if flowcharts[0].preprocessor_custom:
             source += [
-                (c, False, None) for c in flowcharts[0].preprocessor_custom.split('\n')
+                (c, None) for c in flowcharts[0].preprocessor_custom.split('\n')
             ]
 
         if len(flowcharts) > 1:
-            source.append(('', False, None))
+            source.append(('', None))
 
         for flowchart in flowcharts:
             if flowchart.root.name != 'main':
-                source.append((flowchart.get_function_declaration(), False, None))
+                source.append((flowchart.get_function_declaration(), None))
 
         for i, flowchart in enumerate(flowcharts):
-            source.append(('', False, None))
-            source.extend(self._generate_code_(flowchart.root, set()))
+            source.append(('', None))
+            source.extend(self._generate_code(flowchart.root, set()))
 
-        code_lines, break_points, nodes = map(list, zip(*source))
+        nodes: list[Optional[Node]]
+        code_lines, nodes = map(list, zip(*source)) # type: ignore
 
         for flowchart in flowcharts:
-            for node in flowchart:
-                node.lines = []
+            for n in flowchart:
+                n.lines = []
 
-        for i, node in enumerate(nodes):  # type: ignore
-            if node:
-                cast(Node, node).lines.append(i + 1)  # type: ignore
+        for i, n1 in enumerate(nodes):
+            if n1:
+                n1.lines.append(i + 1)
 
         source_code = '\n'.join(cast(list[str], code_lines))
         break_point_definitions = '\n'.join(
             map(lambda e: f'break flowtutor.c:{e[0] + 2}',
-                filter(lambda e: e[1],
-                       enumerate(break_points))))
+                filter(lambda e: e[1], enumerate(map(lambda n: n and n.break_point, nodes)))))
 
         return (source_code, break_point_definitions)
-    
-    def _generate_code_(self, node: Node, visited_nodes: set[Node]) -> Generator[tuple[str, bool, Optional[Node]], None, None]:
+
+    def _generate_code(self, node: Node, visited_nodes: set[Node]) -> Generator[tuple[str, Optional[Node]], None, None]:
         visited_nodes.add(node)
         if isinstance(node, Template):
-            loop_body: Any = sum([list(self._generate_code_(c.dst_node, visited_nodes)) for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes], [])
-            yield from self.template_service.render(node, loop_body)
+            loop_body: list[tuple[str, Optional[Node]]] = []
+            if_branch: list[tuple[str, Optional[Node]]] = []
+            else_branch: list[tuple[str, Optional[Node]]] = []
+            if node.control_flow == 'loop':
+                loop_body = sum([list(self._generate_code(c.dst_node, visited_nodes))
+                                     for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes], [])
+                pass
+            elif node.control_flow == 'decision':
+                for c in [c for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
+                    if isinstance(c.dst_node, Connector) and c.dst_node.scope[-1] == node.tag:
+                        break
+                    if_branch.extend(self._generate_code(c.dst_node, visited_nodes))
+                for c in [c for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes]:
+                    if isinstance(c.dst_node, Connector) and c.dst_node.scope[-1] == node.tag:
+                        break
+                    else_branch.extend(self._generate_code(c.dst_node, visited_nodes))
+            yield from self.template_service.render(node, loop_body, if_branch, else_branch)
         elif isinstance(node, FunctionStart):
             parameters = ', '.join([str(p) for p in node.parameters])
-            yield (f'{node.return_type} {node.name}({parameters}) {{', node.break_point, node)
+            yield (f'{node.return_type} {node.name}({parameters}) {{', node)
         elif isinstance(node, FunctionEnd):
-            yield (f'  return {node.return_value};', node.break_point, node)
-            yield ('}', False, node)
+            yield (f'  return {node.return_value};', node)
+            yield ('}', node)
+        elif isinstance(node, Connector):
+            pass
         else:
-            yield ('', False, None)
-        for code in [self._generate_code_(c.dst_node, visited_nodes) for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
+            yield ('', None)
+        for code in [self._generate_code(c.dst_node, visited_nodes) for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
             yield from code
+
+    

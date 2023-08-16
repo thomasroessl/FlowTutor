@@ -72,7 +72,7 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and parent.control_flow == 'loop')) and\
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and (parent.control_flow == 'loop' or parent.control_flow == 'post-loop'))) and\
                     int(self.src_ind) == 1:
                 in_x, in_y = dst_in_points[0]
                 dpg.draw_line(
@@ -87,7 +87,7 @@ class Connection:
                     thickness=2,
                     size=10)
             elif (isinstance(self.dst_node, ForLoop) or isinstance(self.dst_node, WhileLoop) or
-                  isinstance(self.dst_node, DoWhileLoop) or (isinstance(self.dst_node, Template) and self.dst_node.control_flow == 'loop')) and\
+                  isinstance(self.dst_node, DoWhileLoop) or (isinstance(self.dst_node, Template) and (self.dst_node.control_flow == 'loop'or self.dst_node.control_flow == 'post-loop'))) and\
                     self.dst_node.tag in parent.scope:
                 in_x, in_y = dst_in_points[1]
                 offset_y = max(out_y, in_y) + 25
@@ -108,7 +108,7 @@ class Connection:
                     thickness=2,
                     size=10)
                 pass
-            elif isinstance(parent, Conditional) and isinstance(self.dst_node, Connector):
+            elif (isinstance(parent, Conditional) or (isinstance(parent, Template) and parent.control_flow == 'decision')) and isinstance(self.dst_node, Connector):
                 in_x, in_y = dst_in_points[0]
                 dst_offset = 50
                 if int(self.src_ind) == 1:
@@ -133,7 +133,7 @@ class Connection:
                     color=text_color,
                     thickness=2,
                     size=10)
-            elif isinstance(parent, Conditional):
+            elif isinstance(parent, Conditional) or (isinstance(parent, Template) and parent.control_flow == 'decision'):
                 in_x, in_y = dst_in_points[0]
                 dpg.draw_line(
                     (in_x, out_y),

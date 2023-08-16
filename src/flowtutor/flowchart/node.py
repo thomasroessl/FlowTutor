@@ -1,10 +1,9 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, cast
 from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Polygon
-from shapely.geometry import Point
 
 from flowtutor.gui.themes import theme_colors
 
@@ -254,11 +253,11 @@ class Node(ABC):
 
             text_width, text_height = dpg.get_text_size(self.label)
 
-            if self.__class__.__name__ == 'DoWhileLoop':
+            if self.__class__.__name__ == 'DoWhileLoop' or (self.__class__.__name__ == 'Template' and cast(Any, self).control_flow == 'post-loop'):
                 dpg.draw_circle((pos_x + 75, pos_y + 25), 25, fill=self.color)
                 dpg.draw_circle((pos_x + 75, pos_y + 25), 25, thickness=2, color=text_color)
                 dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,
-                               pos_y + self.shape_height / 2 + 50 - text_height / 2),
+                               pos_y + self.shape_height + 60 - text_height / 2),
                               self.label, color=(0, 0, 0), size=18)
             else:
                 dpg.draw_text((pos_x + self.shape_width / 2 - text_width / 2,

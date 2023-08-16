@@ -24,9 +24,5 @@
                 "a+"
             ]
         }
-    ],
-    "body": [
-        "FILE *{{VAR_NAME}};",
-        "{{VAR_NAME}} = fopen({{FILE}}, \"{{MODE}}\");"
     ]
 }

@@ -1,0 +1,11 @@
+{
+    "label": "Conditional",
+    "shape_id": "decision",
+    "control_flow": "decision",
+    "parameters": [
+        {
+            "name": "CONDITION",
+            "label": "Condition"
+        }
+    ]
+}

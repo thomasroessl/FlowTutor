@@ -18,17 +18,35 @@ class TemplateService:
             lstrip_blocks=True,
             trim_blocks=True)
 
-    def render(self, template: Template, loop_body: list[tuple[str, bool, Optional[Node]]]) -> list[tuple[str, bool, Optional[Node]]]:
+    def render(self, template: Template, loop_body: list[tuple[str, Optional[Node]]], if_branch: list[tuple[str, Optional[Node]]], else_branch: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
         template_body = template.body
-        template.values['LOOP_BODY'] = '\n'.join([l for l, _, _ in loop_body])
-        if not template_body:
+        template.values['LOOP_BODY'] = '\n'.join([l for l, _ in loop_body])
+        template.values['IF_BRANCH'] = '\n'.join([l for l, _ in if_branch])
+        template.values['ELSE_BRANCH'] = '\n'.join([l for l, _ in else_branch])
+        if template_body:
+            return [('  ' + self.jinja_env.from_string(template_body).render(template.values), template)]
+        else:
             path = Path(template.data['file_name'])
             filename_without_ext = path.stem.split('.')[0]
             try:
-                return [('  ' + l, True, template) for l in self.jinja_env.get_template(f'{filename_without_ext}.jinja').render(template.values).splitlines()]
+                unassigned_lines = loop_body.copy()
+                unassigned_lines.reverse()
+                assigned_nodes: set[Node] = set()
+                rendered: list[tuple[str, Optional[Node]]] =\
+                    [('  ' + l, self.assign_node(l, unassigned_lines, template, assigned_nodes)) for l in self.render_jinja_lines(filename_without_ext, template.values)]
+                return rendered
             except TemplateNotFound:
-                return [('', False, None)]
-        elif isinstance(template_body, str):
-            return [('  ' + self.jinja_env.from_string(template_body).render(template.values), True, template)]
+                return [('', None)]
+    
+    def render_jinja_lines(self, template_file_name: str, values: dict[str, str]) -> list[str]:
+        return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
+
+    def assign_node(self, line: str, unassigned_lines: list[tuple[str, Optional[Node]]], default_node: Node, assigned_nodes: set[Node]) -> Optional[Node]:
+        if unassigned_lines and unassigned_lines[-1][0].strip() == line.strip():
+            node = unassigned_lines.pop()[1]
         else:
-            return list(map(lambda t: ('  ' + self.jinja_env.from_string(t).render(template.values), True, template), template_body))
+            node = default_node
+        if not node or node in assigned_nodes:
+            return None
+        assigned_nodes.add(node)
+        return node

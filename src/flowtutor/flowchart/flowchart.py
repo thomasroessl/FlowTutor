@@ -130,7 +130,7 @@ class Flowchart:
         return list(filter(lambda n: n.shape.intersects(selection_box), self))
 
     def find_successor(self, node: Node) -> Optional[Node]:
-        if isinstance(node, Conditional):
+        if isinstance(node, Conditional) or (isinstance(node, Template) and node.control_flow == 'decision'):
             connector = next(filter(lambda n: isinstance(n, Connector)
                              and n.scope and n.scope[-1] == node.tag, self), None)
             if connector:
@@ -155,8 +155,10 @@ class Flowchart:
            isinstance(parent, ForLoop) or\
            isinstance(parent, WhileLoop) or\
            isinstance(parent, DoWhileLoop) or\
-           (isinstance(parent, Template) and parent.control_flow == 'loop')\
+           (isinstance(parent, Template) and parent.control_flow == 'decision') or\
+           (isinstance(parent, Template) and (parent.control_flow == 'loop' or parent.control_flow == 'post-loop'))\
                 and src_ind == 1:
+            
             child.scope.append(parent.tag)
         elif isinstance(parent, Connector) and child.scope:
             child.scope.pop()
@@ -175,17 +177,17 @@ class Flowchart:
             else:
                 parent.connections.remove(existing_connection)
                 parent.connections.append(Connection(child, src_ind, True))
-                if not isinstance(child, Conditional):
+                if not isinstance(child, Conditional) and not (isinstance(child, Template) and child.control_flow == 'decision'):
                     child.connections.append(Connection(existing_connection.dst_node, 0, existing_connection.span))
 
-            if isinstance(child, Conditional):
+            if isinstance(child, Conditional) or (isinstance(child, Template) and child.control_flow == 'decision'):
                 connector_node = Connector()
                 self.add_node(child, connector_node)
                 if existing_connection:
                     connector_node.connections.append(
                         Connection(existing_connection.dst_node, 0, existing_connection.span))
                 self.move_below(connector_node)
-            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop) or isinstance(child, DoWhileLoop) or (isinstance(child, Template) and child.control_flow == 'loop'):
+            elif isinstance(child, ForLoop) or isinstance(child, WhileLoop) or isinstance(child, DoWhileLoop) or (isinstance(child, Template) and (child.control_flow == 'loop'or child.control_flow == 'post-loop')):
                 child.connections.append(Connection(child, 1, False))
             self.move_below(child)
 
@@ -196,15 +198,15 @@ class Flowchart:
                    int(pos_y))
         else:
             _, connection_point_y = parent.out_points[int(src_ind)]
-            if isinstance(parent, Conditional):
+            if isinstance(parent, Conditional) or (isinstance(parent, Template) and parent.control_flow == 'decision'):
                 if int(src_ind) == 0:
                     pos = (parent.pos[0] - 125, int(connection_point_y + 50))
                 else:
                     pos = (parent.pos[0] + 125, int(connection_point_y + 50))
-            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and parent.control_flow == 'loop')) and\
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop'))) and\
                     int(src_ind) == 1:
                 pos = (parent.pos[0] + 160, int(connection_point_y + 25))
-            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and parent.control_flow == 'loop')):
+            elif (isinstance(parent, ForLoop) or isinstance(parent, WhileLoop) or isinstance(parent, DoWhileLoop) or (isinstance(parent, Template) and (parent.control_flow == 'loop'or parent.control_flow == 'post-loop'))):
                 pos = (parent.pos[0] - 35, int(connection_point_y + 50))
             elif isinstance(parent, Connector):
                 pos = (parent.pos[0] - parent.shape_width, int(connection_point_y + 50))
@@ -233,11 +235,13 @@ class Flowchart:
             parent.connections.append(Connection(successor, old_src_connection.src_ind, old_dst_connection.span))
 
     def move_below(self, parent: Node) -> None:  # pragma: no cover
-        ''' Moves ol children of a node down, so they do not overlap.'''
+        ''' Moves all children of a node down, so they do not overlap.'''
         children = list(self.deduplicate(self.get_all_children(parent, True)))
         if not children:
             return
         min_pos_y = parent.pos[1] + parent.shape_height + 50
+        if isinstance(parent, Template) and parent.control_flow == 'post-loop':
+            min_pos_y += 100
         _, child_pos_y = children[0].pos
         distance = min_pos_y - child_pos_y
         if distance > 0:
