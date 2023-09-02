@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Generator, Optional, cast
+from typing import Generator, Optional, cast
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
@@ -87,7 +87,7 @@ class CodeGenerator:
             source.extend(self._generate_code(flowchart, flowchart.root, set(), False))
 
         nodes: list[Optional[Node]]
-        code_lines, nodes = map(list, zip(*source)) # type: ignore
+        code_lines, nodes = map(list, zip(*source))  # type: ignore
 
         for flowchart in flowcharts:
             for n in flowchart:
@@ -103,8 +103,12 @@ class CodeGenerator:
                 filter(lambda e: e[1], enumerate(map(lambda n: n and n.break_point, nodes)))))
 
         return (source_code, break_point_definitions)
-    
-    def _generate_code(self, flowchart: Flowchart, node: Node, visited_nodes: set[Node], is_branch: bool) -> Generator[tuple[str, Optional[Node]], None, None]:
+
+    def _generate_code(self,
+                       flowchart: Flowchart,
+                       node: Node,
+                       visited_nodes: set[Node],
+                       is_branch: bool) -> Generator[tuple[str, Optional[Node]], None, None]:
         visited_nodes.add(node)
         if isinstance(node, Template):
             loop_body: list[tuple[str, Optional[Node]]] = []
@@ -112,11 +116,11 @@ class CodeGenerator:
             else_branch: list[tuple[str, Optional[Node]]] = []
             if node.control_flow == 'loop' or node.control_flow == 'post-loop':
                 loop_body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
-                                     for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes], [])
+                                 for c in node.connections if c.src_ind == 1 and c.dst_node not in visited_nodes], [])
             elif node.control_flow == 'decision':
-                for c in [c for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes]:
+                for c in [c for c in node.connections if c.src_ind == 1 and c.dst_node not in visited_nodes]:
                     if_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
-                for c in [c for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
+                for c in [c for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes]:
                     else_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
             yield from self.template_service.render(node, loop_body, if_branch, else_branch)
             if node.control_flow == 'decision':
@@ -135,7 +139,6 @@ class CodeGenerator:
                 return
         else:
             yield ('', None)
-        for code in [self._generate_code(flowchart, c.dst_node, visited_nodes, is_branch) for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
+        for code in [self._generate_code(flowchart, c.dst_node, visited_nodes, is_branch)
+                     for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes]:
             yield from code
-
-    

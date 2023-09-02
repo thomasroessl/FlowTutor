@@ -53,8 +53,10 @@ class Node(ABC):
     @property
     def shape(self) -> Polygon:
         return Polygon(self.transform_shape_points(self.shape_points))
-    
-    def transform_shape_points(self, shape_points: list[tuple[float, float]]) -> list[tuple[float, float]]: # pragma: no cover
+
+    def transform_shape_points(self,
+                               shape_points: list[tuple[float, float]])\
+            -> list[tuple[float, float]]:  # pragma: no cover
         pos_x, pos_y = self.pos
 
         delta = self.width - self.shape_width
@@ -238,18 +240,17 @@ class Node(ABC):
 
             if self.shape_data:
                 dpg.draw_polygon(self.transform_shape_points(self.shape_data[0]),
-                             fill=color)
+                                 fill=color)
                 for shape in self.shape_data:
                     dpg.draw_polygon(self.transform_shape_points(shape),
                                      color=(255, 0, 0) if self.break_point else text_color,
-                                    thickness=thickness)
+                                     thickness=thickness)
             else:
                 dpg.draw_polygon(list(self.shape.exterior.coords),
-                             fill=color)
+                                 fill=color)
                 dpg.draw_polygon(list(self.shape.exterior.coords),
                                  color=(255, 0, 0) if self.break_point else text_color,
                                  thickness=thickness)
-            
 
             text_width, text_height = dpg.get_text_size(self.label)
 

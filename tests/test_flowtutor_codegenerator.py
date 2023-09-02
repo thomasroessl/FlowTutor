@@ -25,7 +25,7 @@ class TestCodeGenerator:
         container.init_resources()
         container.wire(modules=['flowtutor.codegenerator', 'flowtutor.template_service'])
         return CodeGenerator()
-    
+
     @pytest.fixture(scope='session')
     def nodes(self) -> dict[str, Any]:
         container = Container()
@@ -131,7 +131,7 @@ class TestCodeGenerator:
         flowchart = Flowchart('main')
         assignment = Template(nodes['Assignment'])
         assignment.values['VAR_NAME'] = 'x'
-        assignment.values['VAR_VALUE'] = '3' 
+        assignment.values['VAR_VALUE'] = '3'
         flowchart.add_node(flowchart.root, assignment)
         code, _ = code_generator.generate_code([flowchart])
         print(code)

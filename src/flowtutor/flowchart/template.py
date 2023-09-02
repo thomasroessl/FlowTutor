@@ -5,12 +5,13 @@ import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.language import Language
-from flowtutor.flowchart.node import  Node
+from flowtutor.flowchart.node import Node
 from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
     from flowtutor.template_service import TemplateService
+
 
 class Template(Node):
 
@@ -20,14 +21,14 @@ class Template(Node):
         self.template_service = template_service
         self._data = data
         self._control_flow: Optional[str] = data['control_flow'] if 'control_flow' in data else None
-        self._body: Optional[str] =  data['body'] if 'body' in data else None 
+        self._body: Optional[str] = data['body'] if 'body' in data else None
         self._shape_data, default_color = Language.get_node_shape_data(data['shape_id'])
         if self.control_flow == 'post-loop':
             self.shape_data[0] = list(map(lambda p: (p[0], p[1] + 100), self.shape_data[0]))
         self._shape_points = self.shape_data[0]
 
         self._shape_height = max(map(lambda p: p[1], self.shape_points)) - min(map(lambda p: p[1], self.shape_points))
-        
+
         self._color: tuple[int, int, int] = literal_eval(data['color']) if 'color' in data else default_color
         self._values: dict[str, str] = {}
         if 'parameters' in data:
@@ -56,7 +57,7 @@ class Template(Node):
     @property
     def body(self) -> Optional[str]:
         return self._body
-    
+
     @property
     def control_flow(self) -> Optional[str]:
         return self._control_flow
@@ -88,7 +89,7 @@ class Template(Node):
             return [(40, 175), (100, 25)]
         else:
             return [(75, 75)]
-        
+
     def draw(self,
              flowchart: Flowchart,
              is_selected: bool = False) -> None:  # pragma: no cover
@@ -136,7 +137,7 @@ class Template(Node):
                 dpg.draw_text((pos_x - 10,
                                pos_y + self.shape_height + 5),
                               text_false, color=text_color, size=18)
-    
+
                 text_true = 'True'
                 _, text_true_height = dpg.get_text_size(text_true)
                 dpg.draw_text((pos_x + 5 + self.get_right_x(),
@@ -159,7 +160,7 @@ class Template(Node):
     def label(self) -> str:
         if 'node_label' in self.data:
             return self.template_service.render_line(str(self.data['node_label']), self.values)
-        else: 
+        else:
             return str(self.data['label'])
 
     @property
