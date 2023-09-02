@@ -110,7 +110,7 @@ class CodeGenerator:
             loop_body: list[tuple[str, Optional[Node]]] = []
             if_branch: list[tuple[str, Optional[Node]]] = []
             else_branch: list[tuple[str, Optional[Node]]] = []
-            if node.control_flow == 'loop':
+            if node.control_flow == 'loop' or node.control_flow == 'post-loop':
                 loop_body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
                                      for c in node.connections if c.src_ind == 1 and not c.dst_node in visited_nodes], [])
             elif node.control_flow == 'decision':
@@ -119,9 +119,10 @@ class CodeGenerator:
                 for c in [c for c in node.connections if c.src_ind == 0 and not c.dst_node in visited_nodes]:
                     else_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
             yield from self.template_service.render(node, loop_body, if_branch, else_branch)
-            successor = flowchart.find_successor(node)
-            if successor:
-                yield from self._generate_code(flowchart, successor, visited_nodes, is_branch)
+            if node.control_flow == 'decision':
+                successor = flowchart.find_successor(node)
+                if successor:
+                    yield from self._generate_code(flowchart, successor, visited_nodes, is_branch)
         elif isinstance(node, FunctionStart):
             parameters = ', '.join([str(p) for p in node.parameters])
             yield (f'{node.return_type} {node.name}({parameters}) {{', node)

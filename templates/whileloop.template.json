@@ -1,5 +1,5 @@
 {
-    "label": "While Loop",
+    "label": "While loop",
     "node_label": "{{CONDITION}}",
     "shape_id": "preparation",
     "control_flow": "loop",
