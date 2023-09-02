@@ -14,16 +14,16 @@ class NodesService:
                  utils_service: UtilService = Provide['utils_service']):
         self.utils_service = utils_service
 
-    def get_node_templates(self) -> list[tuple[str, Type[Node], Any]]:
+    def get_node_templates(self) -> dict[str, Any]:
         template_file_paths: list[str] = []
         for (dirpath, _, file_names) in walk(self.utils_service.get_templates_path()):
             template_file_paths.extend([path.join(dirpath, f) for f in file_names])
-        templates: list[tuple[str, Type[Node], Any]] = []
+        templates: dict[str, Any] = {}
         for template_file_path in template_file_paths:
             if not template_file_path.endswith('template.json'):
                 continue
             with open(template_file_path, 'r') as template_file:
                 data = json.load(template_file)
                 data['file_name'] = template_file.name
-                templates.append((str(data['label']), Template, data))
+                templates[str(data['label'])] = data
         return templates

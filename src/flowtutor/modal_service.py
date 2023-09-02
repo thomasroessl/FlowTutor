@@ -7,6 +7,7 @@ from tkinter import filedialog as fd
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.template import Template
 from flowtutor.nodes_service import NodesService
 from flowtutor.util_service import UtilService
 
@@ -107,13 +108,13 @@ class ModalService:
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
 
-                for label, node_class, args in self.nodes_service.get_node_templates():
+                for label, args in self.nodes_service.get_node_templates().items():
                     dpg.add_button(
                         label=label,
                         width=-1,
-                        user_data=(node_class, args),
+                        user_data=args,
                         callback=lambda s: (user_data := dpg.get_item_user_data(s),
-                                            callback(user_data[0](user_data[1]) if user_data[1] else user_data[0]()),
+                                            callback(Template(user_data)),
                                             dpg.delete_item('node_type_modal')))
 
     def open(self, queue: Queue[dict[str, Optional[str]]]) -> None:
