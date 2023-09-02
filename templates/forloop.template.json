@@ -1,5 +1,6 @@
 {
     "label": "For Loop",
+    "node_label": "int {{VAR_NAME}} = {{START_VALUE}}; {{CONDITION}}; {{UPDATE}}",
     "shape_id": "preparation",
     "control_flow": "loop",
     "parameters": [

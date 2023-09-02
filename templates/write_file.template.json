@@ -1,5 +1,6 @@
 {
-    "label": "Write File",
+    "label": "Write file",
+    "node_label": "Write to file {{VAR_NAME}}: {{VALUE}}",
     "shape_id": "preparation",
     "color": "(147, 171, 255)",
     "parameters": [

@@ -1,5 +1,6 @@
 {
     "label": "Declaration",
+    "node_label": "{% if IS_STATIC %}static {% endif %}{{VAR_TYPE}} {% if IS_POINTER %}*{% endif %}{{VAR_NAME}}{% if IS_ARRAY %}[{{ARRAY_SIZE}}]{% endif %}{% if VAR_VALUE %} = {{VAR_VALUE}}{% endif %}",
     "shape_id": "data_internal",
     "parameters": [
         {
@@ -48,5 +49,6 @@
             "name": "VAR_VALUE",
             "label": "Value"
         }
-    ]
+    ],
+    "body": "{% if IS_STATIC %}static {% endif %}{{VAR_TYPE}} {% if IS_POINTER %}*{% endif %}{{VAR_NAME}}{% if IS_ARRAY %}[{{ARRAY_SIZE}}]{% endif %}{% if VAR_VALUE %} = {{VAR_VALUE}}{% endif %};"
 }

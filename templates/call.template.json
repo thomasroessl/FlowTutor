@@ -1,5 +1,6 @@
 {
     "label": "Call",
+    "node_label": "{{EXPRESSION}}",
     "shape_id": "predefined_process",
     "parameters": [
         {

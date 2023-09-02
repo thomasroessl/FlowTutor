@@ -1,5 +1,6 @@
 {
-    "label": "Open File",
+    "label": "Open file",
+    "node_label": "Open file: {{FILE}} as {{VAR_NAME}}",
     "shape_id": "data",
     "color": "(147, 171, 255)",
     "parameters": [

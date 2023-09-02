@@ -1,5 +1,6 @@
 {
     "label": "Conditional",
+    "node_label": "{{CONDITION}}",
     "shape_id": "decision",
     "control_flow": "decision",
     "parameters": [

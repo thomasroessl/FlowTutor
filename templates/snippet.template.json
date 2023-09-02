@@ -1,5 +1,6 @@
 {
     "label": "Snippet",
+    "node_label": "{{CODE}}",
     "shape_id": "process",
     "parameters": [
         {

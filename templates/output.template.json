@@ -1,5 +1,6 @@
 {
     "label": "Output",
+    "node_label": "\"{{TEMPLATE}}\":{% if ARGUMENTS %} {{ARGUMENTS}}{% endif %}",
     "shape_id": "data",
     "parameters": [
         {
