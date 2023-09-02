@@ -23,8 +23,11 @@ class TemplateService:
         template.values['LOOP_BODY'] = '\n'.join([l for l, _ in loop_body])
         template.values['IF_BRANCH'] = '\n'.join([l for l, _ in if_branch])
         template.values['ELSE_BRANCH'] = '\n'.join([l for l, _ in else_branch])
+        rendered: list[tuple[str, Optional[Node]]] = []
+        if template.comment:
+            rendered.append((f'  // {template.comment}', None))
         if template_body:
-            return [('  ' + self.render_line(template_body, template.values), template)]
+            rendered.append(('  ' + self.render_line(template_body, template.values), template))
         else:
             path = Path(template.data['file_name'])
             filename_without_ext = path.stem.split('.')[0]
@@ -32,15 +35,16 @@ class TemplateService:
                 unassigned_lines = loop_body.copy()
                 unassigned_lines.reverse()
                 assigned_nodes: set[Node] = set()
-                rendered: list[tuple[str, Optional[Node]]] =\
-                    [('  ' + l, self.assign_node(l, unassigned_lines, template, assigned_nodes)) for l in self.render_jinja_lines(filename_without_ext, template.values)]
-                return rendered
+                rendered.extend(
+                    [('  ' + l, self.assign_node(l, unassigned_lines, template, assigned_nodes)) for l in self.render_jinja_lines(filename_without_ext, template.values)])
+
             except TemplateNotFound:
                 return [('', None)]
-    
+        return rendered
+
     def render_line(self, jinja_template: str, values: dict[str, str]) -> str:
         return self.jinja_env.from_string(jinja_template).render(values)
-    
+
     def render_jinja_lines(self, template_file_name: str, values: dict[str, str]) -> list[str]:
         return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
 
