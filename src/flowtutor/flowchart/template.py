@@ -39,7 +39,7 @@ class Template(Node):
                     self.values[parameter['name']] = ''
 
     def __repr__(self) -> str:
-        return f'({self.label}: {self.__class__.__name__})'
+        return f'({self.data["label"]}: {self.__class__.__name__})'
 
     @property
     def data(self) -> Any:

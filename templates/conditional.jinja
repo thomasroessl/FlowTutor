@@ -1,5 +1,5 @@
 if({{CONDITION}}) {
-  {{IF_BRANCH | indent(2)}}
-} else {
-  {{ELSE_BRANCH | indent(2)}}
-}
+{{IF_BRANCH | indent(2)}}
+}{% if ELSE_BRANCH %} else {
+{{ELSE_BRANCH | indent(2)}}
+}{% endif %}
