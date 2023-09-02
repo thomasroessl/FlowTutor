@@ -107,7 +107,7 @@ class ModalService:
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
 
-                for label, node_class, args in self.nodes_service.get_node_types():
+                for label, node_class, args in self.nodes_service.get_node_templates():
                     dpg.add_button(
                         label=label,
                         width=-1,

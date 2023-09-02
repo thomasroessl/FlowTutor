@@ -14,9 +14,6 @@ class NodesService:
                  utils_service: UtilService = Provide['utils_service']):
         self.utils_service = utils_service
 
-    def get_node_types(self) -> list[tuple[str, Type[Node], Optional[Any]]]:
-        return self.get_node_templates()
-
     def get_node_templates(self) -> list[tuple[str, Type[Node], Any]]:
         template_file_paths: list[str] = []
         for (dirpath, _, file_names) in walk(self.utils_service.get_templates_path()):
