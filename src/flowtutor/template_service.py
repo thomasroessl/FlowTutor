@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from pathlib import Path
-from flowtutor.util_service import UtilService
 from dependency_injector.wiring import Provide, inject
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
-from flowtutor.flowchart.template import Template
+from flowtutor.util_service import UtilService
 from flowtutor.flowchart.node import Node
+from flowtutor.flowchart.template import Template
 
 
 class TemplateService:
@@ -24,7 +24,7 @@ class TemplateService:
         template.values['IF_BRANCH'] = '\n'.join([l for l, _ in if_branch])
         template.values['ELSE_BRANCH'] = '\n'.join([l for l, _ in else_branch])
         if template_body:
-            return [('  ' + self.jinja_env.from_string(template_body).render(template.values), template)]
+            return [('  ' + self.render_line(template_body, template.values), template)]
         else:
             path = Path(template.data['file_name'])
             filename_without_ext = path.stem.split('.')[0]
@@ -37,6 +37,9 @@ class TemplateService:
                 return rendered
             except TemplateNotFound:
                 return [('', None)]
+    
+    def render_line(self, jinja_template: str, values: dict[str, str]) -> str:
+        return self.jinja_env.from_string(jinja_template).render(values)
     
     def render_jinja_lines(self, template_file_name: str, values: dict[str, str]) -> list[str]:
         return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()

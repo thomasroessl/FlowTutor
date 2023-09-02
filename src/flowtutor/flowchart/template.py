@@ -1,20 +1,23 @@
 from __future__ import annotations
 from ast import literal_eval
 from typing import TYPE_CHECKING, Any, Optional
-from flowtutor.flowchart.node import  Node
-from flowtutor.gui.themes import theme_colors
 import dearpygui.dearpygui as dpg
+from dependency_injector.wiring import Provide, inject
 
 from flowtutor.language import Language
+from flowtutor.flowchart.node import  Node
+from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
-
+    from flowtutor.template_service import TemplateService
 
 class Template(Node):
 
-    def __init__(self, data: Any) -> None:
+    @inject
+    def __init__(self, data: Any, template_service: TemplateService = Provide['template_service']) -> None:
         super().__init__()
+        self.template_service = template_service
         self._data = data
         self._control_flow: Optional[str] = data['control_flow'] if 'control_flow' in data else None
         self._body: Optional[str] =  data['body'] if 'body' in data else None 
@@ -154,7 +157,10 @@ class Template(Node):
 
     @property
     def label(self) -> str:
-        return str(self.data['label'])
+        if 'node_label' in self.data:
+            return self.template_service.render_line(str(self.data['node_label']), self.values)
+        else: 
+            return str(self.data['label'])
 
     @property
     def is_initialized(self) -> bool:
