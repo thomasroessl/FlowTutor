@@ -127,7 +127,8 @@ class CodeGenerator:
                 successor = flowchart.find_successor(node)
                 if successor:
                     yield from self._generate_code(flowchart, successor, visited_nodes, is_branch)
-        elif isinstance(node, FunctionStart):
+        elif isinstance(node, FunctionStart) and\
+                ('has_main_function' not in flowchart.lang_data or flowchart.lang_data['has_main_function']):
             body: list[tuple[str, Optional[Node]]] = []
             body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
                         for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes], [])

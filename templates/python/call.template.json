@@ -1,0 +1,12 @@
+{
+    "label": "Call",
+    "node_label": "{{EXPRESSION}}",
+    "shape_id": "predefined_process",
+    "parameters": [
+        {
+            "name": "EXPRESSION",
+            "label": "Expression"
+        }
+    ],
+    "body": "{{EXPRESSION}}"
+}

@@ -1,0 +1,12 @@
+{
+    "label": "Output",
+    "node_label": "print({{ARGUMENTS}})",
+    "shape_id": "data",
+    "parameters": [
+        {
+            "name": "ARGUMENTS",
+            "label": "Arguments"
+        }
+    ],
+    "body": "print({{ARGUMENTS}})"
+}

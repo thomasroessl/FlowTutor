@@ -1,0 +1,18 @@
+{
+    "label": "For loop",
+    "node_label": "{{VAR_NAME}} in {{COLLECTION}}",
+    "shape_id": "preparation",
+    "control_flow": "loop",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Variable name",
+            "default": "x"
+        },
+        {
+            "name": "COLLECTION",
+            "label": "Collection",
+            "default": ""
+        }
+    ]
+}

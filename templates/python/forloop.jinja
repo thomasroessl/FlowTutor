@@ -1,0 +1,3 @@
+for {{VAR_NAME}} in {{COLLECTION}}:
+{% if LOOP_BODY %}  {{LOOP_BODY | indent(2)}}
+{% else %}  pass{% endif %}

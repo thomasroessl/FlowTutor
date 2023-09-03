@@ -1,0 +1,15 @@
+{
+    "label": "Input",
+    "node_label": "In: {{PROMPT}}",
+    "shape_id": "data",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Variable name"
+        },
+        {
+            "name": "PROMPT",
+            "label": "Prompt"
+        }
+    ]
+}
