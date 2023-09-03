@@ -97,13 +97,17 @@ class ModalService:
                     if dpg.does_item_exist(f'{lang_id}_image'):
                         lang_button = dpg.add_image_button(
                             f'{lang_id}_image',
-                            callback=lambda: (callback(lang_id), dpg.delete_item('language_selection_modal')))
+                            user_data=lang_id,
+                            callback=lambda s: (callback(dpg.get_item_user_data(s)),
+                                                dpg.delete_item('language_selection_modal')))
                         dpg.bind_item_theme(lang_button, lang_button_theme)
                     else:
                         dpg.add_button(
                             label=data['name'],
                             width=75,
-                            callback=lambda: (callback(lang_id), dpg.delete_item('language_selection_modal')))
+                            user_data=lang_id,
+                            callback=lambda s: (callback(dpg.get_item_user_data(s)),
+                                                dpg.delete_item('language_selection_modal')))
 
     def show_input_text_modal(self,
                               label: str,
@@ -135,7 +139,6 @@ class ModalService:
                 pos=pos,
                 modal=True,
                 tag='node_type_modal',
-                width=150,
                 no_resize=True,
                 autosize=True,
                 on_close=lambda: dpg.delete_item('node_type_modal')):
@@ -143,7 +146,7 @@ class ModalService:
                 for label, args in self.language_service.get_node_templates().items():
                     dpg.add_button(
                         label=label,
-                        width=-1,
+                        width=200,
                         user_data=args,
                         callback=lambda s: (user_data := dpg.get_item_user_data(s),
                                             callback(Template(user_data)),

@@ -128,11 +128,13 @@ class CodeGenerator:
                 if successor:
                     yield from self._generate_code(flowchart, successor, visited_nodes, is_branch)
         elif isinstance(node, FunctionStart):
-            parameters = ', '.join([str(p) for p in node.parameters])
-            yield (f'{node.return_type} {node.name}({parameters}) {{', node)
+            body: list[tuple[str, Optional[Node]]] = []
+            body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
+                        for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes], [])
+            function_end = flowchart.find_function_end()
+            yield from self.language_service.render_function(node, function_end, body)
         elif isinstance(node, FunctionEnd):
-            yield (f'  return {node.return_value};', node)
-            yield ('}', node)
+            return
         elif isinstance(node, Connector):
             visited_nodes.remove(node)
             if is_branch:

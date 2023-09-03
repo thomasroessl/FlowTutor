@@ -38,7 +38,7 @@ class MenubarMain:
         def callback() -> None:
             self.gui.file_path = None
             dpg.set_viewport_title('FlowTutor')
-            self.gui.clear_flowchart()
+            self.gui.clear_flowchart(True)
             self.gui.flowcharts = {
                 'main': Flowchart('main')
             }
@@ -63,7 +63,7 @@ class MenubarMain:
     def on_clear(self) -> None:
         def callback() -> None:
             self.gui.selected_flowchart.reset()
-            self.gui.clear_flowchart()
+            self.gui.clear_flowchart(True)
             self.gui.redraw_all(True)
         self.gui.modal_service.show_approval_modal(
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)

@@ -9,5 +9,5 @@
             "type": "textarea"
         }
     ],
-    "body": "{{CODE | indent(2)}}"
+    "body": "{{CODE}}"
 }

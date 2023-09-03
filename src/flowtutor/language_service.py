@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from dependency_injector.wiring import Provide, inject
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from flowtutor.flowchart.functionend import FunctionEnd
+from flowtutor.flowchart.functionstart import FunctionStart
 
 from flowtutor.settings_service import SettingsService
 from flowtutor.util_service import UtilService
@@ -73,9 +75,9 @@ class LanguageService:
         template.values['ELSE_BRANCH'] = '\n'.join([s3 for s3, _ in else_branch])
         rendered: list[tuple[str, Optional[Node]]] = []
         if template.comment:
-            rendered.append((f'  // {template.comment}', None))
+            rendered.append((f'// {template.comment}', None))
         if template_body:
-            rendered.append(('  ' + self.render_line(template_body, template.values), template))
+            rendered.append((self.render_line(template_body, template.values), template))
         else:
             path = Path(template.data['file_name'])
             filename_without_ext = path.stem.split('.')[0]
@@ -84,20 +86,45 @@ class LanguageService:
                 unassigned_lines.reverse()
                 assigned_nodes: set[Node] = set()
                 rendered.extend(
-                    [('  ' + l1, self.assign_node(l1, unassigned_lines, template, assigned_nodes))
+                    [(l1, self.assign_node(l1, unassigned_lines, template, assigned_nodes))
                      for l1 in self.render_jinja_lines(filename_without_ext, template.values)])
 
             except TemplateNotFound:
                 return [('', None)]
         return rendered
 
-    def render_line(self, jinja_template: str, values: dict[str, str]) -> str:
+    def render_function(self,
+                        function_start: FunctionStart,
+                        function_end: FunctionEnd,
+                        body: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
+        values = {
+            'FUN_NAME': function_start.name,
+            'PARAMETERS': function_start.parameters,
+            'BODY': '\n'.join([s1 for s1, _ in body]),
+            'RETURN_TYPE': function_start.return_type,
+            'RETURN_VALUE': function_end.return_value
+        }
+        rendered: list[tuple[str, Optional[Node]]] = []
+        if function_start.comment:
+            rendered.append((f'// {function_start.comment}', None))
+        try:
+            unassigned_lines = body.copy()
+            unassigned_lines.reverse()
+            assigned_nodes: set[Node] = set()
+            rendered.extend(
+                [(l1, self.assign_node(l1, unassigned_lines, function_start, assigned_nodes))
+                 for l1 in self.render_jinja_lines('function', values)])
+        except TemplateNotFound:
+            return [('', None)]
+        return rendered
+
+    def render_line(self, jinja_template: str, values: dict[str, Any]) -> str:
         if self.jinja_env:
             return self.jinja_env.from_string(jinja_template).render(values)
         else:
             return ''
 
-    def render_jinja_lines(self, template_file_name: str, values: dict[str, str]) -> list[str]:
+    def render_jinja_lines(self, template_file_name: str, values: dict[str, Any]) -> list[str]:
         if self.jinja_env:
             return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
         else:

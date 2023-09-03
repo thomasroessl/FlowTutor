@@ -93,6 +93,13 @@ class Flowchart:
     def find_parent(self, node: Node) -> Optional[Node]:
         return next(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self), None)
 
+    def find_function_end(self) -> FunctionEnd:
+        node = next(filter(lambda n: isinstance(n, FunctionEnd), self), None)
+        if isinstance(node, FunctionEnd):
+            return node
+        else:
+            raise Exception('Flowchart does not contain a function end')
+
     def find_parents(self, node: Node) -> list[Node]:
         return list(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self))
 

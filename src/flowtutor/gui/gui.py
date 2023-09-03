@@ -427,13 +427,14 @@ class GUI:
     def set_sidebar_title(self, title: str) -> None:
         dpg.configure_item(self.sidebar_title_tag, default_value=title)
 
-    def clear_flowchart(self) -> None:
-        self.language_service.is_initialized = False
+    def clear_flowchart(self, select_lang: bool = False) -> None:
         self.on_select_node(None)
         self.is_mouse_dragging = False
         for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
             dpg.delete_item(item)
-        self.modal_service.show_language_selection_modal(self.on_select_language)
+        if select_lang:
+            self.language_service.is_initialized = False
+            self.modal_service.show_language_selection_modal(self.on_select_language)
 
     def clear_selected_nodes(self) -> None:
         for selected_node in self.selected_nodes:
