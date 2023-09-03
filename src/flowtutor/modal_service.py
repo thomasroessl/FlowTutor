@@ -8,7 +8,7 @@ from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
-from flowtutor.nodes_service import NodesService
+from flowtutor.language_service import LanguageService
 from flowtutor.util_service import UtilService
 
 
@@ -17,8 +17,8 @@ class ModalService:
     @inject
     def __init__(self,
                  utils_service: UtilService = Provide['utils_service'],
-                 nodes_service: NodesService = Provide['nodes_service']):
-        self.nodes_service = nodes_service
+                 language_service: LanguageService = Provide['language_service']):
+        self.language_service = language_service
         self.utils_service = utils_service
 
     def show_paths_window(self) -> None:
@@ -108,7 +108,7 @@ class ModalService:
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
 
-                for label, args in self.nodes_service.get_node_templates().items():
+                for label, args in self.language_service.get_node_templates().items():
                     dpg.add_button(
                         label=label,
                         width=-1,

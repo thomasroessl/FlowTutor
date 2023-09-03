@@ -6,7 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from flowtutor.util_service import UtilService
 
 
-class NodesService:
+class LanguageService:
 
     @inject
     def __init__(self,
@@ -15,7 +15,8 @@ class NodesService:
 
     def get_node_templates(self) -> dict[str, Any]:
         template_file_paths: list[str] = []
-        for (dirpath, _, file_names) in walk(self.utils_service.get_templates_path()):
+        for (dirpath, _, file_names) in walk(self.utils_service.get_templates_path(), False):
+            print(dirpath, file_names)
             template_file_paths.extend([path.join(dirpath, f) for f in file_names])
         templates: dict[str, Any] = {}
         for template_file_path in template_file_paths:

@@ -13,7 +13,7 @@ from flowtutor.flowchart.template import Template
 
 from flowtutor.language import Language
 from flowtutor.flowchart.node import dpg as node_dpg
-from flowtutor.nodes_service import NodesService
+from flowtutor.language_service import LanguageService
 
 
 @patch.object(node_dpg, 'get_text_size', lambda _: (0, 0))
@@ -30,9 +30,9 @@ class TestCodeGenerator:
     def nodes(self) -> dict[str, Any]:
         container = Container()
         container.init_resources()
-        container.wire(modules=['flowtutor.nodes_service', 'flowtutor.flowchart.template'])
-        nodes_service = NodesService()
-        return nodes_service.get_node_templates()
+        container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
+        language_service = LanguageService()
+        return language_service.get_node_templates()
 
     def test_code_from_empty_flowchart(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')
