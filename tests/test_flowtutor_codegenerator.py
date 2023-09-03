@@ -25,7 +25,11 @@ class TestCodeGenerator:
         container.init_resources()
         container.wire(modules=['flowtutor.codegenerator', 'flowtutor.language_service'])
         code_generator = CodeGenerator()
-        code_generator.language_service.finish_init()
+        flowchart = Flowchart('main')
+        flowchart.lang_data = {
+            'lang_id': 'c'
+        }
+        code_generator.language_service.finish_init(flowchart)
         return code_generator
 
     @pytest.fixture(scope='session')
@@ -34,8 +38,12 @@ class TestCodeGenerator:
         container.init_resources()
         container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
         language_service = LanguageService()
-        language_service.finish_init()
-        return language_service.get_node_templates()
+        flowchart = Flowchart('main')
+        flowchart.lang_data = {
+            'lang_id': 'c'
+        }
+        language_service.finish_init(flowchart)
+        return language_service.get_node_templates(flowchart)
 
     def test_code_from_empty_flowchart(self, code_generator: CodeGenerator):
         flowchart = Flowchart('main')

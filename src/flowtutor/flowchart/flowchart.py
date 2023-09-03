@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING, Any, Generator, Optional
 from shapely.geometry import box, Point
 
 from flowtutor.flowchart.connection import Connection
@@ -28,6 +28,7 @@ class Flowchart:
         self._type_definitions: list[TypeDefinition] = []
         self._struct_definitions: list[StructDefinition] = []
         self._preprocessor_custom: str = ''
+        self.lang_data: dict[str, Any] = {}
 
     @property
     def root(self) -> FunctionStart:
@@ -56,6 +57,14 @@ class Flowchart:
     @preprocessor_custom.setter
     def preprocessor_custom(self, preprocessor_custom: str) -> None:
         self._preprocessor_custom = preprocessor_custom
+
+    @property
+    def lang_data(self) -> dict[str, Any]:
+        return self._lang_data
+
+    @lang_data.setter
+    def lang_data(self, lang_data: dict[str, Any]) -> None:
+        self._lang_data = lang_data
 
     def __iter__(self) -> Generator[Node, None, None]:
         return self.deduplicate(self.get_all_nodes(self.root, False))

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import dearpygui.dearpygui as dpg
 from multiprocessing import Process, Queue
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 import tkinter as tk
 from tkinter import filedialog as fd
 from dependency_injector.wiring import Provide, inject
@@ -10,6 +10,7 @@ from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
 from flowtutor.language_service import LanguageService
 from flowtutor.util_service import UtilService
+from flowtutor.flowchart.flowchart import Flowchart
 
 
 class ModalService:
@@ -75,7 +76,7 @@ class ModalService:
                     width=75,
                     callback=lambda: dpg.delete_item('approval_modal'))
 
-    def show_language_selection_modal(self, callback: Callable[[str], None]) -> None:
+    def show_language_selection_modal(self, callback: Callable[[dict[str, Any]], None]) -> None:
         if dpg.does_item_exist('language_selection_modal'):
             return
         with dpg.window(
@@ -97,7 +98,7 @@ class ModalService:
                     if dpg.does_item_exist(f'{lang_id}_image'):
                         lang_button = dpg.add_image_button(
                             f'{lang_id}_image',
-                            user_data=lang_id,
+                            user_data=data,
                             callback=lambda s: (callback(dpg.get_item_user_data(s)),
                                                 dpg.delete_item('language_selection_modal')))
                         dpg.bind_item_theme(lang_button, lang_button_theme)
@@ -105,7 +106,7 @@ class ModalService:
                         dpg.add_button(
                             label=data['name'],
                             width=75,
-                            user_data=lang_id,
+                            user_data=data,
                             callback=lambda s: (callback(dpg.get_item_user_data(s)),
                                                 dpg.delete_item('language_selection_modal')))
 
@@ -133,7 +134,10 @@ class ModalService:
                     width=75,
                     callback=lambda: dpg.delete_item('input_text_modal'))
 
-    def show_node_type_modal(self, callback: Callable[[Node], None], pos: tuple[int, int]) -> None:
+    def show_node_type_modal(self,
+                             flowchart: Flowchart,
+                             callback: Callable[[Node], None],
+                             pos: tuple[int, int]) -> None:
         with dpg.window(
                 label='Add Node',
                 pos=pos,
@@ -143,7 +147,7 @@ class ModalService:
                 autosize=True,
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
-                for label, args in self.language_service.get_node_templates().items():
+                for label, args in self.language_service.get_node_templates(flowchart).items():
                     dpg.add_button(
                         label=label,
                         width=200,

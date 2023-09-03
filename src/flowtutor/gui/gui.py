@@ -222,9 +222,9 @@ class GUI:
                         dpg.add_table_column(label='Name')
                         dpg.add_table_column(label='Value')
 
-    def on_select_language(self, lang_id: str) -> None:
-        self.settings_service.set_setting('lang_id', lang_id)
-        self.language_service.finish_init()
+    def on_select_language(self, lang_data: dict[str, Any]) -> None:
+        self.flowcharts['main'].lang_data = lang_data
+        self.language_service.finish_init(self.flowcharts['main'])
         self.redraw_all(True)
 
     def refresh_function_tabs(self) -> None:
@@ -384,7 +384,7 @@ class GUI:
                     self.mouse_position_on_canvas = None
                     self.redraw_all()
                     self.resize()
-            self.modal_service.show_node_type_modal(callback, self.mouse_position or (0, 0))
+            self.modal_service.show_node_type_modal(self.selected_flowchart, callback, self.mouse_position or (0, 0))
         elif self.selected_nodes:
             self.is_mouse_dragging = True
             self.drag_offsets.clear()

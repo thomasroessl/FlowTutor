@@ -4,13 +4,14 @@ import json
 from pathlib import Path
 from dependency_injector.wiring import Provide, inject
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, Template as JinjaTemplate
+
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.functionstart import FunctionStart
-
 from flowtutor.settings_service import SettingsService
 from flowtutor.util_service import UtilService
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
+from flowtutor.flowchart.flowchart import Flowchart
 
 
 class LanguageService:
@@ -25,20 +26,16 @@ class LanguageService:
         self.jinja_env: Optional[Environment] = None
         self.template_cache: dict[str, JinjaTemplate] = {}
 
-    @property
-    def lang_id(self) -> str:
-        return self.settings_service.get_setting('lang_id')
-
-    def finish_init(self) -> None:
+    def finish_init(self, flowchart: Flowchart) -> None:
         self.jinja_env = Environment(
-            loader=FileSystemLoader(self.utils_service.get_templates_path(self.lang_id)),
+            loader=FileSystemLoader(self.utils_service.get_templates_path(flowchart.lang_data['lang_id'])),
             lstrip_blocks=True,
             trim_blocks=True)
         self.is_initialized = True
 
-    def get_node_templates(self) -> dict[str, Any]:
+    def get_node_templates(self, flowchart: Flowchart) -> dict[str, Any]:
         template_file_paths: list[str] = []
-        templates_path = self.utils_service.get_templates_path(self.lang_id)
+        templates_path = self.utils_service.get_templates_path(flowchart.lang_data['lang_id'])
         template_file_paths.extend(
             [path.join(templates_path, f) for f in listdir(templates_path) if f.endswith('template.json')])
         templates: dict[str, Any] = {}

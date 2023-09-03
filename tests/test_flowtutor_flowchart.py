@@ -23,8 +23,12 @@ class TestFlowchart:
         container.init_resources()
         container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
         language_service = LanguageService()
-        language_service.finish_init()
-        return language_service.get_node_templates()
+        flowchart = Flowchart('main')
+        flowchart.lang_data = {
+            'lang_id': 'c'
+        }
+        language_service.finish_init(flowchart)
+        return language_service.get_node_templates(flowchart)
 
     def check_roots(self, flowchart):
         for i, node in enumerate(flowchart):
