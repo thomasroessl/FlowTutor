@@ -8,8 +8,6 @@ from flowtutor.settings_service import SettingsService
 
 from flowtutor.language_service import LanguageService
 
-from flowtutor.template_service import TemplateService
-
 
 class Container(containers.DeclarativeContainer):
 
@@ -31,8 +29,4 @@ class Container(containers.DeclarativeContainer):
 
     language_service = providers.Singleton(
         LanguageService
-    )
-
-    template_service = providers.Singleton(
-        TemplateService
     )

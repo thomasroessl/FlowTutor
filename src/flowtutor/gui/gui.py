@@ -20,6 +20,7 @@ from flowtutor.gui.sidebar_multi import SidebarMulti
 from flowtutor.gui.sidebar_none import SidebarNone
 from flowtutor.gui.sidebar_template import SidebarTemplate
 from flowtutor.gui.window_types import WindowTypes
+from flowtutor.language_service import LanguageService
 from flowtutor.modal_service import ModalService
 from flowtutor.settings_service import SettingsService
 from flowtutor.codegenerator import CodeGenerator
@@ -91,12 +92,14 @@ class GUI:
                  utils_service: UtilService = Provide['utils_service'],
                  code_generator: CodeGenerator = Provide['code_generator'],
                  modal_service: ModalService = Provide['modal_service'],
-                 settings_service: SettingsService = Provide['settings_service']):
+                 settings_service: SettingsService = Provide['settings_service'],
+                 language_service: LanguageService = Provide['language_service']):
         self.width = width
         self.height = height
         self.code_generator = code_generator
         self.modal_service = modal_service
         self.settings_service = settings_service
+        self.language_service = language_service
         self.utils_service = utils_service
         self.flowcharts = {
             'main': Flowchart('main')
@@ -108,7 +111,7 @@ class GUI:
 
         dpg.create_context()
 
-        for image in ['c', 'run', 'stop', 'step_into', 'step_over', 'hammer', 'trash', 'pencil']:
+        for image in ['c', 'python', 'run', 'stop', 'step_into', 'step_over', 'hammer', 'trash', 'pencil']:
             image_path = os.path.join(os.path.dirname(__file__), f'assets/{image}.png')
             image_width, image_height, _, image_data = dpg.load_image(image_path)
             with dpg.texture_registry():
@@ -166,8 +169,8 @@ class GUI:
 
         dpg.create_viewport(
             title='FlowTutor',
-            width=int(self.settings_service.get_setting('width', 1000) or 1000),
-            height=int(self.settings_service.get_setting('height', 1000) or 1000))
+            width=int(self.settings_service.get_setting('width', '1000') or 1000),
+            height=int(self.settings_service.get_setting('height', '1000') or 1000))
 
         if self.settings_service.get_setting('theme', 'light') == 'light':
             dpg.bind_theme(create_theme_light())
@@ -218,6 +221,11 @@ class GUI:
                         self.variable_table_id = table_id
                         dpg.add_table_column(label='Name')
                         dpg.add_table_column(label='Value')
+
+    def on_select_language(self, lang_id: str) -> None:
+        self.settings_service.set_setting('lang_id', lang_id)
+        self.language_service.finish_init()
+        self.redraw_all(True)
 
     def refresh_function_tabs(self) -> None:
         for tab in dpg.get_item_children(self.function_tab_bar)[1]:
@@ -302,6 +310,9 @@ class GUI:
 
     def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
+        if not self.language_service.is_initialized:
+            self.modal_service.show_language_selection_modal(self.on_select_language)
+            return
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
             self.mouse_position_on_canvas = None
@@ -317,7 +328,8 @@ class GUI:
 
     def on_drag(self) -> None:
         '''Redraws the currently dragging node to its new position.'''
-        if not self.mouse_position_on_canvas or not self.is_mouse_dragging:
+        if not self.language_service.is_initialized or\
+                not self.mouse_position_on_canvas or not self.is_mouse_dragging:
             return
 
         if self.is_selecting:
@@ -350,7 +362,7 @@ class GUI:
 
     def on_mouse_click(self) -> None:
         '''Handles pressing down of the mouse button.'''
-        if not self.mouse_position_on_canvas:
+        if not self.language_service.is_initialized or not self.mouse_position_on_canvas:
             return
         hovered_node = self.selected_flowchart.find_hovered_node(self.mouse_position_on_canvas)
         self.drag_origin = self.mouse_position_on_canvas
@@ -416,10 +428,12 @@ class GUI:
         dpg.configure_item(self.sidebar_title_tag, default_value=title)
 
     def clear_flowchart(self) -> None:
+        self.language_service.is_initialized = False
         self.on_select_node(None)
         self.is_mouse_dragging = False
         for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
             dpg.delete_item(item)
+        self.modal_service.show_language_selection_modal(self.on_select_language)
 
     def clear_selected_nodes(self) -> None:
         for selected_node in self.selected_nodes:
@@ -444,6 +458,8 @@ class GUI:
         return list(map(lambda x: self.flowcharts[dpg.get_item_user_data(converter[x])], sortedPos))
 
     def redraw_all(self, force: bool = False) -> None:
+        if not self.language_service.is_initialized:
+            return
         self.hovered_add_button = None
         for node in [n for n in self.selected_flowchart if force or n.needs_refresh]:
             node.needs_refresh = False
@@ -464,7 +480,7 @@ class GUI:
         '''Draws a Symbol for adding connected nodes, if the mouse is over a connection point.
         '''
 
-        if not self.mouse_position_on_canvas:
+        if not self.language_service.is_initialized or not self.mouse_position_on_canvas:
             if dpg.does_item_exist(ADD_BUTTON_TAG):
                 dpg.delete_item(ADD_BUTTON_TAG)
             return

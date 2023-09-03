@@ -1,0 +1,12 @@
+{% if DECLARE_VAR %}
+{% if TEMPLATE_SPECIFIER == '%ld' or TEMPLATE_SPECIFIER == '%lo' or TEMPLATE_SPECIFIER == '%lx' or TEMPLATE_SPECIFIER == '%li' %}
+long{% elif TEMPLATE_SPECIFIER == '%hd' %}
+short{% elif TEMPLATE_SPECIFIER == '%d' %}
+int{% elif TEMPLATE_SPECIFIER == '%f' %}
+float{% elif TEMPLATE_SPECIFIER == '%lf' %}
+double{% elif TEMPLATE_SPECIFIER == '%Lf' %}
+long double{% elif TEMPLATE_SPECIFIER == '%c' %}
+char{% elif TEMPLATE_SPECIFIER == '%s' %}
+char{% endif %} {{VAR_NAME}}{% if TEMPLATE_SPECIFIER == '%s' %}[{{STRING_LENGTH}}]{% endif %};
+{% endif %}
+scanf("{{TEMPLATE_SPECIFIER}}", &{{VAR_NAME}});

@@ -1,0 +1,27 @@
+{
+    "label": "For loop",
+    "node_label": "int {{VAR_NAME}} = {{START_VALUE}}; {{CONDITION}}; {{UPDATE}}",
+    "shape_id": "preparation",
+    "control_flow": "loop",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Counter variable name",
+            "default": "i"
+        },
+        {
+            "name": "START_VALUE",
+            "label": "Start value",
+            "default": "0"
+        },
+        {
+            "name": "CONDITION",
+            "label": "Condition"
+        },
+        {
+            "name": "UPDATE",
+            "label": "Update",
+            "default": "i++"
+        }
+    ]
+}

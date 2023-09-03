@@ -1,7 +1,6 @@
 import dbm
 from os import path
 from appdirs import user_config_dir
-from typing import Optional, Any
 from pathlib import Path
 
 
@@ -11,10 +10,11 @@ class SettingsService:
         with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
             db[key] = str(value)
 
-    def get_setting(self, key: str, default: Any) -> Optional[str]:
+    def get_setting(self, key: str, default: str = '') -> str:
         Path(user_config_dir('flowtutor')).mkdir(parents=True, exist_ok=True)
         with dbm.open(path.join(user_config_dir('flowtutor'), 'settings.db'), 'c') as db:
             if key not in db:
-                return str(default)
+                return default
             else:
-                return db[key].decode()
+                val = db[key].decode()
+                return val if val else default

@@ -34,7 +34,6 @@ def main() -> None:
                             'flowtutor.gui.gui',
                             'flowtutor.gui.sidebar_functionstart',
                             'flowtutor.modal_service',
-                            'flowtutor.template_service',
                             'flowtutor.language_service',
                             'flowtutor.flowchart.template'])
     start()

@@ -23,7 +23,7 @@ class TestCodeGenerator:
     def code_generator(self) -> CodeGenerator:
         container = Container()
         container.init_resources()
-        container.wire(modules=['flowtutor.codegenerator', 'flowtutor.template_service'])
+        container.wire(modules=['flowtutor.codegenerator', 'flowtutor.language_service'])
         return CodeGenerator()
 
     @pytest.fixture(scope='session')

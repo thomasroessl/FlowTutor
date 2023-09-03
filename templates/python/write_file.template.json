@@ -1,0 +1,17 @@
+{
+    "label": "Write file",
+    "node_label": "Write to file {{VAR_NAME}}: {{VALUE}}",
+    "shape_id": "preparation",
+    "color": "(147, 171, 255)",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        },
+        {
+            "name": "VALUE",
+            "label": "Value"
+        }
+    ],
+    "body": "fprintf({{VAR_NAME}}, {{VALUE}});"
+}

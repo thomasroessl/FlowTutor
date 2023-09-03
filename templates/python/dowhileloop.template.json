@@ -1,0 +1,12 @@
+{
+    "label": "Do-While loop",
+    "node_label": "{{CONDITION}}",
+    "shape_id": "preparation",
+    "control_flow": "post-loop",
+    "parameters": [
+        {
+            "name": "CONDITION",
+            "label": "Condition"
+        }
+    ]
+}

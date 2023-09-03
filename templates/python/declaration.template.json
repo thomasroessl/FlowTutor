@@ -1,0 +1,54 @@
+{
+    "label": "Declaration",
+    "node_label": "{% if IS_STATIC %}static {% endif %}{{VAR_TYPE}} {% if IS_POINTER %}*{% endif %}{{VAR_NAME}}{% if IS_ARRAY %}[{{ARRAY_SIZE}}]{% endif %}{% if VAR_VALUE %} = {{VAR_VALUE}}{% endif %}",
+    "shape_id": "data_internal",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        },
+        {
+            "name": "VAR_TYPE",
+            "label": "Type",
+            "default": "int",
+            "options": [
+                "char",
+                "unsigned char",
+                "short",
+                "unsigned short",
+                "int",
+                "unsigned int",
+                "long",
+                "unsigned long",
+                "float",
+                "double",
+                "long double"
+            ]
+        },
+        {
+            "name": "IS_POINTER",
+            "label": "Pointer",
+            "type": "checkbox"
+        },
+        {
+            "name": "IS_ARRAY",
+            "label": "Array",
+            "type": "checkbox"
+        },
+        {
+            "name": "ARRAY_SIZE",
+            "label": "Size",
+            "visible": "IS_ARRAY" 
+        },
+        {
+            "name": "IS_STATIC",
+            "label": "Static",
+            "type": "checkbox"
+        },
+        {
+            "name": "VAR_VALUE",
+            "label": "Value"
+        }
+    ],
+    "body": "{% if IS_STATIC %}static {% endif %}{{VAR_TYPE}} {% if IS_POINTER %}*{% endif %}{{VAR_NAME}}{% if IS_ARRAY %}[{{ARRAY_SIZE}}]{% endif %}{% if VAR_VALUE %} = {{VAR_VALUE}}{% endif %};"
+}

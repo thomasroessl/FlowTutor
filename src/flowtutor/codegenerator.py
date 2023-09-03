@@ -10,7 +10,7 @@ from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
 from flowtutor.util_service import UtilService
-from flowtutor.template_service import TemplateService
+from flowtutor.language_service import LanguageService
 
 
 class CodeGenerator:
@@ -18,12 +18,12 @@ class CodeGenerator:
     @inject
     def __init__(self,
                  utils_service: UtilService = Provide['utils_service'],
-                 template_service: TemplateService = Provide['template_service']):
+                 language_service: LanguageService = Provide['language_service']):
         self.prev_source_code = ''
         self.prev_break_points = ''
         self.utils = utils_service
         self.break_point_path = self.utils.get_break_points_path()
-        self.template_service = template_service
+        self.language_service = language_service
         try:
             remove(self.break_point_path)
         except FileNotFoundError:
@@ -122,7 +122,7 @@ class CodeGenerator:
                     if_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
                 for c in [c for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes]:
                     else_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
-            yield from self.template_service.render(node, loop_body, if_branch, else_branch)
+            yield from self.language_service.render_template(node, loop_body, if_branch, else_branch)
             if node.control_flow == 'decision':
                 successor = flowchart.find_successor(node)
                 if successor:

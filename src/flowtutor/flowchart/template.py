@@ -10,15 +10,15 @@ from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
-    from flowtutor.template_service import TemplateService
+    from flowtutor.language_service import LanguageService
 
 
 class Template(Node):
 
     @inject
-    def __init__(self, data: Any, template_service: TemplateService = Provide['template_service']) -> None:
+    def __init__(self, data: Any, language_service: LanguageService = Provide['language_service']) -> None:
         super().__init__()
-        self.template_service = template_service
+        self.language_service = language_service
         self._data = data
         self._control_flow: Optional[str] = data['control_flow'] if 'control_flow' in data else None
         self._body: Optional[str] = data['body'] if 'body' in data else None
@@ -159,7 +159,7 @@ class Template(Node):
     @property
     def label(self) -> str:
         if 'node_label' in self.data:
-            return self.template_service.render_line(str(self.data['node_label']), self.values)
+            return self.language_service.render_line(str(self.data['node_label']), self.values)
         else:
             return str(self.data['label'])
 

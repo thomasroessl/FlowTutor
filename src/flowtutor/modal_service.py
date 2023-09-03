@@ -49,7 +49,9 @@ class ModalService:
                     dpg.add_input_text(default_value=self.utils_service.get_gdb_exe(), width=-1, readonly=True)
                 with dpg.table_row():
                     dpg.add_text('Templates')
-                    dpg.add_input_text(default_value=self.utils_service.get_templates_path(), width=-1, readonly=True)
+                    dpg.add_input_text(default_value=self.utils_service.get_templates_path(''),
+                                       width=-1,
+                                       readonly=True)
                 with dpg.table_row():
                     dpg.add_text('Source File')
                     dpg.add_input_text(default_value=self.utils_service.get_c_source_path(), width=-1, readonly=True)
@@ -72,6 +74,36 @@ class ModalService:
                     label='Cancel',
                     width=75,
                     callback=lambda: dpg.delete_item('approval_modal'))
+
+    def show_language_selection_modal(self, callback: Callable[[str], None]) -> None:
+        if dpg.does_item_exist('language_selection_modal'):
+            return
+        with dpg.window(
+                label='Select language',
+                modal=True,
+                tag='language_selection_modal',
+                autosize=True,
+                no_close=True,
+                no_collapse=True,
+                pos=(250, 100),
+                on_close=lambda: dpg.delete_item('language_selection_modal')):
+            dpg.add_text('Choose the language of this file')
+            with dpg.theme() as lang_button_theme:
+                with dpg.theme_component(dpg.mvImageButton):
+                    dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
+
+            with dpg.group(horizontal=True):
+                for lang_id, data in self.language_service.get_languages().items():
+                    if dpg.does_item_exist(f'{lang_id}_image'):
+                        lang_button = dpg.add_image_button(
+                            f'{lang_id}_image',
+                            callback=lambda: (callback(lang_id), dpg.delete_item('language_selection_modal')))
+                        dpg.bind_item_theme(lang_button, lang_button_theme)
+                    else:
+                        dpg.add_button(
+                            label=data['name'],
+                            width=75,
+                            callback=lambda: (callback(lang_id), dpg.delete_item('language_selection_modal')))
 
     def show_input_text_modal(self,
                               label: str,
@@ -105,10 +137,10 @@ class ModalService:
                 tag='node_type_modal',
                 width=150,
                 no_resize=True,
+                autosize=True,
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
-
-                for label, args in self.language_service.get_node_templates().items():
+                for label, args in self.language_service.get_node_templates(self.language_service.lang_id).items():
                     dpg.add_button(
                         label=label,
                         width=-1,

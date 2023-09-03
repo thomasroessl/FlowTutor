@@ -91,12 +91,12 @@ class UtilService:
         '''Gets the path to the break-point file for gdb.'''
         return path.join(self.temp_dir, 'flowtutor_break_points')
 
-    def get_templates_path(self) -> str:
+    def get_templates_path(self, lang_id: str = '') -> str:
         '''Gets the path to the directory containing templates for predefined nodes.'''
         if (sys.modules['__main__'].__file__ or '').endswith('.pyw'):
-            return path.join(self.root, 'templates')
+            return path.join(self.root, 'templates', lang_id)
         else:
-            return path.abspath(path.join(self.root, '..', '..', 'templates'))
+            return path.abspath(path.join(self.root, '..', '..', 'templates', lang_id))
 
     def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''

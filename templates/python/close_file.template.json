@@ -1,0 +1,13 @@
+{
+    "label": "Close file",
+    "node_label": "Close file: {{VAR_NAME}}",
+    "shape_id": "data",
+    "color": "(147, 171, 255)",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Name"
+        }
+    ],
+    "body": "fclose({{VAR_NAME}});"
+}

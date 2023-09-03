@@ -1,0 +1,38 @@
+{
+    "label": "Input",
+    "shape_id": "data",
+    "parameters": [
+        {
+            "name": "VAR_NAME",
+            "label": "Variable name"
+        },
+        {
+            "name": "DECLARE_VAR",
+            "label": "Declare variable",
+            "type": "checkbox"
+        },
+        {
+            "name": "STRING_LENGTH",
+            "label": "String length",
+            "default": 128,
+            "visible": "DECLARE_VAR and TEMPLATE_SPECIFIER == '%s'"
+        },
+        {
+            "name": "TEMPLATE_SPECIFIER",
+            "label": "Template specifier",
+            "default": "%ld",
+            "options": [
+                "%ld",
+                "%lo",
+                "%lx",
+                "%li",
+                "%hd",
+                "%d",
+                "%f",
+                "%lf",
+                "%c",
+                "%s"
+            ]
+        }
+    ]
+}
