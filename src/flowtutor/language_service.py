@@ -20,6 +20,7 @@ class LanguageService:
         self.utils_service = utils_service
         self.settings_service = settings_service
         self.is_initialized = False
+        self.jinja_env: Optional[Environment] = None
 
     @property
     def lang_id(self) -> str:
@@ -27,15 +28,14 @@ class LanguageService:
 
     def finish_init(self) -> None:
         self.jinja_env = Environment(
-            loader=FileSystemLoader(self.utils_service.get_templates_path(
-                self.settings_service.get_setting('lang_id', ''))),
+            loader=FileSystemLoader(self.utils_service.get_templates_path(self.lang_id)),
             lstrip_blocks=True,
             trim_blocks=True)
         self.is_initialized = True
 
-    def get_node_templates(self, lang_id: str) -> dict[str, Any]:
+    def get_node_templates(self) -> dict[str, Any]:
         template_file_paths: list[str] = []
-        templates_path = self.utils_service.get_templates_path(lang_id)
+        templates_path = self.utils_service.get_templates_path(self.lang_id)
         template_file_paths.extend(
             [path.join(templates_path, f) for f in listdir(templates_path) if f.endswith('template.json')])
         templates: dict[str, Any] = {}
@@ -92,10 +92,16 @@ class LanguageService:
         return rendered
 
     def render_line(self, jinja_template: str, values: dict[str, str]) -> str:
-        return self.jinja_env.from_string(jinja_template).render(values)
+        if self.jinja_env:
+            return self.jinja_env.from_string(jinja_template).render(values)
+        else:
+            return ''
 
     def render_jinja_lines(self, template_file_name: str, values: dict[str, str]) -> list[str]:
-        return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
+        if self.jinja_env:
+            return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
+        else:
+            return []
 
     def assign_node(self,
                     line: str,

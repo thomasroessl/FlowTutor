@@ -24,7 +24,9 @@ class TestCodeGenerator:
         container = Container()
         container.init_resources()
         container.wire(modules=['flowtutor.codegenerator', 'flowtutor.language_service'])
-        return CodeGenerator()
+        code_generator = CodeGenerator()
+        code_generator.language_service.finish_init()
+        return code_generator
 
     @pytest.fixture(scope='session')
     def nodes(self) -> dict[str, Any]:
@@ -32,6 +34,7 @@ class TestCodeGenerator:
         container.init_resources()
         container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
         language_service = LanguageService()
+        language_service.finish_init()
         return language_service.get_node_templates()
 
     def test_code_from_empty_flowchart(self, code_generator: CodeGenerator):

@@ -140,7 +140,7 @@ class ModalService:
                 autosize=True,
                 on_close=lambda: dpg.delete_item('node_type_modal')):
             with dpg.group():
-                for label, args in self.language_service.get_node_templates(self.language_service.lang_id).items():
+                for label, args in self.language_service.get_node_templates().items():
                     dpg.add_button(
                         label=label,
                         width=-1,
