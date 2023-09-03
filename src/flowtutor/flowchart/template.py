@@ -42,6 +42,16 @@ class Template(Node):
     def __repr__(self) -> str:
         return f'({self.data["label"]}: {self.__class__.__name__})'
 
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        del state['language_service']
+        return state
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        tmp = Template(self.data)
+        self.language_service = tmp.language_service
+
     @property
     def data(self) -> Any:
         return self._data
