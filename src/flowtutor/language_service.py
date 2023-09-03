@@ -3,7 +3,7 @@ from os import listdir, path
 import json
 from pathlib import Path
 from dependency_injector.wiring import Provide, inject
-from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, Template as JinjaTemplate
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.functionstart import FunctionStart
 
@@ -23,6 +23,7 @@ class LanguageService:
         self.settings_service = settings_service
         self.is_initialized = False
         self.jinja_env: Optional[Environment] = None
+        self.template_cache: dict[str, JinjaTemplate] = {}
 
     @property
     def lang_id(self) -> str:
@@ -118,9 +119,14 @@ class LanguageService:
             return [('', None)]
         return rendered
 
-    def render_line(self, jinja_template: str, values: dict[str, Any]) -> str:
+    def render_line(self, jinja_template_string: str, values: dict[str, Any]) -> str:
         if self.jinja_env:
-            return self.jinja_env.from_string(jinja_template).render(values)
+            if jinja_template_string in self.template_cache:
+                jinja_template = self.template_cache[jinja_template_string]
+            else:
+                jinja_template = self.jinja_env.from_string(jinja_template_string)
+                self.template_cache[jinja_template_string] = jinja_template
+            return jinja_template.render(values)
         else:
             return ''
 
