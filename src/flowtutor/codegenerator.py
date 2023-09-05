@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional, cast
+from typing import TYPE_CHECKING, Generator, Optional
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
@@ -53,17 +53,15 @@ class CodeGenerator:
 
     def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
         source: list[tuple[str, Optional[Node]]] = self.language_service.render_imports(flowcharts[0])
-
-        if len(flowcharts[0].type_definitions) > 0:
+        if len(source) > 0 and source[-1][0]:
             source.append(('', None))
-
         for type_definition in flowcharts[0].type_definitions:
             source += [
                 (str(type_definition), None)
             ]
-
         for struct_definition in flowcharts[0].struct_definitions:
-            source += [('', None)]
+            if len(source) > 0 and source[-1][0]:
+                source += [('', None)]
             source += [
                 (d, None) for d in str(struct_definition).split('\n')
             ]
@@ -74,20 +72,20 @@ class CodeGenerator:
             source += [
                 (c, None) for c in flowcharts[0].preprocessor_custom.split('\n')
             ]
-
-        if len(flowcharts) > 1:
+        if len(source) > 0 and source[-1][0]:
             source.append(('', None))
-
         for flowchart in flowcharts:
             if flowchart.root.name != 'main':
                 source.append((flowchart.get_function_declaration(), None))
-
         for i, flowchart in enumerate(flowcharts):
-            source.append(('', None))
+            if len(source) > 0 and source[-1][0]:
+                source.append(('', None))
             source.extend(self._generate_code(flowchart, flowchart.root, set(), False))
 
-        nodes: list[Optional[Node]]
-        code_lines, nodes = map(list, zip(*source))  # type: ignore
+        nodes: list[Optional[Node]] = []
+        code_lines: list[str] = []
+        if source:
+            code_lines, nodes = map(list, zip(*source))  # type: ignore
 
         for flowchart in flowcharts:
             for n in flowchart:
@@ -97,7 +95,7 @@ class CodeGenerator:
             if n1:
                 n1.lines.append(i + 1)
 
-        source_code = '\n'.join(cast(list[str], code_lines))
+        source_code = '\n'.join(code_lines)
         break_point_definitions = '\n'.join(
             map(lambda e: f'break flowtutor.c:{e[0] + 2}',
                 filter(lambda e: e[1], enumerate(map(lambda n: n and n.break_point, nodes)))))
@@ -140,8 +138,6 @@ class CodeGenerator:
             visited_nodes.remove(node)
             if is_branch:
                 return
-        else:
-            yield ('', None)
         for code in [self._generate_code(flowchart, c.dst_node, visited_nodes, is_branch)
                      for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes]:
             yield from code
