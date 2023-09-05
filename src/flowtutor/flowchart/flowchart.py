@@ -23,7 +23,7 @@ class Flowchart:
         self._root = root
         end = FunctionEnd(name)
         self.add_node(root, end)
-        self._includes: list[str] = []
+        self._imports: list[str] = []
         self._preprocessor_definitions: list[str] = []
         self._type_definitions: list[TypeDefinition] = []
         self._struct_definitions: list[StructDefinition] = []
@@ -35,8 +35,8 @@ class Flowchart:
         return self._root
 
     @property
-    def includes(self) -> list[str]:
-        return self._includes
+    def imports(self) -> list[str]:
+        return self._imports
 
     @property
     def preprocessor_definitions(self) -> list[str]:

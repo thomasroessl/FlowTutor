@@ -19,10 +19,10 @@ class SidebarNone(Sidebar):
         self.gui = gui
         self.language_service = language_service
         with dpg.group() as self.main_group:
-            dpg.add_text('Preprocessor')
-            with dpg.collapsing_header(label='Include', tag='selected_includes'):
+            dpg.add_text('File head')
+            with dpg.collapsing_header(label='Import') as self.import_header:
                 pass
-            with dpg.collapsing_header(label='Define'):
+            with dpg.collapsing_header(label='Define') as self.define_header:
                 with dpg.table(sortable=False, hideable=False, reorderable=False,
                                borders_innerH=True, borders_outerH=True, borders_innerV=True,
                                borders_outerV=True) as self.table:
@@ -42,7 +42,6 @@ class SidebarNone(Sidebar):
                                                  self.refresh_definitions(
                                    self.preprocessor_definitions()),
                                    gui.redraw_all(True)))
-
             with dpg.collapsing_header(label='Custom'):
                 dpg.add_input_text(tag='selected_preprocessor_custom',
                                    width=-1,
@@ -54,14 +53,15 @@ class SidebarNone(Sidebar):
             dpg.add_spacer(height=3)
             dpg.add_separator()
             dpg.add_spacer(height=3)
-            dpg.add_button(label='Types', width=-1,
-                           callback=lambda: (dpg.show_item('type_window'), gui.redraw_all(True)))
+            self.types_button = dpg.add_button(label='Types', width=-1,
+                                               callback=lambda: (dpg.show_item('type_window'),
+                                                                 gui.redraw_all(True)))
 
     def main_node(self) -> Flowchart:
         return self.gui.flowcharts['main']
 
-    def includes(self) -> list[str]:
-        result: list[str] = self.main_node().__getattribute__('includes')
+    def imports(self) -> list[str]:
+        result: list[str] = self.main_node().__getattribute__('imports')
         return result
 
     def preprocessor_definitions(self) -> list[str]:
@@ -71,9 +71,9 @@ class SidebarNone(Sidebar):
     def on_header_checkbox_change(self, sender: Union[int, str], is_checked: bool) -> None:
         header = dpg.get_item_user_data(sender)
         if is_checked:
-            self.includes().append(header)
+            self.imports().append(header)
         else:
-            self.includes().remove(header)
+            self.imports().remove(header)
         self.gui.redraw_all(True)
 
     def refresh_definitions(self, entries: list[str]) -> None:
@@ -101,22 +101,33 @@ class SidebarNone(Sidebar):
                 dpg.bind_item_theme(delete_button, delete_button_theme)
 
     def refresh(self) -> None:
+        if self.gui.selected_flowchart.lang_data['lang_id'] == 'c':
+            dpg.show_item(self.types_button)
+            dpg.show_item(self.define_header)
+        else:
+            dpg.hide_item(self.types_button)
+            dpg.hide_item(self.define_header)
+        if 'import' in self.gui.selected_flowchart.lang_data and\
+           'standard_imports' in self.gui.selected_flowchart.lang_data:
+            dpg.show_item(self.import_header)
+        else:
+            dpg.hide_item(self.import_header)
         self.refresh_definitions(self.preprocessor_definitions())
         dpg.configure_item(
             'selected_preprocessor_custom',
             default_value=self.main_node().__getattribute__('preprocessor_custom'))
         # delete existing entries to avoid duplicates
-        for child in dpg.get_item_children('selected_includes')[1]:
+        for child in dpg.get_item_children(self.import_header)[1]:
             dpg.delete_item(child)
         for header in self.language_service.get_standard_headers(self.gui.selected_flowchart):
             dpg.add_checkbox(
-                parent='selected_includes',
+                parent=self.import_header,
                 label=header,
-                default_value=header in self.includes(),
+                default_value=header in self.imports(),
                 user_data=header,
                 callback=self.on_header_checkbox_change)
-        for checkbox in dpg.get_item_children('selected_includes')[1]:
-            dpg.configure_item(checkbox, default_value=dpg.get_item_user_data(checkbox) in self.includes())
+        for checkbox in dpg.get_item_children(self.import_header)[1]:
+            dpg.configure_item(checkbox, default_value=dpg.get_item_user_data(checkbox) in self.imports())
 
     def hide(self) -> None:
         dpg.hide_item(self.main_group)

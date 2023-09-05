@@ -91,7 +91,7 @@ class TestCodeGenerator:
             'lang_id': 'c',
             'import': '#include <{{IMPORT}}>'
         }
-        flowchart.includes.append('stdio.h')
+        flowchart.imports.append('stdio.h')
         return flowchart
 
     def test_code_from_empty_flowchart(self, flowchart: Flowchart, code_generator: CodeGenerator):
@@ -106,9 +106,9 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'An empty flowchart should produce a main function, which returns 0.'
 
-    def test_code_from_includes(self, flowchart: Flowchart, code_generator: CodeGenerator):
-        flowchart.includes.append('test1.h')
-        flowchart.includes.append('test2.h')
+    def test_code_from_imports(self, flowchart: Flowchart, code_generator: CodeGenerator):
+        flowchart.imports.append('test1.h')
+        flowchart.imports.append('test2.h')
         code, _ = code_generator.generate_code([flowchart])
         print(code)
         expected = '\n'.join([

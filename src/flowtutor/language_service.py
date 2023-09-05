@@ -96,7 +96,7 @@ class LanguageService:
     def render_imports(self, flowchart: Flowchart) -> list[tuple[str, Optional[Node]]]:
         rendered: list[tuple[str, Optional[Node]]] = []
         if 'import' in flowchart.lang_data:
-            for imp in flowchart.includes:
+            for imp in flowchart.imports:
                 rendered.append(
                     (self.render_line(flowchart.lang_data['import'], {'IMPORT': imp}), None))
         return rendered
