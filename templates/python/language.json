@@ -2,5 +2,6 @@
     "lang_id": "python",
     "name": "Python",
     "has_main_function": false,
-    "import": "import {{IMPORT}}"
+    "import": "import {{IMPORT}}",
+    "comment_specifier": "#"
 }

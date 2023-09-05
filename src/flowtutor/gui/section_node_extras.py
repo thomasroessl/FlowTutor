@@ -33,7 +33,7 @@ class SectionNodeExtras:
                 self.node_is_comment = dpg.add_checkbox(
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('is_comment', data),
                                               self.gui.selected_node.__setattr__('needs_refresh', True),
-                                              self.gui.redraw_all()))
+                                              self.gui.redraw_all(True)))
 
     def toggle(self, node: Optional[Node]) -> None:
         self.show(node) if node else self.hide()

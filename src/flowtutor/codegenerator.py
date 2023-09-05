@@ -120,7 +120,7 @@ class CodeGenerator:
                     if_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
                 for c in [c for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes]:
                     else_branch.extend(self._generate_code(flowchart, c.dst_node, visited_nodes, True))
-            yield from self.language_service.render_template(node, loop_body, if_branch, else_branch)
+            yield from self.language_service.render_template(node, flowchart, loop_body, if_branch, else_branch)
             if node.control_flow == 'decision':
                 successor = flowchart.find_successor(node)
                 if successor:
@@ -131,7 +131,7 @@ class CodeGenerator:
             body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
                         for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes], [])
             function_end = flowchart.find_function_end()
-            yield from self.language_service.render_function(node, function_end, body)
+            yield from self.language_service.render_function(node, function_end, flowchart, body)
         elif isinstance(node, FunctionEnd):
             return
         elif isinstance(node, Connector):

@@ -64,8 +64,13 @@ class LanguageService:
                 languages[str(data['lang_id'])] = data
         return languages
 
+    def get_comment_specifier(self, flowchart: Flowchart) -> str:
+        return str(flowchart.lang_data['comment_specifier'])\
+            if 'comment_specifier' in flowchart.lang_data else '//'
+
     def render_template(self,
                         template: Template,
+                        flowchart: Flowchart,
                         loop_body: list[tuple[str, Optional[Node]]],
                         if_branch: list[tuple[str, Optional[Node]]],
                         else_branch: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
@@ -74,8 +79,9 @@ class LanguageService:
         template.values['IF_BRANCH'] = '\n'.join([s2 for s2, _ in if_branch])
         template.values['ELSE_BRANCH'] = '\n'.join([s3 for s3, _ in else_branch])
         rendered: list[tuple[str, Optional[Node]]] = []
+        comment_specifier = self.get_comment_specifier(flowchart)
         if template.comment:
-            rendered.append((f'// {template.comment}', None))
+            rendered.append((f'{comment_specifier} {template.comment}', None))
         if template_body:
             rendered.append((self.render_line(template_body, template.values), template))
         else:
@@ -91,6 +97,8 @@ class LanguageService:
 
             except TemplateNotFound:
                 return [('', None)]
+        if template.is_comment:
+            return list(map(lambda r: (f'{comment_specifier} {r[0]}', r[1]), rendered))
         return rendered
 
     def render_imports(self, flowchart: Flowchart) -> list[tuple[str, Optional[Node]]]:
@@ -104,6 +112,7 @@ class LanguageService:
     def render_function(self,
                         function_start: FunctionStart,
                         function_end: FunctionEnd,
+                        flowchart: Flowchart,
                         body: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
         values = {
             'FUN_NAME': function_start.name,
@@ -113,8 +122,9 @@ class LanguageService:
             'RETURN_VALUE': function_end.return_value
         }
         rendered: list[tuple[str, Optional[Node]]] = []
+        comment_specifier = self.get_comment_specifier(flowchart)
         if function_start.comment:
-            rendered.append((f'// {function_start.comment}', None))
+            rendered.append((f'{comment_specifier} {function_start.comment}', None))
         try:
             unassigned_lines = body.copy()
             unassigned_lines.reverse()

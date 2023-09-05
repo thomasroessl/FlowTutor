@@ -26,5 +26,6 @@
         "float",
         "double",
         "long double"
-    ]
+    ],
+    "comment_specifier": "//"
 }
