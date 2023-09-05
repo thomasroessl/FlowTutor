@@ -102,7 +102,7 @@ class GUI:
         self.language_service = language_service
         self.utils_service = utils_service
         self.flowcharts = {
-            'main': Flowchart('main')
+            'main': Flowchart('main', {})
         }
 
         signal('hit-line').connect(self.on_hit_line)

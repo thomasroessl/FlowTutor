@@ -27,10 +27,9 @@ class TestFlowchart:
             'flowtutor.flowchart.functionstart',
             'flowtutor.flowchart.functionend'])
         language_service = LanguageService()
-        flowchart = Flowchart('main')
-        flowchart.lang_data = {
+        flowchart = Flowchart('main', {
             'lang_id': 'c'
-        }
+        })
         language_service.finish_init(flowchart)
         return language_service.get_node_templates(flowchart)
 
@@ -42,12 +41,12 @@ class TestFlowchart:
                 assert isinstance(node, FunctionEnd), 'The last node must be the function end'
 
     def test_flowchart_initialize_root(self):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         assert len(flowchart) == 2, 'A new flowchart should contain exactly 2 Nodes ("main" and "End")'
         self.check_roots(flowchart)
 
     def test_flowchart_add_nodes(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         node1 = Template(nodes['Declaration'])
         node2 = Template(nodes['Declaration'])
         flowchart.add_node(flowchart.root, node1)
@@ -61,7 +60,7 @@ class TestFlowchart:
         assert node1_connection_0.dst_node == node2, 'There should be a connection from node1 to node2'
 
     def test_flowchart_add_loop(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         loop1 = Template(nodes['While loop'])
         flowchart.add_node(flowchart.root, loop1)
         assert len(flowchart) == 3, 'After adding a loop, there should be 3 nodes in the flowchart'
@@ -73,7 +72,7 @@ class TestFlowchart:
         assert loop1_connection_1.dst_node == loop1, 'There should be a connection from the loop to itself'
 
     def test_flowchart_add_conditional(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         node1 = Template(nodes['Conditional'])
         flowchart.add_node(flowchart.root, node1)
         assert len(flowchart) == 4, ('After adding a conditional, there should be 4 nodes in the flowchart'
@@ -93,7 +92,7 @@ class TestFlowchart:
         assert connector_0 == connector_1, 'The connections of the conditional should be to the same connector'
 
     def test_flowchart_add_and_remove_node(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         node1 = Template(nodes['Declaration'])
         flowchart.add_node(flowchart.root, node1)
         assert len(flowchart) == 3, 'After adding a node, there should be 3 nodes in the flowchart'
@@ -102,7 +101,7 @@ class TestFlowchart:
         self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     def test_flowchart_add_and_remove_conditional(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         conditional1 = Template(nodes['Conditional'])
         flowchart.add_node(flowchart.root, conditional1)
         assert len(flowchart) == 4, 'After adding a conditional, there should be 4 nodes in the flowchart'
@@ -111,7 +110,7 @@ class TestFlowchart:
         self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     def test_flowchart_node_in_loop_body(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
         loop1 = Template(nodes['While loop'])
         node1 = Template(nodes['Declaration'])
         flowchart.add_node(flowchart.root, loop1)
@@ -127,7 +126,7 @@ class TestFlowchart:
         assert node1_connection_0.dst_node == loop1, 'There should be a connection from the node to the loop'
 
     def test_flowchart_add_and_remove_nested_conditional(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
 
         conditional1 = Template(nodes['Conditional'])
         flowchart.add_node(flowchart.root, conditional1)
@@ -163,7 +162,7 @@ class TestFlowchart:
         self.check_roots(flowchart)  # The remaining nodes should be the roots
 
     def test_flowchart_add_and_remove_nested_loops(self, nodes: dict[str, Any]):
-        flowchart = Flowchart('main')
+        flowchart = Flowchart('main', {})
 
         loop1 = Template(nodes['While loop'])
         flowchart.add_node(flowchart.root, loop1)

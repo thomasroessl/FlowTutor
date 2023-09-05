@@ -48,6 +48,12 @@ class LanguageService:
                 templates[str(data['label'])] = data
         return templates
 
+    def has_function_declarations(self, flowchart: Flowchart) -> bool:
+        return 'function_declaration' in flowchart.lang_data
+
+    def has_main_function(self, flowchart: Flowchart) -> bool:
+        return ('has_main_function' not in flowchart.lang_data or flowchart.lang_data['has_main_function'])
+
     def get_languages(self) -> dict[str, Any]:
         language_paths: list[str] = []
         templates_path = self.utils_service.get_templates_path()
@@ -99,6 +105,19 @@ class LanguageService:
                 return [('', None)]
         if template.is_comment:
             return list(map(lambda r: (f'{comment_specifier} {r[0]}', r[1]), rendered))
+        return rendered
+
+    def render_function_declaration(self,
+                                    flowchart: Flowchart,
+                                    function_start: FunctionStart) -> list[tuple[str, Optional[Node]]]:
+        rendered: list[tuple[str, Optional[Node]]] = []
+        if 'function_declaration' in flowchart.lang_data:
+            rendered.append((self.render_line(flowchart.lang_data['function_declaration'],
+                                              {
+                'FUN_NAME': function_start.name,
+                'RETURN_TYPE': function_start.return_type,
+                'PARAMETERS': function_start.parameters
+            }), None))
         return rendered
 
     def render_imports(self, flowchart: Flowchart) -> list[tuple[str, Optional[Node]]]:

@@ -58,11 +58,9 @@ class TestCodeGenerator:
             'flowtutor.flowchart.functionstart',
             'flowtutor.flowchart.functionend'])
         code_generator = CodeGenerator()
-        flowchart = Flowchart('main')
-        flowchart.lang_data = {
-            'lang_id': 'c',
-            'import': '#include <{{IMPORT}}>'
-        }
+        flowchart = Flowchart('main', {
+            'lang_id': 'c'
+        })
         code_generator.language_service.finish_init(flowchart)
         return code_generator
 
@@ -76,21 +74,20 @@ class TestCodeGenerator:
             'flowtutor.flowchart.functionstart',
             'flowtutor.flowchart.functionend'])
         language_service = LanguageService()
-        flowchart = Flowchart('main')
-        flowchart.lang_data = {
-            'lang_id': 'c',
-            'import': '#include <{{IMPORT}}>'
-        }
+        flowchart = Flowchart('main', {
+            'lang_id': 'c'
+        })
         language_service.finish_init(flowchart)
         return language_service.get_node_templates(flowchart)
 
     @pytest.fixture()
     def flowchart(self) -> Flowchart:
-        flowchart = Flowchart('main')
-        flowchart.lang_data = {
+        flowchart = Flowchart('main', {
             'lang_id': 'c',
-            'import': '#include <{{IMPORT}}>'
-        }
+            'import': '#include <{{IMPORT}}>',
+            'function_declaration': '{{RETURN_TYPE}} {{FUN_NAME}}({% for p in PARAMETERS %}{{p.type}} {{p.name}}{{ \",'
+            ' \" if not loop.last else \"\" }}{% endfor %});'
+        })
         flowchart.imports.append('stdio.h')
         return flowchart
 
@@ -501,9 +498,9 @@ class TestCodeGenerator:
         assert code == expected, 'Output with arguments.'
 
     def test_code_from_multiple_empty_functions(self, flowchart: Flowchart, code_generator: CodeGenerator):
-        flowchart2 = Flowchart('func1')
+        flowchart2 = Flowchart('func1', flowchart.lang_data)
 
-        flowchart3 = Flowchart('func2')
+        flowchart3 = Flowchart('func2', flowchart.lang_data)
 
         code, _ = code_generator.generate_code([flowchart, flowchart2, flowchart3])
         expected = '\n'.join([
@@ -531,9 +528,9 @@ class TestCodeGenerator:
     def test_code_from_multiple_empty_functions_with_arguments(self,
                                                                flowchart: Flowchart,
                                                                code_generator: CodeGenerator):
-        flowchart2 = Flowchart('func1')
+        flowchart2 = Flowchart('func1', flowchart.lang_data)
 
-        flowchart3 = Flowchart('func2')
+        flowchart3 = Flowchart('func2', flowchart.lang_data)
         flowchart3.root.return_type = 'float'
 
         parameter1 = Parameter()

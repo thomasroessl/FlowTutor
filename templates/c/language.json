@@ -27,5 +27,6 @@
         "double",
         "long double"
     ],
-    "comment_specifier": "//"
+    "comment_specifier": "//",
+    "function_declaration": "{{RETURN_TYPE}} {{FUN_NAME}}({% for p in PARAMETERS %}{{p.type}} {{p.name}}{{ \", \" if not loop.last else \"\" }}{% endfor %});"
 }

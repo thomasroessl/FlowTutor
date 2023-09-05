@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class Flowchart:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, lang_data: dict[str, Any]):
         root = FunctionStart(name)
         root.pos = (290, 20)
         self._root = root
@@ -28,7 +28,7 @@ class Flowchart:
         self._type_definitions: list[TypeDefinition] = []
         self._struct_definitions: list[StructDefinition] = []
         self._preprocessor_custom: str = ''
-        self.lang_data: dict[str, Any] = {}
+        self.lang_data = lang_data
 
     @property
     def root(self) -> FunctionStart:
@@ -91,10 +91,6 @@ class Flowchart:
             if ((connection.span or ignore_span) and
                     connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self.get_all_nodes(connection.dst_node, ignore_span)
-
-    def get_function_declaration(self) -> str:
-        parameters = ', '.join([str(p) for p in self.root.parameters])
-        return f'{self.root.return_type} {self.root.name}({parameters});'
 
     def find_node(self, tag: str) -> Optional[Node]:
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)

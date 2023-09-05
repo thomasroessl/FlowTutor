@@ -40,7 +40,7 @@ class MenubarMain:
             dpg.set_viewport_title('FlowTutor')
             self.gui.clear_flowchart(True)
             self.gui.flowcharts = {
-                'main': Flowchart('main')
+                'main': Flowchart('main', {})
             }
             self.gui.redraw_all(True)
             self.gui.refresh_function_tabs()
@@ -95,7 +95,7 @@ class MenubarMain:
 
     def on_add_function(self) -> None:
         def callback(name: str) -> None:
-            self.gui.flowcharts[name] = Flowchart(name)
+            self.gui.flowcharts[name] = Flowchart(name, self.gui.selected_flowchart.lang_data)
             self.gui.refresh_function_tabs()
         i = len(self.gui.flowcharts.values())
         new_name = f'fun_{i}'
