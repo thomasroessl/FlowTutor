@@ -11,9 +11,38 @@ from flowtutor.flowchart.type_definition import TypeDefinition
 from flowtutor.flowchart.parameter import Parameter
 from flowtutor.flowchart.template import Template
 
-from flowtutor.language import Language
 from flowtutor.flowchart.node import dpg as node_dpg
 from flowtutor.language_service import LanguageService
+
+C_TYPES = [
+    'char',
+    'unsigned char',
+    'short',
+    'unsigned short',
+    'int',
+    'unsigned int',
+    'long',
+    'unsigned long',
+    'float',
+    'double',
+    'long double'
+]
+
+C_FORMAT_SPECIFIERS = [
+    [
+        '%c',
+        '%c',
+        '%hd',
+        '%hu',
+        '%d',
+        '%u',
+        '%ld',
+        '%lu',
+        '%f',
+        '%lf',
+        '%Lf'
+    ]
+]
 
 
 @patch.object(node_dpg, 'get_text_size', lambda _: (0, 0))
@@ -23,7 +52,11 @@ class TestCodeGenerator:
     def code_generator(self) -> CodeGenerator:
         container = Container()
         container.init_resources()
-        container.wire(modules=['flowtutor.codegenerator', 'flowtutor.language_service'])
+        container.wire(modules=[
+            'flowtutor.codegenerator',
+            'flowtutor.language_service',
+            'flowtutor.flowchart.functionstart',
+            'flowtutor.flowchart.functionend'])
         code_generator = CodeGenerator()
         flowchart = Flowchart('main')
         flowchart.lang_data = {
@@ -36,7 +69,11 @@ class TestCodeGenerator:
     def nodes(self) -> dict[str, Any]:
         container = Container()
         container.init_resources()
-        container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
+        container.wire(modules=[
+            'flowtutor.language_service',
+            'flowtutor.flowchart.template',
+            'flowtutor.flowchart.functionstart',
+            'flowtutor.flowchart.functionend'])
         language_service = LanguageService()
         flowchart = Flowchart('main')
         flowchart.lang_data = {
@@ -75,7 +112,7 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Selected headers should be included in the source file.'
 
-    @pytest.mark.parametrize('data_type', Language.get_data_types())
+    @pytest.mark.parametrize('data_type', C_TYPES)
     def test_code_from_declaration(self, data_type, code_generator: CodeGenerator, nodes: dict[str, Any]):
         flowchart = Flowchart('main')
         declaration = Template(nodes['Declaration'])
@@ -97,7 +134,7 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Declaration with value.'
 
-    @pytest.mark.parametrize('data_type', Language.get_data_types())
+    @pytest.mark.parametrize('data_type', C_TYPES)
     def test_code_from_static_declaration(self, data_type, code_generator: CodeGenerator, nodes: dict[str, Any]):
         flowchart = Flowchart('main')
         declaration = Template(nodes['Declaration'])
@@ -118,7 +155,7 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'Static declaration with initialization.'
 
-    @pytest.mark.parametrize('data_type', Language.get_data_types())
+    @pytest.mark.parametrize('data_type', C_TYPES)
     def test_code_from_pointer_declaration(self, data_type, code_generator: CodeGenerator, nodes: dict[str, Any]):
         flowchart = Flowchart('main')
         declaration = Template(nodes['Declaration'])
@@ -344,7 +381,7 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'For-Loop.'
 
-    @pytest.mark.parametrize('data_type_format', list(zip(Language.get_data_types(), Language.get_format_specifiers())))
+    @pytest.mark.parametrize('data_type_format', list(zip(C_TYPES, C_FORMAT_SPECIFIERS)))
     def test_code_from_input(self, data_type_format, code_generator: CodeGenerator, nodes: dict[str, Any]):
         data_type, format_specifier = data_type_format
         flowchart = Flowchart('main')

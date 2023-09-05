@@ -3,23 +3,27 @@ from typing import TYPE_CHECKING, Optional
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
-from flowtutor.flowchart.functionstart import FunctionStart
-from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.parameter import Parameter
 from flowtutor.gui.sidebar import Sidebar
-from flowtutor.language import Language
-from flowtutor.modal_service import ModalService
+from flowtutor.flowchart.functionstart import FunctionStart
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
+    from flowtutor.language_service import LanguageService
+    from flowtutor.modal_service import ModalService
+    from flowtutor.flowchart.node import Node
 
 
 class SidebarFunctionStart(Sidebar):
 
     @inject
-    def __init__(self, gui: GUI, modal_service: ModalService = Provide['modal_service']) -> None:
+    def __init__(self,
+                 gui: GUI,
+                 modal_service: ModalService = Provide['modal_service'],
+                 language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
         self.modal_service = modal_service
+        self.language_service = language_service
         with dpg.group(show=False) as self.main_group:
             dpg.configure_item(gui.rename_button, callback=self.on_rename)
             dpg.configure_item(gui.delete_button, callback=self.on_delete)
@@ -54,7 +58,7 @@ class SidebarFunctionStart(Sidebar):
 
             with dpg.group(tag='selected_function_return_type_group'):
                 dpg.add_text('Return Type')
-                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
+                dpg.add_combo(language_service.get_data_types(self.gui.flowcharts['main']),
                               tag='selected_function_return_type',
                               width=-1,
                               callback=lambda _, data: (gui.selected_node.__setattr__('return_type', data),
@@ -97,7 +101,7 @@ class SidebarFunctionStart(Sidebar):
                                                              .__setattr__('name', data),
                                                              self.gui.redraw_all(True)),
                                    no_spaces=True, default_value=entry.name)
-                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
+                dpg.add_combo(self.language_service.get_data_types(self.gui.flowcharts['main']),
                               user_data=i,
                               callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
                                                         .__setattr__('type', data),

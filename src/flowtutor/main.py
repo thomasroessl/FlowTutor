@@ -1,11 +1,14 @@
 from __future__ import annotations
 import platform
+from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.containers import Container
 from flowtutor.gui.gui import GUI
-from flowtutor.util_service import UtilService
+
+if TYPE_CHECKING:
+    from flowtutor.util_service import UtilService
 
 
 @inject
@@ -32,10 +35,15 @@ def main() -> None:
                             'flowtutor.debugsession',
                             'flowtutor.gui.debugger',
                             'flowtutor.gui.gui',
+                            'flowtutor.gui.sidebar_none',
                             'flowtutor.gui.sidebar_functionstart',
+                            'flowtutor.gui.sidebar_template',
+                            'flowtutor.gui.section_structs',
                             'flowtutor.modal_service',
                             'flowtutor.language_service',
-                            'flowtutor.flowchart.template'])
+                            'flowtutor.flowchart.template',
+                            'flowtutor.flowchart.functionstart',
+                            'flowtutor.flowchart.functionend'])
     start()
 
 

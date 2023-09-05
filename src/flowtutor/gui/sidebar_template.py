@@ -1,18 +1,23 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import dearpygui.dearpygui as dpg
-from flowtutor.flowchart.node import Node
-from flowtutor.flowchart.template import Template
+from dependency_injector.wiring import Provide, inject
 
+from flowtutor.flowchart.template import Template
 from flowtutor.gui.sidebar import Sidebar
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
+    from flowtutor.flowchart.node import Node
+    from flowtutor.language_service import LanguageService
 
 
 class SidebarTemplate(Sidebar):
-    def __init__(self, gui: GUI) -> None:
+
+    @inject
+    def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
+        self.language_service = language_service
         self.main_group = dpg.add_group(show=False)
 
     def hide(self) -> None:
@@ -56,7 +61,10 @@ class SidebarTemplate(Sidebar):
                         label = dpg.add_text(parameter['label'])
                         label_inputs.append((label, input_group))
                         if 'options' in parameter:
-                            dpg.add_combo(parameter['options'],
+                            options = parameter['options']
+                            if options == '{{TYPES}}':
+                                options = self.language_service.get_data_types(self.gui.selected_flowchart)
+                            dpg.add_combo(options,
                                           width=-1,
                                           default_value=node.values.__getitem__(parameter['name']) or '',
                                           user_data=parameter,

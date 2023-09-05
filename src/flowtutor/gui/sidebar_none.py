@@ -1,24 +1,26 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union
 import dearpygui.dearpygui as dpg
-from flowtutor.flowchart.node import Node
-from flowtutor.gui.sidebar import Sidebar
+from dependency_injector.wiring import Provide, inject
 
-from flowtutor.language import Language
+from flowtutor.gui.sidebar import Sidebar
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
     from flowtutor.gui.gui import GUI
+    from flowtutor.language_service import LanguageService
+    from flowtutor.flowchart.node import Node
 
 
 class SidebarNone(Sidebar):
 
-    def __init__(self, gui: GUI) -> None:
+    @inject
+    def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
         with dpg.group() as self.main_group:
             dpg.add_text('Preprocessor')
             with dpg.collapsing_header(label='Include', tag='selected_includes'):
-                for header in Language.get_standard_headers():
+                for header in language_service.get_standard_headers():
                     dpg.add_checkbox(
                         label=header,
                         default_value=header in self.includes(),

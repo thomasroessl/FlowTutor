@@ -21,7 +21,11 @@ class TestFlowchart:
     def nodes(self) -> dict[str, Any]:
         container = Container()
         container.init_resources()
-        container.wire(modules=['flowtutor.language_service', 'flowtutor.flowchart.template'])
+        container.wire(modules=[
+            'flowtutor.language_service',
+            'flowtutor.flowchart.template',
+            'flowtutor.flowchart.functionstart',
+            'flowtutor.flowchart.functionend'])
         language_service = LanguageService()
         flowchart = Flowchart('main')
         flowchart.lang_data = {
