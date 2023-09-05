@@ -5,7 +5,6 @@ from flowtutor.codegenerator import CodeGenerator
 from flowtutor.modal_service import ModalService
 from flowtutor.util_service import UtilService
 from flowtutor.settings_service import SettingsService
-
 from flowtutor.language_service import LanguageService
 
 

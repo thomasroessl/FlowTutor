@@ -1,16 +1,18 @@
 from __future__ import annotations
 import dearpygui.dearpygui as dpg
 from multiprocessing import Process, Queue
-from typing import Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 import tkinter as tk
 from tkinter import filedialog as fd
 from dependency_injector.wiring import Provide, inject
 
-from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
-from flowtutor.language_service import LanguageService
-from flowtutor.util_service import UtilService
-from flowtutor.flowchart.flowchart import Flowchart
+
+if TYPE_CHECKING:
+    from flowtutor.language_service import LanguageService
+    from flowtutor.util_service import UtilService
+    from flowtutor.flowchart.flowchart import Flowchart
+    from flowtutor.flowchart.node import Node
 
 
 class ModalService:

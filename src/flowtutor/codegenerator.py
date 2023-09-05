@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generator, Optional, cast
+from typing import TYPE_CHECKING, Generator, Optional, cast
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
@@ -9,8 +9,10 @@ from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.node import Node
 from flowtutor.flowchart.template import Template
-from flowtutor.util_service import UtilService
-from flowtutor.language_service import LanguageService
+
+if TYPE_CHECKING:
+    from flowtutor.language_service import LanguageService
+    from flowtutor.util_service import UtilService
 
 
 class CodeGenerator:

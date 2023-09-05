@@ -20,17 +20,17 @@ from flowtutor.gui.sidebar_multi import SidebarMulti
 from flowtutor.gui.sidebar_none import SidebarNone
 from flowtutor.gui.sidebar_template import SidebarTemplate
 from flowtutor.gui.window_types import WindowTypes
-from flowtutor.language_service import LanguageService
-from flowtutor.modal_service import ModalService
-from flowtutor.settings_service import SettingsService
 from flowtutor.codegenerator import CodeGenerator
 from flowtutor.gui.debugger import Debugger
 from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
 from flowtutor.gui.themes import create_theme_dark, create_theme_light
-from flowtutor.util_service import UtilService
 
 
 if TYPE_CHECKING:
+    from flowtutor.language_service import LanguageService
+    from flowtutor.util_service import UtilService
+    from flowtutor.modal_service import ModalService
+    from flowtutor.settings_service import SettingsService
     from flowtutor.flowchart.node import Node
 
 FLOWCHART_TAG = 'flowchart'

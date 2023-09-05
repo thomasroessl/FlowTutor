@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Optional
 import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
-from flowtutor.language import Language
 from flowtutor.flowchart.node import Node
 from flowtutor.gui.themes import theme_colors
 
@@ -22,7 +21,7 @@ class Template(Node):
         self._data = data
         self._control_flow: Optional[str] = data['control_flow'] if 'control_flow' in data else None
         self._body: Optional[str] = data['body'] if 'body' in data else None
-        self._shape_data, default_color = Language.get_node_shape_data(data['shape_id'])
+        self._shape_data, default_color = language_service.get_node_shape_data(data['shape_id'])
         if self.control_flow == 'post-loop':
             self.shape_data[0] = list(map(lambda p: (p[0], p[1] + 100), self.shape_data[0]))
         self._shape_points = self.shape_data[0]

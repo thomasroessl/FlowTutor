@@ -1,14 +1,18 @@
+from __future__ import annotations
 import re
 import subprocess
 import sys
 from time import sleep
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 import dearpygui.dearpygui as dpg
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
 
-from flowtutor.util_service import UtilService
 from flowtutor.debugsession import DebugSession
+
+if TYPE_CHECKING:
+    from flowtutor.util_service import UtilService
+
 
 LOADING_INDICATOR_TAG = 'loading_indicator'
 
