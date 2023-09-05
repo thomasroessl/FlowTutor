@@ -51,6 +51,9 @@ class LanguageService:
     def has_function_declarations(self, flowchart: Flowchart) -> bool:
         return 'function_declaration' in flowchart.lang_data
 
+    def has_types(self, flowchart: Flowchart) -> bool:
+        return 'types' in flowchart.lang_data
+
     def has_main_function(self, flowchart: Flowchart) -> bool:
         return ('has_main_function' not in flowchart.lang_data or flowchart.lang_data['has_main_function'])
 

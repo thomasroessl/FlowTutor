@@ -35,7 +35,7 @@ class SidebarFunctionStart(Sidebar):
                                borders_outerV=True) as self.table:
 
                     dpg.add_table_column(label='Name')
-                    dpg.add_table_column(label='Type')
+                    self.type_column = dpg.add_table_column(label='Type')
                     dpg.add_table_column(label='', width_fixed=True, width=12)
 
                     self.refresh_entries([])
@@ -92,6 +92,12 @@ class SidebarFunctionStart(Sidebar):
         for child in dpg.get_item_children(self.table)[1]:
             dpg.delete_item(child)
 
+        has_types = self.language_service.has_types(self.gui.selected_flowchart)
+        if has_types:
+            dpg.show_item(self.type_column)
+        else:
+            dpg.hide_item(self.type_column)
+
         for i, entry in enumerate(entries):
             with dpg.table_row(parent=self.table):
                 dpg.add_input_text(width=-1,
@@ -101,12 +107,15 @@ class SidebarFunctionStart(Sidebar):
                                                              .__setattr__('name', data),
                                                              self.gui.redraw_all(True)),
                                    no_spaces=True, default_value=entry.name)
-                dpg.add_combo(self.language_service.get_data_types(self.gui.flowcharts['main']),
-                              user_data=i,
-                              callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
-                                                        .__setattr__('type', data),
-                                                        self.gui.redraw_all(True)),
-                              width=-1, default_value=entry.type)
+                if has_types:
+                    dpg.add_combo(self.language_service.get_data_types(self.gui.flowcharts['main']),
+                                  user_data=i,
+                                  callback=lambda s, data: (self.parameters()[dpg.get_item_user_data(s)]
+                                                            .__setattr__('type', data),
+                                                            self.gui.redraw_all(True)),
+                                  width=-1, default_value=entry.type)
+                else:
+                    dpg.add_text('')
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
                     self.parameters().pop(dpg.get_item_user_data(s)),
