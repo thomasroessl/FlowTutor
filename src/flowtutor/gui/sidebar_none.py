@@ -17,15 +17,11 @@ class SidebarNone(Sidebar):
     @inject
     def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
+        self.language_service = language_service
         with dpg.group() as self.main_group:
             dpg.add_text('Preprocessor')
             with dpg.collapsing_header(label='Include', tag='selected_includes'):
-                for header in language_service.get_standard_headers():
-                    dpg.add_checkbox(
-                        label=header,
-                        default_value=header in self.includes(),
-                        user_data=header,
-                        callback=self.on_header_checkbox_change)
+                pass
             with dpg.collapsing_header(label='Define'):
                 with dpg.table(sortable=False, hideable=False, reorderable=False,
                                borders_innerH=True, borders_outerH=True, borders_innerV=True,
@@ -109,6 +105,16 @@ class SidebarNone(Sidebar):
         dpg.configure_item(
             'selected_preprocessor_custom',
             default_value=self.main_node().__getattribute__('preprocessor_custom'))
+        # delete existing entries to avoid duplicates
+        for child in dpg.get_item_children('selected_includes')[1]:
+            dpg.delete_item(child)
+        for header in self.language_service.get_standard_headers(self.gui.selected_flowchart):
+            dpg.add_checkbox(
+                parent='selected_includes',
+                label=header,
+                default_value=header in self.includes(),
+                user_data=header,
+                callback=self.on_header_checkbox_change)
         for checkbox in dpg.get_item_children('selected_includes')[1]:
             dpg.configure_item(checkbox, default_value=dpg.get_item_user_data(checkbox) in self.includes())
 

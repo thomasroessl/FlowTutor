@@ -52,9 +52,7 @@ class CodeGenerator:
             return None
 
     def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
-        source: list[tuple[str, Optional[Node]]] = [
-            (f'#include <{h}.h>', None) for h in flowcharts[0].includes
-        ]
+        source: list[tuple[str, Optional[Node]]] = self.language_service.render_imports(flowcharts[0])
 
         if len(flowcharts[0].type_definitions) > 0:
             source.append(('', None))

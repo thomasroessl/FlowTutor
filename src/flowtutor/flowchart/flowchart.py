@@ -23,7 +23,7 @@ class Flowchart:
         self._root = root
         end = FunctionEnd(name)
         self.add_node(root, end)
-        self._includes: list[str] = ['stdio']
+        self._includes: list[str] = []
         self._preprocessor_definitions: list[str] = []
         self._type_definitions: list[TypeDefinition] = []
         self._struct_definitions: list[StructDefinition] = []

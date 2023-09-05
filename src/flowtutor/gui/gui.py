@@ -225,6 +225,7 @@ class GUI:
     def on_select_language(self, lang_data: dict[str, Any]) -> None:
         self.flowcharts['main'].lang_data = lang_data
         self.language_service.finish_init(self.flowcharts['main'])
+        self.sidebar_none.refresh()
         self.redraw_all(True)
 
     def refresh_function_tabs(self) -> None:

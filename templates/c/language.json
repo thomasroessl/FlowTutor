@@ -1,18 +1,18 @@
 {
     "lang_id": "c",
     "name": "C",
-    "import": "include <{{IMPORT}}>",
+    "import": "#include <{{IMPORT}}>",
     "standard_imports": [
-        "assert",
-        "ctype",
-        "errno",
-        "error",
-        "float",
-        "signal",
-        "stdio",
-        "stdlib",
-        "string",
-        "math"
+        "assert.h",
+        "ctype.h",
+        "errno.h",
+        "error.h",
+        "float.h",
+        "signal.h",
+        "stdio.h",
+        "stdlib.h",
+        "string.h",
+        "math.h"
     ],
     "types": [
         "char",

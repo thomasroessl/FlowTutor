@@ -93,6 +93,14 @@ class LanguageService:
                 return [('', None)]
         return rendered
 
+    def render_imports(self, flowchart: Flowchart) -> list[tuple[str, Optional[Node]]]:
+        rendered: list[tuple[str, Optional[Node]]] = []
+        if 'import' in flowchart.lang_data:
+            for imp in flowchart.includes:
+                rendered.append(
+                    (self.render_line(flowchart.lang_data['import'], {'IMPORT': imp}), None))
+        return rendered
+
     def render_function(self,
                         function_start: FunctionStart,
                         function_end: FunctionEnd,
@@ -241,16 +249,7 @@ class LanguageService:
                            (200, 170, 255))
         }[node_type])
 
-    def get_standard_headers(self) -> list[str]:
-        return [
-            'assert',
-            'ctype',
-            'errno',
-            'error',
-            'float',
-            'signal',
-            'stdio',
-            'stdlib',
-            'string',
-            'math'
-        ]
+    def get_standard_headers(self, flowchart: Flowchart) -> list[str]:
+        standard_headers: list[str] = flowchart.lang_data['standard_imports']\
+            if 'standard_imports' in flowchart.lang_data else []
+        return standard_headers
