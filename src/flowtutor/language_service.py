@@ -57,6 +57,9 @@ class LanguageService:
     def has_main_function(self, flowchart: Flowchart) -> bool:
         return ('has_main_function' not in flowchart.lang_data or flowchart.lang_data['has_main_function'])
 
+    def is_compiled(self, flowchart: Flowchart) -> bool:
+        return flowchart.lang_data['is_compiled'] is True if 'is_compiled' in flowchart.lang_data else False
+
     def get_languages(self) -> dict[str, Any]:
         language_paths: list[str] = []
         templates_path = self.utils_service.get_templates_path()

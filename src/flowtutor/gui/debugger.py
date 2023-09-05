@@ -12,6 +12,8 @@ from flowtutor.debugsession import DebugSession
 
 if TYPE_CHECKING:
     from flowtutor.util_service import UtilService
+    from flowtutor.flowchart.flowchart import Flowchart
+    from flowtutor.language_service import LanguageService
 
 
 LOADING_INDICATOR_TAG = 'loading_indicator'
@@ -22,9 +24,12 @@ class Debugger:
     debug_session: Optional[DebugSession] = None
 
     @inject
-    def __init__(self, parent: Union[str, int], utils_service: UtilService = Provide['utils_service']) -> None:
-
+    def __init__(self,
+                 parent: Union[str, int],
+                 utils_service: UtilService = Provide['utils_service'],
+                 language_service: LanguageService = Provide['language_service']) -> None:
         self.utils = utils_service
+        self.language_service = language_service
 
         self.log_level = 0
         self._auto_scroll = True
@@ -125,6 +130,12 @@ class Debugger:
         with dpg.theme() as self.error_theme:
             with dpg.theme_component(0):
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
+
+    def refresh(self, flowchart: Flowchart) -> None:
+        if self.language_service.is_compiled(flowchart):
+            dpg.show_item(self.build_button)
+        else:
+            dpg.hide_item(self.build_button)
 
     def on_input(self) -> None:
         self.utils.write_tty(dpg.get_value(self.input_id))

@@ -1,6 +1,7 @@
 {
     "lang_id": "c",
     "name": "C",
+    "is_compiled": true,
     "import": "#include <{{IMPORT}}>",
     "standard_imports": [
         "assert.h",

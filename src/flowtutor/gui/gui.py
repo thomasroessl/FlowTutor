@@ -226,6 +226,8 @@ class GUI:
         self.flowcharts['main'].lang_data = lang_data
         self.language_service.finish_init(self.flowcharts['main'])
         self.sidebar_none.refresh()
+        if self.debugger:
+            self.debugger.refresh(self.selected_flowchart)
         self.redraw_all(True)
 
     def refresh_function_tabs(self) -> None:
