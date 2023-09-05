@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional, cast
+from typing import TYPE_CHECKING, Generator, Optional
 from os import remove, path
 from dependency_injector.wiring import Provide, inject
 
@@ -135,12 +135,12 @@ class CodeGenerator:
                 if successor:
                     yield from self._generate_code(flowchart, successor, visited_nodes, is_branch)
         elif isinstance(node, FunctionStart) and\
-                node.name != 'main' or self.language_service.has_main_function(flowchart):
+                (node.name != 'main' or self.language_service.has_main_function(flowchart)):
             body: list[tuple[str, Optional[Node]]] = []
             body = sum([list(self._generate_code(flowchart, c.dst_node, visited_nodes, False))
                         for c in node.connections if c.src_ind == 0 and c.dst_node not in visited_nodes], [])
             function_end = flowchart.find_function_end()
-            yield from self.language_service.render_function(cast(FunctionStart, node), function_end, flowchart, body)
+            yield from self.language_service.render_function(node, function_end, flowchart, body)
         elif isinstance(node, FunctionEnd):
             return
         elif isinstance(node, Connector):
