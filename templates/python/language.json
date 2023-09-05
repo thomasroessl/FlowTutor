@@ -1,5 +1,6 @@
 {
     "lang_id": "python",
     "name": "Python",
-    "has_main_function": false
+    "has_main_function": false,
+    "import": "import {{IMPORT}}"
 }

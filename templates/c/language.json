@@ -1,4 +1,30 @@
 {
     "lang_id": "c",
-    "name": "C"
+    "name": "C",
+    "import": "include <{{IMPORT}}>",
+    "standard_imports": [
+        "assert",
+        "ctype",
+        "errno",
+        "error",
+        "float",
+        "signal",
+        "stdio",
+        "stdlib",
+        "string",
+        "math"
+    ],
+    "types": [
+        "char",
+        "unsigned char",
+        "short",
+        "unsigned short",
+        "int",
+        "unsigned int",
+        "long",
+        "unsigned long",
+        "float",
+        "double",
+        "long double"
+    ]
 }

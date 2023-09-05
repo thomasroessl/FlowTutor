@@ -11,19 +11,7 @@
             "name": "VAR_TYPE",
             "label": "Type",
             "default": "int",
-            "options": [
-                "char",
-                "unsigned char",
-                "short",
-                "unsigned short",
-                "int",
-                "unsigned int",
-                "long",
-                "unsigned long",
-                "float",
-                "double",
-                "long double"
-            ]
+            "options": "{{TYPES}}"
         },
         {
             "name": "IS_POINTER",

@@ -1,18 +1,22 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 import dearpygui.dearpygui as dpg
-from flowtutor.flowchart.flowchart import Flowchart
+from dependency_injector.wiring import Provide, inject
 from flowtutor.flowchart.struct_definition import StructDefinition
 from flowtutor.flowchart.struct_member import StructMember
-from flowtutor.language import Language
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
+    from flowtutor.language_service import LanguageService
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class SectionStructs:
-    def __init__(self, gui: GUI) -> None:
+
+    @inject
+    def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
+        self.language_service = language_service
         with dpg.theme() as self.delete_button_theme:
             with dpg.theme_component(dpg.mvImageButton):
                 dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 3, 3, category=dpg.mvThemeCat_Core)
@@ -125,7 +129,7 @@ class SectionStructs:
                                                              self.gui.redraw_all(True)),
                                    no_spaces=True, default_value=member.name)
 
-                dpg.add_combo(Language.get_data_types(self.gui.flowcharts['main']),
+                dpg.add_combo(self.language_service.get_data_types(self.gui.flowcharts['main']),
                               width=-1,
                               user_data=(i, j),
                               callback=lambda s, data: (self.member(dpg.get_item_user_data(s))
