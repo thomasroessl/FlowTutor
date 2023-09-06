@@ -78,39 +78,46 @@ class ModalService:
                     width=75,
                     callback=lambda: dpg.delete_item('approval_modal'))
 
-    def show_language_selection_modal(self, callback: Callable[[dict[str, Any]], None]) -> None:
-        if dpg.does_item_exist('language_selection_modal'):
+    def show_welcome_modal(self,
+                           language_selection_callback: Callable[[dict[str, Any]], None],
+                           open: Callable[[], None]) -> None:
+        if dpg.does_item_exist('welcome_modal'):
             return
         with dpg.window(
-                label='Select language',
+                label='Welcome',
                 modal=True,
-                tag='language_selection_modal',
+                tag='welcome_modal',
                 autosize=True,
                 no_close=True,
                 no_collapse=True,
                 pos=(250, 100),
-                on_close=lambda: dpg.delete_item('language_selection_modal')):
-            dpg.add_text('Choose the language of this file')
+                on_close=lambda: dpg.delete_item('welcome_modal')):
             with dpg.theme() as lang_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
                     dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
-
-            with dpg.group(horizontal=True):
-                for lang_id, data in self.language_service.get_languages().items():
-                    if dpg.does_item_exist(f'{lang_id}_image'):
-                        lang_button = dpg.add_image_button(
-                            f'{lang_id}_image',
-                            user_data=data,
-                            callback=lambda s: (callback(dpg.get_item_user_data(s)),
-                                                dpg.delete_item('language_selection_modal')))
-                        dpg.bind_item_theme(lang_button, lang_button_theme)
-                    else:
-                        dpg.add_button(
-                            label=data['name'],
-                            width=75,
-                            user_data=data,
-                            callback=lambda s: (callback(dpg.get_item_user_data(s)),
-                                                dpg.delete_item('language_selection_modal')))
+            dpg.add_text('New file:')
+            with dpg.group():
+                with dpg.group(horizontal=True):
+                    for lang_id, data in self.language_service.get_languages().items():
+                        if dpg.does_item_exist(f'{lang_id}_image'):
+                            lang_button = dpg.add_image_button(
+                                f'{lang_id}_image',
+                                user_data=data,
+                                callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
+                                                    dpg.delete_item('welcome_modal')))
+                            dpg.bind_item_theme(lang_button, lang_button_theme)
+                        else:
+                            dpg.add_button(
+                                label=data['name'],
+                                width=75,
+                                user_data=data,
+                                callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
+                                                    dpg.delete_item('welcome_modal')))
+                dpg.add_separator()
+                dpg.add_button(
+                    label='Open file',
+                    width=-1,
+                    callback=lambda: (dpg.delete_item('welcome_modal'), open()))
 
     def show_input_text_modal(self,
                               label: str,

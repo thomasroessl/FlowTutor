@@ -14,7 +14,7 @@
         {
             "name": "STRING_LENGTH",
             "label": "String length",
-            "default": 128,
+            "default": 256,
             "visible": "DECLARE_VAR and TEMPLATE_SPECIFIER == '%s'"
         },
         {
