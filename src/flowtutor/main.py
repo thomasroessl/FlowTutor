@@ -35,6 +35,7 @@ def main() -> None:
                             'flowtutor.debugsession',
                             'flowtutor.gui.debugger',
                             'flowtutor.gui.gui',
+                            'flowtutor.gui.menubar_main',
                             'flowtutor.gui.sidebar_none',
                             'flowtutor.gui.sidebar_functionstart',
                             'flowtutor.gui.sidebar_template',

@@ -2,9 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
 from pickle import dump, load
+from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.gui.themes import create_theme_dark, create_theme_light
+from flowtutor.language_service import LanguageService
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
@@ -12,8 +14,10 @@ if TYPE_CHECKING:
 
 class MenubarMain:
 
-    def __init__(self, gui: GUI) -> None:
+    @inject
+    def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
+        self.language_service = language_service
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
                 dpg.add_menu_item(label='New Program', callback=self.on_new)
@@ -52,7 +56,9 @@ class MenubarMain:
             with open(file_path, 'rb') as file:
                 self.gui.file_path = file_path
                 dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                self.gui.flowcharts = load(file)
+                flowcharts: dict[str, Flowchart] = load(file)
+                self.gui.flowcharts = flowcharts
+                self.language_service.finish_init(self.gui.flowcharts['main'])
                 self.gui.window_types.refresh()
                 self.gui.sidebar_none.refresh()
                 self.gui.redraw_all(True)

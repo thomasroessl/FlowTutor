@@ -312,7 +312,7 @@ class GUI:
     def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
         if not self.language_service.is_initialized:
-            self.modal_service.show_language_selection_modal(self.on_select_language)
+            self.modal_service.show_welcome_modal(self.on_select_language, self.menubar_main.on_open)
             return
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -435,7 +435,7 @@ class GUI:
             dpg.delete_item(item)
         if select_lang:
             self.language_service.is_initialized = False
-            self.modal_service.show_language_selection_modal(self.on_select_language)
+            self.modal_service.show_welcome_modal(self.on_select_language, self.menubar_main.on_open)
 
     def clear_selected_nodes(self) -> None:
         for selected_node in self.selected_nodes:
