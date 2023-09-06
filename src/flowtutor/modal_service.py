@@ -84,7 +84,7 @@ class ModalService:
         if dpg.does_item_exist('welcome_modal'):
             return
         with dpg.window(
-                label='Select language',
+                label='Welcome',
                 modal=True,
                 tag='welcome_modal',
                 autosize=True,
@@ -92,11 +92,10 @@ class ModalService:
                 no_collapse=True,
                 pos=(250, 100),
                 on_close=lambda: dpg.delete_item('welcome_modal')):
-            dpg.add_text('Choose the language of this file')
             with dpg.theme() as lang_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
                     dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
-
+            dpg.add_text('New file:')
             with dpg.group():
                 with dpg.group(horizontal=True):
                     for lang_id, data in self.language_service.get_languages().items():
@@ -116,7 +115,7 @@ class ModalService:
                                                     dpg.delete_item('welcome_modal')))
                 dpg.add_separator()
                 dpg.add_button(
-                    label='Open',
+                    label='Open file',
                     width=-1,
                     callback=lambda: (dpg.delete_item('welcome_modal'), open()))
 
