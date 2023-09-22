@@ -154,9 +154,13 @@ class LanguageService:
             unassigned_lines = body.copy()
             unassigned_lines.reverse()
             assigned_nodes: set[Node] = set()
-            rendered.extend(
-                [(l1, self.assign_node(l1, unassigned_lines, function_start, assigned_nodes))
-                 for l1 in self.render_jinja_lines('function', values)])
+            tmp = [(l1, self.assign_node(l1, unassigned_lines, function_start, assigned_nodes))
+                   for l1 in self.render_jinja_lines('function', values)]
+            unassigned_lines = list(filter(lambda x: not x[1], tmp))
+            if unassigned_lines:
+                tmp[tmp.index(unassigned_lines[-1])] = unassigned_lines[-1][0], function_end
+            rendered.extend(tmp)
+
         except TemplateNotFound:
             return [('', None)]
         return rendered
