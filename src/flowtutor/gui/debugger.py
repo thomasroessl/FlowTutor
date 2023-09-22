@@ -8,7 +8,8 @@ import dearpygui.dearpygui as dpg
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
 
-from flowtutor.debugsession import DebugSession
+from flowtutor.debugger.debugsession import DebugSession
+from flowtutor.debugger.gdbsession import GdbSession
 
 if TYPE_CHECKING:
     from flowtutor.util_service import UtilService
@@ -22,6 +23,7 @@ LOADING_INDICATOR_TAG = 'loading_indicator'
 class Debugger:
 
     debug_session: Optional[DebugSession] = None
+    flowchart: Optional[Flowchart] = None
 
     @inject
     def __init__(self,
@@ -132,7 +134,8 @@ class Debugger:
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
 
     def refresh(self, flowchart: Flowchart) -> None:
-        if self.language_service.is_compiled(flowchart):
+        self.flowchart = flowchart
+        if self.language_service.is_compiled(self.flowchart):
             dpg.show_item(self.build_button)
         else:
             dpg.hide_item(self.build_button)
@@ -250,7 +253,10 @@ class Debugger:
     def on_debug_run(self) -> None:
         if not self.debug_session:
             # Start debugger
-            self.debug_session = DebugSession(self)
+            if self.flowchart and self.flowchart.lang_data['debugger'] == 'pdb':
+                return
+            else:
+                self.debug_session = GdbSession(self)
             self.debug_session.run()
         else:
             self.debug_session.cont()

@@ -32,7 +32,7 @@ def main() -> None:
     container.init_resources()
     container.wire(modules=[__name__,
                             'flowtutor.codegenerator',
-                            'flowtutor.debugsession',
+                            'flowtutor.debugger.debugsession',
                             'flowtutor.gui.debugger',
                             'flowtutor.gui.gui',
                             'flowtutor.gui.menubar_main',

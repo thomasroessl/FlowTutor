@@ -1,24 +1,23 @@
 from __future__ import annotations
-from blinker import signal
-from typing import TYPE_CHECKING, Optional, cast
-from sys import stderr
 import re
 import subprocess
 import threading
+from sys import stderr
+from typing import Optional
 from pygdbmi import gdbmiparser
-from dependency_injector.wiring import Provide, inject
+from blinker import signal
+from typing import TYPE_CHECKING, cast
+
+from flowtutor.debugger.debugsession import DebugSession
 
 if TYPE_CHECKING:
     from flowtutor.gui.debugger import Debugger
-    from flowtutor.util_service import UtilService
 
 
-class DebugSession:
+class GdbSession(DebugSession):
 
-    @inject
-    def __init__(self, debugger: Debugger, utils_service: UtilService = Provide['utils_service']):
-        self.debugger = debugger
-        self.utils = utils_service
+    def __init__(self, debugger: Debugger):
+        super().__init__(debugger)
         self._gdb_process = None
         try:
             self.gdb_args = [self.utils.get_gdb_exe(),
@@ -60,7 +59,7 @@ class DebugSession:
         if not self.process:
             return
 
-        def t(self: DebugSession) -> None:
+        def t(self: GdbSession) -> None:
             if not self.process or not self.process.stdin or not self.process.stdout:
                 return
             print('START EXECUTE:', command, file=stderr)

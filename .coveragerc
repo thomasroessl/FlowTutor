@@ -12,4 +12,4 @@ omit =
     */flowtutor/main.py 
     */flowtutor/gui/*
     */flowtutor/modal_service.py
-    */flowtutor/debugsession.py
+    */flowtutor/debugger/*
