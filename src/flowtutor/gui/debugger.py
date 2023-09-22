@@ -317,7 +317,7 @@ class Debugger:
         self.debug_session.stop()
 
     def on_program_finished(self, _: Any, **kw: Any) -> None:
-        sleep(1.0)
+        sleep(0.5)
         self.log_info('Program ended.')
         self.debug_session = None
 

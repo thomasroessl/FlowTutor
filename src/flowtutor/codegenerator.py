@@ -37,7 +37,6 @@ class CodeGenerator:
 
     def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
         source_code, break_points = self.generate_code(flowcharts)
-        print(break_points)
         if break_points != self.prev_break_points or not path.exists(self.break_point_path):
             self.prev_break_points = break_points
             with open(self.break_point_path, 'w') as file:

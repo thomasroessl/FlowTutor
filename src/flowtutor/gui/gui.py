@@ -248,14 +248,18 @@ class GUI:
         line = kw['line']
         if self.debugger:
             self.debugger.enable_all()
+        node_hit = False
         for func in self.flowcharts.values():
             for node in func:
                 node.has_debug_cursor = line in node.lines
+                node_hit = node_hit or node.has_debug_cursor
                 # Switches to the flowcharts, where the break point is hit
                 if node.has_debug_cursor:
                     for tab in dpg.get_item_children(self.function_tab_bar)[1]:
                         if dpg.get_item_user_data(tab) == func.root.name:
                             dpg.set_value(self.function_tab_bar, tab)
+        if not node_hit and self.debugger:
+            self.debugger.on_debug_step_over()
         self.redraw_all(True)
 
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
@@ -276,6 +280,8 @@ class GUI:
                 node.has_debug_cursor = False
         if self.debugger:
             self.debugger.enable_build_and_run()
+        for row_id in dpg.get_item_children(self.variable_table_id)[1]:
+            dpg.delete_item(row_id)
         self.redraw_all(True)
 
     def on_select_node(self, node: Optional[Node]) -> None:
