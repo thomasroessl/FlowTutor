@@ -37,6 +37,7 @@ class CodeGenerator:
 
     def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
         source_code, break_points = self.generate_code(flowcharts)
+        print(break_points)
         if break_points != self.prev_break_points or not path.exists(self.break_point_path):
             self.prev_break_points = break_points
             with open(self.break_point_path, 'w') as file:
@@ -44,9 +45,7 @@ class CodeGenerator:
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
             with open(self.utils.get_c_source_path(), 'w') as file:
-                # Add a function to the source code, that turns off stdout buffering
-                # Otherwise output will not be displayed until after the program has finished.
-                file.write(source_code + '\nvoid fix_debug(void) { setvbuf(stdout, NULL, _IONBF, 0); }')
+                file.write(source_code)
             return source_code
         else:
             return None
@@ -105,9 +104,10 @@ class CodeGenerator:
                 n1.lines.append(i + 1)
 
         source_code = '\n'.join(code_lines)
+
         break_point_definitions = '\n'.join(
-            map(lambda e: f'break flowtutor.c:{e[0] + 2}',
-                filter(lambda e: e[1], enumerate(map(lambda n: n and n.break_point, nodes)))))
+            map(lambda n: f'break flowtutor.c:{n.lines[0]}' if n else '',
+                filter(lambda n: n and n.break_point, nodes)))
 
         return (source_code, break_point_definitions)
 

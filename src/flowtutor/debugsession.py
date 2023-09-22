@@ -83,7 +83,7 @@ class DebugSession:
                             self.cont()
                         else:
                             self.get_variable_assignments()
-                            signal('hit-line').send(self, line=int(frame['line']) - 1)
+                            signal('hit-line').send(self, line=int(frame['line']))
                     elif reason == 'signal-received':
                         meaning = record['payload']['signal-meaning']
                         signal('program-error').send(self, error=meaning)
