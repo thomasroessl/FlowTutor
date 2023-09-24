@@ -181,34 +181,50 @@ class GUI:
         dpg.show_viewport()
         dpg.set_primary_window(self.main_window, True)
 
-        with dpg.child_window(parent=self.main_group, border=False, width=-1):
-            with dpg.child_window(border=False, height=-254):
-                with dpg.group(horizontal=True):
-                    with dpg.group(width=-410):
-                        with dpg.tab_bar(
-                                reorderable=True,
-                                callback=self.on_selected_tab_changed) as self.function_tab_bar:
-                            self.refresh_function_tabs()
-                        with dpg.child_window(horizontal_scrollbar=True) as self.flowchart_container:
+        with dpg.child_window(parent=self.main_group,
+                              border=False,
+                              height=-1,
+                              width=-1,
+                              no_scrollbar=True,
+                              no_scroll_with_mouse=True):
+            with dpg.child_window(border=False, height=-255, no_scrollbar=True, no_scroll_with_mouse=True):
+                with dpg.item_handler_registry() as window_handler:
+                    dpg.add_item_resize_handler(callback=self.on_window_resize)
+                with dpg.table(header_row=False, resizable=True):
+                    dpg.add_table_column(init_width_or_weight=2)
+                    dpg.add_table_column(init_width_or_weight=1)
 
-                            # Remove the padding of the flowchart container
-                            with dpg.theme() as item_theme:
-                                with dpg.theme_component(dpg.mvChildWindow):
-                                    dpg.add_theme_style(dpg.mvStyleVar_WindowPadding, 0.0, category=dpg.mvThemeCat_Core)
-                            dpg.bind_item_theme(self.flowchart_container, item_theme)
+                    with dpg.table_row():
+                        with dpg.table_cell():
+                            with dpg.tab_bar(
+                                    reorderable=True,
+                                    callback=self.on_selected_tab_changed) as self.function_tab_bar:
+                                self.refresh_function_tabs()
+                            with dpg.child_window(horizontal_scrollbar=True) as self.flowchart_container:
+                                # Remove the padding of the flowchart container
+                                with dpg.theme() as item_theme:
+                                    with dpg.theme_component(dpg.mvChildWindow):
+                                        dpg.add_theme_style(dpg.mvStyleVar_WindowPadding,
+                                                            0.0,
+                                                            category=dpg.mvThemeCat_Core)
+                                dpg.bind_item_theme(self.flowchart_container, item_theme)
+                                dpg.add_drawlist(tag=FLOWCHART_TAG,
+                                                 width=self.width,
+                                                 height=self.height)
+                                with dpg.handler_registry():
+                                    dpg.add_mouse_move_handler(callback=self.on_hover)
+                                    dpg.add_mouse_drag_handler(callback=self.on_drag)
+                                    dpg.add_mouse_click_handler(callback=self.on_mouse_click)
+                                    dpg.add_mouse_release_handler(callback=self.on_mouse_release)
+                                    dpg.add_key_press_handler(
+                                        dpg.mvKey_Delete, callback=self.on_delete_press)
+                        with dpg.table_cell():
+                            self.source_code_input = dpg.add_input_text(multiline=True,
+                                                                        height=-1,
+                                                                        width=-1,
+                                                                        readonly=True)
+                            dpg.bind_item_handler_registry(self.source_code_input, window_handler)
 
-                            dpg.add_drawlist(tag=FLOWCHART_TAG,
-                                             width=self.width,
-                                             height=self.height)
-                            with dpg.handler_registry():
-                                dpg.add_mouse_move_handler(callback=self.on_hover)
-                                dpg.add_mouse_drag_handler(callback=self.on_drag)
-                                dpg.add_mouse_click_handler(callback=self.on_mouse_click)
-                                dpg.add_mouse_release_handler(callback=self.on_mouse_release)
-                                dpg.add_key_press_handler(
-                                    dpg.mvKey_Delete, callback=self.on_delete_press)
-                    with dpg.group(width=400):
-                        self.source_code_input = dpg.add_input_text(multiline=True, height=-1, readonly=True)
             with dpg.group(horizontal=True):
                 with dpg.child_window(width=-410, border=False, height=250) as debugger_window:
                     self.debugger = Debugger(debugger_window)
