@@ -56,8 +56,8 @@ class ModalService:
                                        width=-1,
                                        readonly=True)
                 with dpg.table_row():
-                    dpg.add_text('Source File')
-                    dpg.add_input_text(default_value=self.utils_service.get_c_source_path(), width=-1, readonly=True)
+                    dpg.add_text('Working directory')
+                    dpg.add_input_text(default_value=self.utils_service.get_temp_dir(), width=-1, readonly=True)
 
     def show_approval_modal(self, label: str, message: str, callback: Callable[[], None]) -> None:
         with dpg.window(

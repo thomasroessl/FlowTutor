@@ -38,6 +38,10 @@ class UtilService:
         '''Gets the root directory of the application.'''
         return self.root
 
+    def get_temp_dir(self) -> pathlib.Path:
+        '''Gets the temp directory where output files are stored.'''
+        return pathlib.Path(self.temp_dir)
+
     def get_gcc_exe(self) -> str:
         '''Gets the path to the installed gcc, or the packaged version of mingw on Windows.'''
         if exe := which('gcc-13'):
@@ -83,9 +87,9 @@ class UtilService:
             gdb_commands_file.write(gdb_commands)
         return gdb_commands_path
 
-    def get_c_source_path(self) -> str:
-        '''Gets the path to the generated C-source code of the flowchart.'''
-        return path.join(self.temp_dir, 'flowtutor.c')
+    def get_source_path(self, file_ext: str) -> str:
+        '''Gets the path to the generated source code of the flowchart.'''
+        return path.join(self.temp_dir, f'flowtutor{file_ext}')
 
     def get_break_points_path(self) -> str:
         '''Gets the path to the break-point file for gdb.'''
@@ -116,7 +120,7 @@ class UtilService:
                     data = os.read(fd, 1)
                     if len(data) > 0:
                         try:
-                            signal('recieve_output').send(self, output=data.decode('utf-8'))
+                            signal('recieve-output').send(self, output=data.decode('utf-8'))
                         except UnicodeDecodeError:
                             pass
 

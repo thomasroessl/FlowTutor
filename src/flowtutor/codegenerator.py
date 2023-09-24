@@ -30,10 +30,6 @@ class CodeGenerator:
             remove(self.break_point_path)
         except FileNotFoundError:
             pass
-        try:
-            remove(self.utils.get_c_source_path())
-        except FileNotFoundError:
-            pass
 
     def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
         source_code, break_points = self.generate_code(flowcharts)
@@ -43,7 +39,7 @@ class CodeGenerator:
                 file.write(break_points)
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
-            with open(self.utils.get_c_source_path(), 'w') as file:
+            with open(self.utils.get_source_path(flowcharts[0].lang_data['file_ext']), 'w') as file:
                 file.write(source_code)
             return source_code
         else:

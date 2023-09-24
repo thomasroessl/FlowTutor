@@ -3,6 +3,7 @@
     "name": "Python",
     "is_compiled": false,
     "debugger": "pdb",
+    "file_ext": ".py",
     "has_main_function": false,
     "import": "import {{IMPORT}}",
     "comment_specifier": "#"

@@ -3,6 +3,7 @@
     "name": "C",
     "is_compiled": true,
     "debugger": "gdb",
+    "file_ext": ".c",
     "import": "#include <{{IMPORT}}>",
     "standard_imports": [
         "assert.h",
