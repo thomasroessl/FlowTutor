@@ -9,6 +9,7 @@ from blinker import signal
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.debugger.debugsession import DebugSession
+from flowtutor.debugger.ftdbsession import FtdbSession
 from flowtutor.debugger.gdbsession import GdbSession
 
 if TYPE_CHECKING:
@@ -44,7 +45,7 @@ class Debugger:
 
         signal('program-finished').connect(self.on_program_finished)
         signal('program-kiled').connect(self.on_program_killed)
-        signal('recieve_output').connect(self.on_recieve_output)
+        signal('recieve-output').connect(self.on_recieve_output)
         signal('program-error').connect(self.on_program_error)
 
         with dpg.group(horizontal=True, parent=self.window_id) as self.controls_group:
@@ -149,9 +150,14 @@ class Debugger:
         dpg.enable_item(self.auto_scroll_cb)
         dpg.enable_item(self.clear_button)
 
-    def enable_build_only(self) -> None:
+    def enable_build_only(self, flowchart: Flowchart) -> None:
+        self.flowchart = flowchart
         self.disable_all()
-        dpg.enable_item(self.build_button)
+        if self.language_service.is_compiled(self.flowchart):
+            dpg.enable_item(self.build_button)
+        else:
+            dpg.enable_item(self.run_button)
+            dpg.hide_item(self.build_button)
 
     def enable_build_and_run(self) -> None:
         self.disable_all()
@@ -254,7 +260,7 @@ class Debugger:
         if not self.debug_session:
             # Start debugger
             if self.flowchart and self.flowchart.lang_data['debugger'] == 'pdb':
-                return
+                self.debug_session = FtdbSession(self)
             else:
                 self.debug_session = GdbSession(self)
             self.debug_session.run()
@@ -277,7 +283,7 @@ class Debugger:
         # Build the executable
         result = subprocess.run([
             gcc_exe,
-            self.utils.get_c_source_path(),
+            self.utils.get_source_path('flowtutor.c'),
             '-g',
             '-o',
             self.utils.get_exe_path(),

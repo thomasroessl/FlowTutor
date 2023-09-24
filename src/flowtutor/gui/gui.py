@@ -480,7 +480,7 @@ class GUI:
             if source_code:
                 dpg.configure_item(self.source_code_input, default_value=source_code)
                 if self.debugger:
-                    self.debugger.enable_build_only()
+                    self.debugger.enable_build_only(self.selected_flowchart)
         else:
             if self.debugger:
                 self.debugger.disable_all()

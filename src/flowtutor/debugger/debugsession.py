@@ -35,11 +35,3 @@ class DebugSession(ABC):
     @abstractmethod
     def next(self) -> None:
         pass
-
-    @abstractmethod
-    def refresh_break_points(self) -> None:
-        pass
-
-    @abstractmethod
-    def get_variable_assignments(self) -> None:
-        pass
