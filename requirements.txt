@@ -1,5 +1,5 @@
 blinker==1.6.2
-dearpygui==1.9.1
+dearpygui==1.10.0
 Shapely==2.0.1
 appdirs==1.4.4
 dependency-injector==4.41.0
