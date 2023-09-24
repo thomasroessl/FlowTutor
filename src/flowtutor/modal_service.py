@@ -136,8 +136,9 @@ class ModalService:
                             width=-1,
                             callback=lambda: (dpg.delete_item('welcome_modal'), open()))
                         dpg.add_text('Recents:')
-                        recents = self.settings_service.get_setting('recents').split(',')
-                        self.settings_service.set_setting('recents', ','.join(filter(lambda r: exists(r), recents)))
+                        recents = list(
+                            filter(lambda r: exists(r), self.settings_service.get_setting('recents').split(',')))
+                        self.settings_service.set_setting('recents', ','.join(recents))
                         for recent in filter(lambda r: r, recents):
                             dpg.add_button(
                                 label=basename(recent),
