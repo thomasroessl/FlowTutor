@@ -1,7 +1,6 @@
 from __future__ import annotations
 import sys
 from os import path
-from re import match
 from blinker import signal
 from threading import Thread
 from typing import TYPE_CHECKING
@@ -11,6 +10,7 @@ from flowtutor.debugger.ftdb import FtDb
 
 if TYPE_CHECKING:
     from flowtutor.gui.debugger import Debugger
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class FtdbSession(DebugSession):
@@ -19,11 +19,11 @@ class FtdbSession(DebugSession):
         self.ftdb = FtDb()
         self.source_path = path.join(self.utils.get_temp_dir(), 'flowtutor.py')
 
-    def run(self) -> None:
+    def run(self, flowchart: Flowchart) -> None:
         def t(self: FtdbSession) -> None:
             source = open(self.source_path).read()
             compiled_code = compile(source, self.source_path, 'exec')
-            self.refresh_break_points(self.source_path)
+            self.refresh_break_points(flowchart)
             self.ftdb.run(compiled_code)
             self.ftdb.read_output()
             signal('program-finished').send(self)
@@ -31,8 +31,8 @@ class FtdbSession(DebugSession):
             sys.stderr = sys.__stderr__
         Thread(target=t, args=[self]).start()
 
-    def cont(self) -> None:
-        self.refresh_break_points(self.source_path)
+    def cont(self, flowchart: Flowchart) -> None:
+        self.refresh_break_points(flowchart)
         self.ftdb.read_output()
         self.ftdb.set_continue()
         self.ftdb.interact()
@@ -41,18 +41,16 @@ class FtdbSession(DebugSession):
         self.ftdb.set_quit()
         self.ftdb.interact()
 
-    def step(self) -> None:
+    def step(self, flowchart: Flowchart) -> None:
         self.ftdb.set_step()
         self.ftdb.interact()
 
-    def next(self) -> None:
+    def next(self, flowchart: Flowchart) -> None:
         if self.ftdb.current_frame:
             self.ftdb.set_next(self.ftdb.current_frame)
         self.ftdb.interact()
 
-    def refresh_break_points(self, source_path: str) -> None:
+    def refresh_break_points(self, flowchart: Flowchart) -> None:
         self.ftdb.clear_all_breaks()
-        with open(self.utils.get_break_points_path()) as break_points_file:
-            for m in map(lambda l: match(r'break flowtutor.c:(\d+)', l), break_points_file.readlines()):
-                if m:
-                    print(self.ftdb.set_break(source_path, int(m.groups()[0])))
+        for b in flowchart.break_points:
+            self.ftdb.set_break(self.source_path, b)

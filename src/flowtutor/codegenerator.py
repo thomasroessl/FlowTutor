@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Generator, Optional
-from os import remove, path
+from typing import TYPE_CHECKING, Generator, Optional, cast
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.connector import Connector
@@ -24,19 +23,11 @@ class CodeGenerator:
         self.prev_source_code = ''
         self.prev_break_points = ''
         self.utils = utils_service
-        self.break_point_path = self.utils.get_break_points_path()
         self.language_service = language_service
-        try:
-            remove(self.break_point_path)
-        except FileNotFoundError:
-            pass
 
-    def write_source_files(self, flowcharts: list[Flowchart]) -> Optional[str]:
+    def write_source_file(self, flowcharts: list[Flowchart]) -> Optional[str]:
         source_code, break_points = self.generate_code(flowcharts)
-        if break_points != self.prev_break_points or not path.exists(self.break_point_path):
-            self.prev_break_points = break_points
-            with open(self.break_point_path, 'w') as file:
-                file.write(break_points)
+        flowcharts[0].break_points = break_points
         if source_code != self.prev_source_code:
             self.prev_source_code = source_code
             with open(self.utils.get_source_path(flowcharts[0].lang_data['file_ext']), 'w') as file:
@@ -45,7 +36,7 @@ class CodeGenerator:
         else:
             return None
 
-    def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, str]:
+    def generate_code(self, flowcharts: list[Flowchart]) -> tuple[str, list[int]]:
         main_function = flowcharts[0]
         functions = flowcharts[1:]
 
@@ -100,11 +91,11 @@ class CodeGenerator:
 
         source_code = '\n'.join(code_lines)
 
-        break_point_definitions = '\n'.join(
-            map(lambda n: f'break flowtutor.c:{n.lines[0]}' if n else '',
+        break_points = list(
+            map(lambda n: cast(Node, n).lines[0],
                 filter(lambda n: n and n.break_point, nodes)))
 
-        return (source_code, break_point_definitions)
+        return (source_code, break_points)
 
     def _generate_code(self,
                        flowchart: Flowchart,

@@ -28,6 +28,7 @@ class Flowchart:
         self._struct_definitions: list[StructDefinition] = []
         self._preprocessor_custom: str = ''
         self.lang_data = lang_data
+        self._break_points: list[int] = []
 
     @property
     def root(self) -> FunctionStart:
@@ -64,6 +65,14 @@ class Flowchart:
     @lang_data.setter
     def lang_data(self, lang_data: dict[str, Any]) -> None:
         self._lang_data = lang_data
+
+    @property
+    def break_points(self) -> list[int]:
+        return self._break_points
+
+    @break_points.setter
+    def break_points(self, break_points: list[int]) -> None:
+        self._break_points = break_points
 
     def __iter__(self) -> Generator[Node, None, None]:
         return self.deduplicate(self.get_all_nodes(self.root, False))

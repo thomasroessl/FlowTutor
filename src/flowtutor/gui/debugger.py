@@ -257,15 +257,16 @@ class Debugger:
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
     def on_debug_run(self) -> None:
-        if not self.debug_session:
-            # Start debugger
-            if self.flowchart and self.flowchart.lang_data['debugger'] == 'pdb':
-                self.debug_session = FtdbSession(self)
+        if self.flowchart:
+            if not self.debug_session:
+                # Start debugger
+                if self.flowchart.lang_data['debugger'] == 'pdb':
+                    self.debug_session = FtdbSession(self)
+                else:
+                    self.debug_session = GdbSession(self)
+                self.debug_session.run(self.flowchart)
             else:
-                self.debug_session = GdbSession(self)
-            self.debug_session.run()
-        else:
-            self.debug_session.cont()
+                self.debug_session.cont(self.flowchart)
 
     def on_build(self) -> None:
         self.disable_all()
@@ -283,7 +284,7 @@ class Debugger:
         # Build the executable
         result = run([
             gcc_exe,
-            self.utils.get_source_path('flowtutor.c'),
+            self.utils.get_source_path('.c'),
             '-g',
             '-o',
             self.utils.get_exe_path(),
@@ -314,14 +315,14 @@ class Debugger:
         self.load_end()
 
     def on_debug_step_over(self) -> None:
-        if not self.debug_session:
+        if not self.debug_session or not self.flowchart:
             return
-        self.debug_session.next()
+        self.debug_session.next(self.flowchart)
 
     def on_debug_step_into(self) -> None:
-        if not self.debug_session:
+        if not self.debug_session or not self.flowchart:
             return
-        self.debug_session.step()
+        self.debug_session.step(self.flowchart)
 
     def on_debug_stop(self) -> None:
         if not self.debug_session:

@@ -2,11 +2,11 @@ from __future__ import annotations
 from re import search
 from typing import TYPE_CHECKING, Any, Optional, Type, Union, cast
 from os.path import join, dirname
-import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
 from itertools import repeat, chain
+import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.flowchart.functionstart import FunctionStart
@@ -476,7 +476,7 @@ class GUI:
             node.redraw(self.selected_flowchart, self.selected_nodes)
         self.redraw_add_button()
         if self.selected_flowchart.is_initialized():
-            source_code = self.code_generator.write_source_files(self.get_ordered_flowcharts())
+            source_code = self.code_generator.write_source_file(self.get_ordered_flowcharts())
             if source_code:
                 dpg.configure_item(self.source_code_input, default_value=source_code)
                 if self.debugger:

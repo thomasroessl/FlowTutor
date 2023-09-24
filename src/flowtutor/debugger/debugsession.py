@@ -4,9 +4,11 @@ from typing import TYPE_CHECKING
 
 from dependency_injector.wiring import Provide, inject
 
+
 if TYPE_CHECKING:
     from flowtutor.gui.debugger import Debugger
     from flowtutor.util_service import UtilService
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class DebugSession(ABC):
@@ -17,11 +19,11 @@ class DebugSession(ABC):
         self.utils = utils_service
 
     @abstractmethod
-    def run(self) -> None:
+    def run(self, flowchart: Flowchart) -> None:
         pass
 
     @abstractmethod
-    def cont(self) -> None:
+    def cont(self, flowchart: Flowchart) -> None:
         pass
 
     @abstractmethod
@@ -29,9 +31,9 @@ class DebugSession(ABC):
         pass
 
     @abstractmethod
-    def step(self) -> None:
+    def step(self, flowchart: Flowchart) -> None:
         pass
 
     @abstractmethod
-    def next(self) -> None:
+    def next(self, flowchart: Flowchart) -> None:
         pass

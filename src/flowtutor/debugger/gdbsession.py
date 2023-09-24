@@ -1,5 +1,6 @@
 from __future__ import annotations
 from re import search
+from os import remove
 from subprocess import PIPE, STDOUT, Popen
 from threading import Thread
 from sys import stderr
@@ -12,6 +13,7 @@ from flowtutor.debugger.debugsession import DebugSession
 
 if TYPE_CHECKING:
     from flowtutor.gui.debugger import Debugger
+    from flowtutor.flowchart.flowchart import Flowchart
 
 
 class GdbSession(DebugSession):
@@ -41,6 +43,8 @@ class GdbSession(DebugSession):
         if not self.process or not self.process.stdout or not self.process.stdin:
             return
 
+        self.break_point_path = self.utils.get_break_points_path()
+
         for line in self.process.stdout:
             print('INIT', line, end='', file=stderr)
             if (search(r'\(gdb\)\s*$', line)):
@@ -55,7 +59,7 @@ class GdbSession(DebugSession):
     def process(self) -> Optional[Popen[str]]:
         return self._gdb_process
 
-    def execute(self, command: str) -> None:
+    def execute(self, command: str, flowchart: Flowchart) -> None:
         if not self.process:
             return
 
@@ -79,7 +83,7 @@ class GdbSession(DebugSession):
                     elif reason == 'breakpoint-hit' or reason == 'end-stepping-range':
                         frame = record['payload']['frame']
                         if frame['func'] == '??':
-                            self.cont()
+                            self.cont(flowchart)
                         else:
                             self.get_variable_assignments()
                             signal('hit-line').send(self, line=int(frame['line']))
@@ -94,12 +98,13 @@ class GdbSession(DebugSession):
             print('END EXECUTE:', command, file=stderr)
         Thread(target=t, args=[self]).start()
 
-    def run(self) -> None:
-        self.execute('-exec-run\n')
+    def run(self, flowchart: Flowchart) -> None:
+        self.refresh_break_points(flowchart)
+        self.execute('-exec-run\n', flowchart)
 
-    def cont(self) -> None:
-        self.refresh_break_points()
-        self.execute('-exec-continue')
+    def cont(self, flowchart: Flowchart) -> None:
+        self.refresh_break_points(flowchart)
+        self.execute('-exec-continue', flowchart)
 
     def stop(self) -> None:
         if not self.process or not self.process.stdin:
@@ -107,15 +112,24 @@ class GdbSession(DebugSession):
         self.process.stdin.write('kill\n')
         signal('program-finished').send(self)
 
-    def step(self) -> None:
-        self.execute('-exec-step')
+    def step(self, flowchart: Flowchart) -> None:
+        self.execute('-exec-step', flowchart)
 
-    def next(self) -> None:
-        self.execute('-exec-next')
+    def next(self, flowchart: Flowchart) -> None:
+        self.execute('-exec-next', flowchart)
 
-    def refresh_break_points(self) -> None:
+    def refresh_break_points(self, flowchart: Flowchart) -> None:
         if not self.process or not self.process.stdin:
             return
+        try:
+            remove(self.break_point_path)
+        except FileNotFoundError:
+            pass
+        break_point_definitions = '\n'.join(
+            map(lambda l: f'break flowtutor.c:{l}', flowchart.break_points))
+
+        with open(self.break_point_path, 'w') as file:
+            file.write(break_point_definitions)
         self.process.stdin.write('-break-delete\n')
         self.process.stdin.write(f'source {self.utils.get_break_points_path()}\n')
 
