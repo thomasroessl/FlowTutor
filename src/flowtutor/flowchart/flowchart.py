@@ -8,7 +8,6 @@ from flowtutor.flowchart.functionstart import FunctionStart
 from flowtutor.flowchart.functionend import FunctionEnd
 from flowtutor.flowchart.struct_definition import StructDefinition
 from flowtutor.flowchart.type_definition import TypeDefinition
-
 from flowtutor.flowchart.template import Template
 
 if TYPE_CHECKING:

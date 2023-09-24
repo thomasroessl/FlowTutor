@@ -1,7 +1,7 @@
 from __future__ import annotations
-import re
-import subprocess
-import threading
+from re import search
+from subprocess import PIPE, STDOUT, Popen
+from threading import Thread
 from sys import stderr
 from typing import Optional
 from pygdbmi import gdbmiparser
@@ -31,19 +31,19 @@ class GdbSession(DebugSession):
             return
 
         print('GDB ARGS', self.gdb_args, file=stderr)
-        self._gdb_process = subprocess.Popen(self.gdb_args,
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.STDOUT,
-                                             stdin=subprocess.PIPE,
-                                             text=True,
-                                             bufsize=1)
+        self._gdb_process = Popen(self.gdb_args,
+                                  stdout=PIPE,
+                                  stderr=STDOUT,
+                                  stdin=PIPE,
+                                  text=True,
+                                  bufsize=1)
 
         if not self.process or not self.process.stdout or not self.process.stdin:
             return
 
         for line in self.process.stdout:
             print('INIT', line, end='', file=stderr)
-            if (re.search(r'\(gdb\)\s*$', line)):
+            if (search(r'\(gdb\)\s*$', line)):
                 break
 
     def __del__(self) -> None:
@@ -52,7 +52,7 @@ class GdbSession(DebugSession):
         self._gdb_process.kill()
 
     @property
-    def process(self) -> Optional[subprocess.Popen[str]]:
+    def process(self) -> Optional[Popen[str]]:
         return self._gdb_process
 
     def execute(self, command: str) -> None:
@@ -92,7 +92,7 @@ class GdbSession(DebugSession):
                     signal('program-finished').send(self)
 
             print('END EXECUTE:', command, file=stderr)
-        threading.Thread(target=t, args=[self]).start()
+        Thread(target=t, args=[self]).start()
 
     def run(self) -> None:
         self.execute('-exec-run\n')
@@ -154,7 +154,7 @@ class GdbSession(DebugSession):
                     break
                 elif record['type'] == 'console':
                     payload = str(record['payload'])
-                    match = re.search(r'^\$1 = (.*)', payload.strip())
+                    match = search(r'^\$1 = (.*)', payload.strip())
                     if match:
                         variables[var_name] = str(match.group(1))
 

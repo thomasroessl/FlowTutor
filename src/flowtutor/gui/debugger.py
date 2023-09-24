@@ -1,7 +1,7 @@
 from __future__ import annotations
-import re
-import subprocess
-import sys
+from re import sub
+from subprocess import run
+from sys import stderr
 from time import sleep
 from typing import TYPE_CHECKING, Any, Optional, Union
 import dearpygui.dearpygui as dpg
@@ -278,10 +278,10 @@ class Debugger:
             self.load_end()
             return
 
-        print(gcc_exe, file=sys.stderr)
+        print(gcc_exe, file=stderr)
 
         # Build the executable
-        result = subprocess.run([
+        result = run([
             gcc_exe,
             self.utils.get_source_path('flowtutor.c'),
             '-g',
@@ -295,7 +295,7 @@ class Debugger:
 
         log = self.log_info
         for line in output_lines:
-            output_line = re.sub(r'.*?:(\d+:\d+:)?', '', line, count=1)
+            output_line = sub(r'.*?:(\d+:\d+:)?', '', line, count=1)
             stripped = output_line.lstrip()
             if stripped.startswith('warning'):
                 log = self.log_warning

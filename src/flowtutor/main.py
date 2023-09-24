@@ -1,8 +1,8 @@
 from __future__ import annotations
-import platform
+from dependency_injector.wiring import Provide, inject
+from platform import system
 from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
-from dependency_injector.wiring import Provide, inject
 
 from flowtutor.containers import Container
 from flowtutor.gui.gui import GUI
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 @inject
 def start(utils_service: UtilService = Provide['utils_service']) -> None:
-    if platform.system() != 'Windows':
+    if system() != 'Windows':
         utils_service.open_tty()
     gui = GUI(2000, 2000)
     # Calls the redraw function after the first frame is rendered
@@ -21,7 +21,7 @@ def start(utils_service: UtilService = Provide['utils_service']) -> None:
         dpg.render_dearpygui_frame()
         gui.redraw_all(True)
     dpg.start_dearpygui()
-    if platform.system() != 'Windows':
+    if system() != 'Windows':
         utils_service.stop_tty()
     dpg.destroy_context()
     utils_service.cleanup_temp()

@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
+
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.template import Template
-
 from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:

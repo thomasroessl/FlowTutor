@@ -1,9 +1,12 @@
-import sys
-import platform
-import pathlib
-import os
-import select
-import threading
+from pathlib import Path
+from platform import system
+from select import select
+from sys import modules, stdin
+from threading import Event, Thread
+from blinker import signal
+from shutil import which, rmtree
+from tempfile import mkdtemp
+from os import isatty, path, read, ttyname, write
 import dearpygui.dearpygui as dpg
 
 try:
@@ -12,35 +15,30 @@ try:
 except ModuleNotFoundError:
     pass
 
-from blinker import signal
-from shutil import which, rmtree
-from tempfile import mkdtemp
-from os import path
-
 
 class UtilService:
 
     def __init__(self) -> None:
-        self.root = pathlib.Path(sys.modules['__main__'].__file__ or '').parent.resolve()
+        self.root = Path(modules['__main__'].__file__ or '').parent.resolve()
         self.temp_dir = mkdtemp(None, 'flowtutor-')
         print(self.temp_dir)
         self.tty_name = ''
         self.tty_fd = 0
-        self.is_stopped = threading.Event()
-        self.is_windows = platform.system() == 'Windows'
-        self.is_mac_os = platform.system() == 'Darwin'
+        self.is_stopped = Event()
+        self.is_windows = system() == 'Windows'
+        self.is_mac_os = system() == 'Darwin'
 
     def cleanup_temp(self) -> None:
         '''Deletes the temporary working directory.'''
         rmtree(self.temp_dir)
 
-    def get_root_dir(self) -> pathlib.Path:
+    def get_root_dir(self) -> Path:
         '''Gets the root directory of the application.'''
         return self.root
 
-    def get_temp_dir(self) -> pathlib.Path:
+    def get_temp_dir(self) -> Path:
         '''Gets the temp directory where output files are stored.'''
-        return pathlib.Path(self.temp_dir)
+        return Path(self.temp_dir)
 
     def get_gcc_exe(self) -> str:
         '''Gets the path to the installed gcc, or the packaged version of mingw on Windows.'''
@@ -97,7 +95,7 @@ class UtilService:
 
     def get_templates_path(self, lang_id: str = '') -> str:
         '''Gets the path to the directory containing templates for predefined nodes.'''
-        if (sys.modules['__main__'].__file__ or '').endswith('.pyw'):
+        if (modules['__main__'].__file__ or '').endswith('.pyw'):
             return path.join(self.root, 'templates', lang_id)
         else:
             return path.abspath(path.join(self.root, '..', '..', 'templates', lang_id))
@@ -105,36 +103,36 @@ class UtilService:
     def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''
 
-        if (os.isatty(sys.stdin.fileno())):
-            attrs = termios.tcgetattr(sys.stdin)
+        if (isatty(stdin.fileno())):
+            attrs = termios.tcgetattr(stdin)
             attrs[3] = attrs[3] & ~(termios.ISIG | termios.ICANON | termios.ECHO)
-            termios.tcsetattr(sys.stdin, termios.TCSANOW, attrs)
+            termios.tcsetattr(stdin, termios.TCSANOW, attrs)
 
         self.tty_fd, slave_fd = pty.openpty()
-        self.tty_name = os.ttyname(slave_fd)
+        self.tty_name = ttyname(slave_fd)
 
         def output(fd: int) -> None:
             while not self.is_stopped.is_set():
-                rfds, _, _ = select.select([fd], [], [])
+                rfds, _, _ = select([fd], [], [])
                 if fd in rfds:
-                    data = os.read(fd, 1)
+                    data = read(fd, 1)
                     if len(data) > 0:
                         try:
                             signal('recieve-output').send(self, output=data.decode('utf-8'))
                         except UnicodeDecodeError:
                             pass
 
-        threading.Thread(target=output, args=[self.tty_fd]).start()
+        Thread(target=output, args=[self.tty_fd]).start()
 
     def write_tty(self, message: str) -> None:
         '''Writes to the opened pseudoterminal that communicates with with gdb.'''
-        os.write(self.tty_fd, (message + '\n').encode('utf-8'))
+        write(self.tty_fd, (message + '\n').encode('utf-8'))
 
     def stop_tty(self) -> None:
         '''Stops the pseudoterminal thread.'''
         self.is_stopped.set()
         try:
-            os.write(self.tty_fd, '\n'.encode('utf-8'))
+            write(self.tty_fd, '\n'.encode('utf-8'))
         except OSError:
             pass  # Ignore error if tty has been stopped already
 

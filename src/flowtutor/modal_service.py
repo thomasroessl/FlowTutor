@@ -2,8 +2,7 @@ from __future__ import annotations
 import dearpygui.dearpygui as dpg
 from multiprocessing import Process, Queue
 from typing import TYPE_CHECKING, Any, Callable, Optional
-import tkinter as tk
-from tkinter import filedialog as fd
+from tkinter import Tk, filedialog as fd
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.template import Template
@@ -166,7 +165,7 @@ class ModalService:
                                             dpg.delete_item('node_type_modal')))
 
     def open(self, queue: Queue[dict[str, Optional[str]]]) -> None:
-        tk_root = tk.Tk()
+        tk_root = Tk()
         tk_root.withdraw()
         path = fd.askopenfilename(
             title='Open...',
@@ -190,7 +189,7 @@ class ModalService:
             callback(path)
 
     def save_as(self, queue: Queue[dict[str, Optional[str]]]) -> None:
-        tk_root = tk.Tk()
+        tk_root = Tk()
         tk_root.withdraw()
         path = fd.asksaveasfilename(
             title='Save As...',

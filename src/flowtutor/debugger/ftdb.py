@@ -1,11 +1,10 @@
+import sys
 from threading import Barrier
 from bdb import Bdb
 from io import StringIO
-import types
 from typing import Any, Optional
 from blinker import signal
-import sys
-from types import FrameType
+from types import BuiltinFunctionType, BuiltinMethodType, FrameType, FunctionType, ModuleType
 
 
 class FtDb(Bdb):
@@ -70,9 +69,9 @@ class FtDb(Bdb):
                         'Container',
                         'GUI',
                         'start']
-        exclude_valuetypes = [types.BuiltinFunctionType,
-                              types.BuiltinMethodType,
-                              types.ModuleType,
-                              types.FunctionType]
+        exclude_valuetypes = [BuiltinFunctionType,
+                              BuiltinMethodType,
+                              ModuleType,
+                              FunctionType]
         return {k: v for k, v in locals_dict.items() if not (k in exclude_keys or type(v) in exclude_valuetypes)
                 and k[0] != '_'}

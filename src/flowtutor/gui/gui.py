@@ -1,7 +1,7 @@
 from __future__ import annotations
+from re import search
 from typing import TYPE_CHECKING, Any, Optional, Type, Union, cast
-import re
-import os.path
+from os.path import join, dirname
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Point
 from blinker import signal
@@ -112,15 +112,15 @@ class GUI:
         dpg.create_context()
 
         for image in ['c', 'python', 'run', 'stop', 'step_into', 'step_over', 'hammer', 'trash', 'pencil']:
-            image_path = os.path.join(os.path.dirname(__file__), f'assets/{image}.png')
+            image_path = join(dirname(__file__), f'assets/{image}.png')
             image_width, image_height, _, image_data = dpg.load_image(image_path)
             with dpg.texture_registry():
                 dpg.add_static_texture(width=image_width, height=image_height,
                                        default_value=image_data, tag=f'{image}_image')
 
         with dpg.font_registry():
-            default_font = dpg.add_font(os.path.join(os.path.dirname(__file__), 'assets/inconsolata.ttf'), 18)
-            dpg.add_font(os.path.join(os.path.dirname(__file__),
+            default_font = dpg.add_font(join(dirname(__file__), 'assets/inconsolata.ttf'), 18)
+            dpg.add_font(join(dirname(__file__),
                          'assets/inconsolata.ttf'), 22, tag='header_font')
         dpg.bind_font(default_font)
 
@@ -381,7 +381,7 @@ class GUI:
         if not hovered_node:
             self.is_selecting = True
         if self.hovered_add_button:
-            m = re.search(r'(.*)\[(.*)\]', self.hovered_add_button)
+            m = search(r'(.*)\[(.*)\]', self.hovered_add_button)
             if m:
                 parent_tag = m.group(1)
                 src_index = m.group(2)

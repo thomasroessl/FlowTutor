@@ -1,7 +1,7 @@
 from __future__ import annotations
+from json import load as json_load
 from typing import TYPE_CHECKING, Any, Optional, cast
 from os import listdir, path
-import json
 from pathlib import Path
 from dependency_injector.wiring import Provide, inject
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, Template as JinjaTemplate
@@ -43,7 +43,7 @@ class LanguageService:
         templates: dict[str, Any] = {}
         for template_file_path in template_file_paths:
             with open(template_file_path, 'r') as template_file:
-                data = json.load(template_file)
+                data = json_load(template_file)
                 data['file_name'] = template_file.name
                 templates[str(data['label'])] = data
         return templates
@@ -72,7 +72,7 @@ class LanguageService:
             if not path.exists(language_file_path):
                 continue
             with open(language_file_path, 'r') as language_file:
-                data = json.load(language_file)
+                data = json_load(language_file)
                 languages[str(data['lang_id'])] = data
         return languages
 
