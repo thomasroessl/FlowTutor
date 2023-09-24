@@ -155,6 +155,7 @@ class Debugger:
         self.disable_all()
         if self.language_service.is_compiled(self.flowchart):
             dpg.enable_item(self.build_button)
+            dpg.show_item(self.build_button)
         else:
             dpg.enable_item(self.run_button)
             dpg.hide_item(self.build_button)

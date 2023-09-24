@@ -167,10 +167,10 @@ class GUI:
 
         dpg.configure_app()
 
-        dpg.create_viewport(
-            title='FlowTutor',
-            width=int(self.settings_service.get_setting('width', '1000') or 1000),
-            height=int(self.settings_service.get_setting('height', '1000') or 1000))
+        self.parent_size = (int(self.settings_service.get_setting('width', '1000') or 1000),
+                            int(self.settings_service.get_setting('height', '1000') or 1000))
+
+        dpg.create_viewport(title='FlowTutor', width=self.parent_size[0], height=self.parent_size[1])
 
         if self.settings_service.get_setting('theme', 'light') == 'light':
             dpg.bind_theme(create_theme_light())
@@ -320,7 +320,10 @@ class GUI:
     def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
         if not self.language_service.is_initialized:
-            self.modal_service.show_welcome_modal(self.on_select_language, self.menubar_main.on_open)
+            self.modal_service.show_welcome_modal(self.parent_size[0],
+                                                  self.on_select_language,
+                                                  self.menubar_main.on_open,
+                                                  self.menubar_main.open_callback)
             return
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -443,7 +446,10 @@ class GUI:
             dpg.delete_item(item)
         if select_lang:
             self.language_service.is_initialized = False
-            self.modal_service.show_welcome_modal(self.on_select_language, self.menubar_main.on_open)
+            self.modal_service.show_welcome_modal(self.parent_size[0],
+                                                  self.on_select_language,
+                                                  self.menubar_main.on_open,
+                                                  self.menubar_main.open_callback)
 
     def clear_selected_nodes(self) -> None:
         for selected_node in self.selected_nodes:

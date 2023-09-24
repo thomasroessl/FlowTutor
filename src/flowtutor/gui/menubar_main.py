@@ -6,17 +6,22 @@ from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
 from flowtutor.gui.themes import create_theme_dark, create_theme_light
-from flowtutor.language_service import LanguageService
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
+    from flowtutor.language_service import LanguageService
+    from flowtutor.settings_service import SettingsService
 
 
 class MenubarMain:
 
     @inject
-    def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
+    def __init__(self,
+                 gui: GUI,
+                 settings_service: SettingsService = Provide['settings_service'],
+                 language_service: LanguageService = Provide['language_service']) -> None:
         self.gui = gui
+        self.settings_service = settings_service
         self.language_service = language_service
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
@@ -52,19 +57,25 @@ class MenubarMain:
             'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     def on_open(self) -> None:
-        def callback(file_path: str) -> None:
-            with open(file_path, 'rb') as file:
-                self.gui.file_path = file_path
-                dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                flowcharts: dict[str, Flowchart] = load(file)
-                self.gui.flowcharts = flowcharts
-                self.language_service.finish_init(self.gui.flowcharts['main'])
-                self.gui.window_types.refresh()
-                self.gui.sidebar_none.refresh()
-                self.gui.redraw_all(True)
-                self.gui.resize()
-                self.gui.refresh_function_tabs()
-        self.gui.modal_service.show_open_modal(callback)
+        self.gui.modal_service.show_open_modal(self.open_callback)
+
+    def open_callback(self, file_path: str) -> None:
+        with open(file_path, 'rb') as file:
+            self.gui.file_path = file_path
+            dpg.set_viewport_title(f'FlowTutor - {file_path}')
+            flowcharts: dict[str, Flowchart] = load(file)
+            self.gui.flowcharts = flowcharts
+            self.language_service.finish_init(self.gui.flowcharts['main'])
+            self.gui.window_types.refresh()
+            self.gui.sidebar_none.refresh()
+            self.gui.redraw_all(True)
+            self.gui.resize()
+            self.gui.refresh_function_tabs()
+            if self.gui.debugger:
+                self.gui.debugger.enable_build_only(self.gui.flowcharts['main'])
+            recents = set(self.settings_service.get_setting('recents').split(','))
+            recents.add(file_path)
+            self.settings_service.set_setting('recents', ','.join(recents))
 
     def on_clear(self) -> None:
         def callback() -> None:
@@ -87,6 +98,9 @@ class MenubarMain:
                 self.gui.file_path = file_path
                 dpg.set_viewport_title(f'FlowTutor - {file_path}')
                 dump(self.gui.flowcharts, file)
+                recents = set(self.settings_service.get_setting('recents').split(','))
+                recents.add(file_path)
+                self.settings_service.set_setting('recents', ','.join(recents))
         self.gui.modal_service.show_save_as_modal(callback)
 
     def on_light_theme_menu_item_click(self) -> None:

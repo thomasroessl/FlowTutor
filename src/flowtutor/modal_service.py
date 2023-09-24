@@ -1,14 +1,16 @@
 from __future__ import annotations
-import dearpygui.dearpygui as dpg
+from dependency_injector.wiring import Provide, inject
+from os.path import basename, exists
 from multiprocessing import Process, Queue
 from typing import TYPE_CHECKING, Any, Callable, Optional
 from tkinter import Tk, filedialog as fd
-from dependency_injector.wiring import Provide, inject
+import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.template import Template
 
 if TYPE_CHECKING:
     from flowtutor.language_service import LanguageService
+    from flowtutor.settings_service import SettingsService
     from flowtutor.util_service import UtilService
     from flowtutor.flowchart.flowchart import Flowchart
     from flowtutor.flowchart.node import Node
@@ -19,7 +21,9 @@ class ModalService:
     @inject
     def __init__(self,
                  utils_service: UtilService = Provide['utils_service'],
+                 settings_service: SettingsService = Provide['settings_service'],
                  language_service: LanguageService = Provide['language_service']):
+        self.settings_service = settings_service
         self.language_service = language_service
         self.utils_service = utils_service
 
@@ -78,45 +82,69 @@ class ModalService:
                     callback=lambda: dpg.delete_item('approval_modal'))
 
     def show_welcome_modal(self,
+                           parent_width: int,
                            language_selection_callback: Callable[[dict[str, Any]], None],
-                           open: Callable[[], None]) -> None:
+                           open: Callable[[], None],
+                           open_callback: Callable[[str], None]) -> None:
         if dpg.does_item_exist('welcome_modal'):
             return
         with dpg.window(
                 label='Welcome',
                 modal=True,
                 tag='welcome_modal',
-                autosize=True,
+                width=500,
+                no_title_bar=True,
                 no_close=True,
                 no_collapse=True,
-                pos=(250, 100),
+                no_resize=True,
+                pos=(parent_width / 2 - 250, 30),
                 on_close=lambda: dpg.delete_item('welcome_modal')):
             with dpg.theme() as lang_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
                     dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
-            dpg.add_text('New file:')
-            with dpg.group():
-                with dpg.group(horizontal=True):
-                    for lang_id, data in self.language_service.get_languages().items():
-                        if dpg.does_item_exist(f'{lang_id}_image'):
-                            lang_button = dpg.add_image_button(
-                                f'{lang_id}_image',
-                                user_data=data,
-                                callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
-                                                    dpg.delete_item('welcome_modal')))
-                            dpg.bind_item_theme(lang_button, lang_button_theme)
-                        else:
+
+            with dpg.table(policy=dpg.mvTable_SizingFixedFit,
+                           header_row=True,
+                           borders_outerH=True,
+                           borders_innerV=True,
+                           borders_innerH=True,
+                           borders_outerV=True):
+                dpg.add_table_column(label="New", width_fixed=True, no_sort=True)
+                dpg.add_table_column(label="Open", width_stretch=True, no_sort=True)
+                with dpg.table_row():
+                    with dpg.table_cell():
+                        dpg.add_spacer(height=1)
+                        for lang_id, data in self.language_service.get_languages().items():
+                            if dpg.does_item_exist(f'{lang_id}_image'):
+                                lang_button = dpg.add_image_button(
+                                    f'{lang_id}_image',
+                                    user_data=data,
+                                    callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
+                                                        dpg.delete_item('welcome_modal')))
+                                dpg.bind_item_theme(lang_button, lang_button_theme)
+                            else:
+                                dpg.add_button(
+                                    label=data['name'],
+                                    width=75,
+                                    user_data=data,
+                                    callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
+                                                        dpg.delete_item('welcome_modal')))
+                    with dpg.table_cell():
+                        dpg.add_spacer(height=1)
+                        dpg.add_button(
+                            label='Open...',
+                            width=-1,
+                            callback=lambda: (dpg.delete_item('welcome_modal'), open()))
+                        dpg.add_text('Recents:')
+                        recents = self.settings_service.get_setting('recents').split(',')
+                        self.settings_service.set_setting('recents', ','.join(filter(lambda r: exists(r), recents)))
+                        for recent in filter(lambda r: r, recents):
                             dpg.add_button(
-                                label=data['name'],
-                                width=75,
-                                user_data=data,
-                                callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
+                                label=basename(recent),
+                                width=-1,
+                                user_data=recent,
+                                callback=lambda s: (open_callback(dpg.get_item_user_data(s)),
                                                     dpg.delete_item('welcome_modal')))
-                dpg.add_separator()
-                dpg.add_button(
-                    label='Open file',
-                    width=-1,
-                    callback=lambda: (dpg.delete_item('welcome_modal'), open()))
 
     def show_input_text_modal(self,
                               label: str,
