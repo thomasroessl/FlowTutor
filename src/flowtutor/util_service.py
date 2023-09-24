@@ -5,7 +5,7 @@ from sys import modules, stdin
 from threading import Event, Thread
 from blinker import signal
 from shutil import which, rmtree
-from tempfile import mkdtemp
+import tempfile
 from os import isatty, path, read, ttyname, write
 import dearpygui.dearpygui as dpg
 
@@ -20,7 +20,7 @@ class UtilService:
 
     def __init__(self) -> None:
         self.root = Path(modules['__main__'].__file__ or '').parent.resolve()
-        self.temp_dir = mkdtemp(None, 'flowtutor-')
+        self.temp_dir = tempfile.mkdtemp(None, 'flowtutor-')
         print(self.temp_dir)
         self.tty_name = ''
         self.tty_fd = 0
@@ -29,8 +29,10 @@ class UtilService:
         self.is_mac_os = system() == 'Darwin'
 
     def cleanup_temp(self) -> None:
-        '''Deletes the temporary working directory.'''
-        rmtree(self.temp_dir)
+        '''Deletes the temporary working directories.'''
+        parent = Path(self.temp_dir).parent
+        for d in parent.glob('flowtutor-*'):
+            rmtree(d)
 
     def get_root_dir(self) -> Path:
         '''Gets the root directory of the application.'''
