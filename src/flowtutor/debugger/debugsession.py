@@ -37,3 +37,7 @@ class DebugSession(ABC):
     @abstractmethod
     def next(self, flowchart: Flowchart) -> None:
         pass
+
+    @abstractmethod
+    def write(self, value: str) -> None:
+        pass

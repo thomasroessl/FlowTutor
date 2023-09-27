@@ -133,6 +133,9 @@ class GdbSession(DebugSession):
         self.process.stdin.write('-break-delete\n')
         self.process.stdin.write(f'source {self.utils.get_break_points_path()}\n')
 
+    def write(self, value: str) -> None:
+        self.utils.write_tty(value)
+
     def get_variable_assignments(self) -> None:
         if not self.process or not self.process.stdout or not self.process.stdin:
             return

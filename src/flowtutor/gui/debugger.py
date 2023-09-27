@@ -142,7 +142,9 @@ class Debugger:
             dpg.hide_item(self.build_button)
 
     def on_input(self) -> None:
-        self.utils.write_tty(dpg.get_value(self.input_id))
+        input_value = dpg.get_value(self.input_id)
+        if self.debug_session:
+            self.debug_session.write(input_value)
         dpg.configure_item(self.input_id, default_value='')
 
     def disable_all(self) -> None:

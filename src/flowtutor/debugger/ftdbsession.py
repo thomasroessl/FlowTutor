@@ -22,12 +22,19 @@ class FtdbSession(DebugSession):
     def run(self, flowchart: Flowchart) -> None:
         def t(self: FtdbSession) -> None:
             source = open(self.source_path).read()
-            compiled_code = compile(source, self.source_path, 'exec')
-            self.refresh_break_points(flowchart)
-            self.ftdb.run(compiled_code)
-            self.ftdb.read_output()
+            try:
+                compiled_code = compile(source, self.source_path, 'exec')
+                self.refresh_break_points(flowchart)
+                self.ftdb.run(compiled_code)
+                self.ftdb.read_output()
+            except SyntaxError as error:
+                signal('program-error').send(self, error=f'{error.msg}\n{error.text}')
+            except Exception:
+                signal('program-error').send(self, error='Exception occured')
+
             signal('program-finished').send(self)
             sys.stdout = sys.__stdout__
+            sys.stdin = sys.__stdin__
             sys.stderr = sys.__stderr__
         Thread(target=t, args=[self]).start()
 
@@ -49,6 +56,10 @@ class FtdbSession(DebugSession):
         if self.ftdb.current_frame:
             self.ftdb.set_next(self.ftdb.current_frame)
         self.ftdb.interact()
+
+    def write(self, value: str) -> None:
+        self.ftdb.input_stream.write(value)
+        self.ftdb.read_output()
 
     def refresh_break_points(self, flowchart: Flowchart) -> None:
         self.ftdb.clear_all_breaks()

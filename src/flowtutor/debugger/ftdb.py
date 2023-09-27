@@ -6,12 +6,15 @@ from typing import Any, Optional
 from blinker import signal
 from types import BuiltinFunctionType, BuiltinMethodType, FrameType, FunctionType, ModuleType
 
+from flowtutor.debugger.stdinqueue import StdinQueue
+
 
 class FtDb(Bdb):
     def __init__(self) -> None:
         super().__init__()
         self.output_stream = StringIO()
         self.error_stream = StringIO()
+        self.input_stream: Any = StdinQueue()
         self.interacted = False
         self.barrier: Optional[Barrier] = None
         self.current_frame: Optional[FrameType] = None
@@ -34,6 +37,7 @@ class FtDb(Bdb):
     def user_line(self, frame: FrameType) -> None:
         sys.stdout = self.output_stream
         sys.stderr = self.error_stream
+        sys.stdin = self.input_stream
         self.current_frame = frame
         self.read_output()
         signal('variables').send(self, variables=self.filter_locals(frame.f_locals))
