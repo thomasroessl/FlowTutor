@@ -126,7 +126,7 @@ class GdbSession(DebugSession):
         except FileNotFoundError:
             pass
         break_point_definitions = '\n'.join(
-            map(lambda l: f'break flowtutor.c:{l}', flowchart.break_points))
+            map(lambda line: f'break flowtutor.c:{line}', flowchart.break_points))
 
         with open(self.break_point_path, 'w') as file:
             file.write(break_point_definitions)
