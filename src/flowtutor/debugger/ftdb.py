@@ -40,7 +40,8 @@ class FtDb(Bdb):
         sys.stdin = self.input_stream
         self.current_frame = frame
         self.read_output()
-        signal('variables').send(self, variables=self.filter_locals(frame.f_locals))
+        if frame.f_code.co_filename.endswith('flowtutor.py'):
+            signal('variables').send(self, variables=self.filter_locals(frame.f_locals))
         if self.break_here(frame) or self.interacted:
             signal('hit-line').send(self, line=int(frame.f_lineno))
             self.barrier = Barrier(2)
