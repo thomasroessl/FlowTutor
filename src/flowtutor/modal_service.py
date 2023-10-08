@@ -1,9 +1,8 @@
 from __future__ import annotations
 from dependency_injector.wiring import Provide, inject
 from os.path import basename, exists
-from multiprocessing import Process, Queue
-from typing import TYPE_CHECKING, Any, Callable, Optional
-from tkinter import Tk, filedialog as fd
+from typing import TYPE_CHECKING, Any, Callable
+from pickle import load, dump
 import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.template import Template
@@ -14,6 +13,7 @@ if TYPE_CHECKING:
     from flowtutor.util_service import UtilService
     from flowtutor.flowchart.flowchart import Flowchart
     from flowtutor.flowchart.node import Node
+    from flowtutor.gui.gui import GUI
 
 
 class ModalService:
@@ -63,31 +63,36 @@ class ModalService:
                     dpg.add_input_text(default_value=self.utils_service.get_temp_dir(), width=-1, readonly=True)
 
     def show_approval_modal(self, label: str, message: str, callback: Callable[[], None]) -> None:
+        client_with = dpg.get_viewport_client_width()
+
         with dpg.window(
                 label=label,
                 modal=True,
                 tag='approval_modal',
                 autosize=True,
-                pos=(250, 100),
-                on_close=lambda: dpg.delete_item('approval_modal')):
+                width=500,
+                pos=(client_with / 2 - 250, 30),
+                no_open_over_existing_popup=False,
+                no_close=True):
             dpg.add_text(message)
             with dpg.group(horizontal=True):
                 dpg.add_button(
                     label='OK',
                     width=75,
-                    callback=lambda: (callback(), dpg.delete_item('approval_modal')))
+                    callback=lambda: (dpg.delete_item('approval_modal'), callback()))
                 dpg.add_button(
                     label='Cancel',
                     width=75,
                     callback=lambda: dpg.delete_item('approval_modal'))
 
-    def show_welcome_modal(self,
-                           parent_width: int,
-                           language_selection_callback: Callable[[dict[str, Any]], None],
-                           open: Callable[[], None],
-                           open_callback: Callable[[str], None]) -> None:
+    def show_welcome_modal(self, gui: GUI) -> None:
+        client_with = dpg.get_viewport_client_width()
+
         if dpg.does_item_exist('welcome_modal'):
+            dpg.show_item('welcome_modal')
+            dpg.set_item_pos('welcome_modal', (client_with / 2 - 250, 40))
             return
+
         with dpg.window(
                 label='Welcome',
                 modal=True,
@@ -97,8 +102,8 @@ class ModalService:
                 no_close=True,
                 no_collapse=True,
                 no_resize=True,
-                pos=(parent_width / 2 - 250, 30),
-                on_close=lambda: dpg.delete_item('welcome_modal')):
+                no_open_over_existing_popup=False,
+                pos=(client_with / 2 - 250, 30)):
             with dpg.theme() as lang_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
                     dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
@@ -119,22 +124,22 @@ class ModalService:
                                 lang_button = dpg.add_image_button(
                                     f'{lang_id}_image',
                                     user_data=data,
-                                    callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
-                                                        dpg.delete_item('welcome_modal')))
+                                    callback=lambda s: (self.on_select_language(gui, dpg.get_item_user_data(s)),
+                                                        dpg.hide_item('welcome_modal')))
                                 dpg.bind_item_theme(lang_button, lang_button_theme)
                             else:
                                 dpg.add_button(
                                     label=data['name'],
                                     width=75,
                                     user_data=data,
-                                    callback=lambda s: (language_selection_callback(dpg.get_item_user_data(s)),
-                                                        dpg.delete_item('welcome_modal')))
+                                    callback=lambda s: (self.on_select_language(gui, dpg.get_item_user_data(s)),
+                                                        dpg.hide_item('welcome_modal')))
                     with dpg.table_cell():
                         dpg.add_spacer(height=1)
                         dpg.add_button(
                             label='Open...',
                             width=-1,
-                            callback=lambda: (dpg.delete_item('welcome_modal'), open()))
+                            callback=lambda: self.show_open_dialog(gui))
                         dpg.add_text('Recents:')
                         recents = list(
                             filter(lambda r: exists(r), self.settings_service.get_setting('recents').split(',')))
@@ -144,8 +149,65 @@ class ModalService:
                                 label=basename(recent),
                                 width=-1,
                                 user_data=recent,
-                                callback=lambda s: (open_callback(dpg.get_item_user_data(s)),
-                                                    dpg.delete_item('welcome_modal')))
+                                callback=lambda s: (self.open_callback(gui, dpg.get_item_user_data(s)),
+                                                    dpg.hide_item('welcome_modal')))
+
+    def on_select_language(self, gui: GUI, lang_data: dict[str, Any]) -> None:
+        gui.flowcharts['main'].lang_data = lang_data
+        gui.language_service.finish_init(gui.flowcharts['main'])
+        gui.sidebar_none.refresh()
+        if gui.debugger:
+            gui.debugger.refresh(gui.selected_flowchart)
+        gui.redraw_all(True)
+
+    def open_callback(self, gui: GUI, file_path: str) -> None:
+        with open(file_path, 'rb') as file:
+            gui.file_path = file_path
+            dpg.set_viewport_title(f'FlowTutor - {file_path}')
+            flowcharts: dict[str, Flowchart] = load(file)
+            gui.flowcharts = flowcharts
+            self.language_service.finish_init(gui.flowcharts['main'])
+            gui.window_types.refresh()
+            gui.sidebar_none.refresh()
+            gui.redraw_all(True)
+            gui.resize()
+            gui.refresh_function_tabs()
+            if gui.debugger:
+                gui.debugger.enable_build_only(gui.flowcharts['main'])
+            recents = set(self.settings_service.get_setting('recents').split(','))
+            recents.add(file_path)
+            self.settings_service.set_setting('recents', ','.join(recents))
+
+    def show_save_as_dialog(self, gui: GUI) -> None:
+        def callback(gui: GUI, file_path: str) -> None:
+            with open(file_path, 'wb') as file:
+                gui.file_path = file_path
+                dpg.set_viewport_title(f'FlowTutor - {file_path}')
+                dump(gui.flowcharts, file)
+                recents = set(self.settings_service.get_setting('recents').split(','))
+                recents.add(file_path)
+                self.settings_service.set_setting('recents', ','.join(recents))
+        if dpg.does_item_exist('save_as_dialog'):
+            dpg.show_item('save_as_dialog')
+            return
+        with dpg.file_dialog(tag='save_as_dialog',
+                             min_size=[500, 300],
+                             directory_selector=False,
+                             # callback=lambda _, data: print(data['file_path_name'])):
+                             callback=lambda _, data: callback(gui, data['file_path_name'])):
+            dpg.add_file_extension(".flowtutor")
+
+    def show_open_dialog(self, gui: GUI) -> None:
+        if dpg.does_item_exist('open_dialog'):
+            dpg.show_item('open_dialog')
+            return
+        with dpg.file_dialog(tag='open_dialog',
+                             min_size=[500, 300],
+                             directory_selector=False,
+                             cancel_callback=lambda: self.show_welcome_modal(
+                                 gui) if not self.language_service.is_initialized else None,
+                             callback=lambda _, data: self.open_callback(gui, data['file_path_name'])):
+            dpg.add_file_extension(".flowtutor")
 
     def show_input_text_modal(self,
                               label: str,
@@ -192,51 +254,3 @@ class ModalService:
                         callback=lambda s: (user_data := dpg.get_item_user_data(s),
                                             callback(Template(user_data)),
                                             dpg.delete_item('node_type_modal')))
-
-    def open(self, queue: Queue[dict[str, Optional[str]]]) -> None:
-        tk_root = Tk()
-        tk_root.withdraw()
-        path = fd.askopenfilename(
-            title='Open...',
-            defaultextension='*.flowtutor',
-            filetypes=[('FlowTutor Files', '*.flowtutor')]
-        )
-        tk_root.destroy()
-        ret = queue.get()
-        ret['path'] = path
-        queue.put(ret)
-
-    def show_open_modal(self, callback: Callable[[str], None]) -> None:
-        queue: Queue[dict[str, Optional[str]]] = Queue()
-        ret: dict[str, Optional[str]] = {'path': None}
-        queue.put(ret)
-        process = Process(target=self.open, args=(queue, ))
-        process.start()
-        process.join()
-        path = queue.get()['path']
-        if path:
-            callback(path)
-
-    def save_as(self, queue: Queue[dict[str, Optional[str]]]) -> None:
-        tk_root = Tk()
-        tk_root.withdraw()
-        path = fd.asksaveasfilename(
-            title='Save As...',
-            defaultextension='*.flowtutor',
-            filetypes=[('FlowTutor Files', '*.flowtutor')]
-        )
-        tk_root.destroy()
-        ret = queue.get()
-        ret['path'] = path
-        queue.put(ret)
-
-    def show_save_as_modal(self, callback: Callable[[str], None]) -> None:
-        queue: Queue[dict[str, Optional[str]]] = Queue()
-        ret: dict[str, Optional[str]] = {'path': None}
-        queue.put(ret)
-        process = Process(target=self.save_as, args=(queue, ))
-        process.start()
-        process.join()
-        path = queue.get()['path']
-        if path:
-            callback(path)
