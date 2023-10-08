@@ -19,7 +19,6 @@
 The following programs have to be available on the system for FlowTutor to be able to run:
 
 - [Python] >= 3.9
-- [tkinter] - For system file dialogs
 - [GCC] - C-Compiler
 - [GDB] - Debugger
 
@@ -75,16 +74,9 @@ This refreshes the system's certificates and code-signing data.
 
 The application is packaged with Pynsist for easier distribution on Windows.
 
-Because Pynsist makes use of the “bundled” versions of Python the `tkinter` module isn’t included by default.
-
-For the currently used version of Python the [necessary files], namely `_tkinter.lib`, `_tkinter.pyd`, `_tkinter.lib`, `tcl86t.dll` and `tk86t.dll` in `pynsist_pks/` and the contents of `lib/` folder, have been correctly included.
-
-Should the bundled Python version change, these files have to be replaced accordingly.
 
 [Python]: <https://www.python.org/>
-[tkinter]: <https://docs.python.org/3/library/tkinter.html>
 [GCC]: <https://gcc.gnu.org/>
 [GDB]: <https://www.sourceware.org/gdb/>
 [code signed]: <https://sourceware.org/gdb/wiki/PermissionsDarwin>
-[necessary files]: <https://pynsist.readthedocs.io/en/latest/faq.html#packaging-with-tkinter>
 [Wiki]: <https://github.com/thomasroessl/FlowTutor/wiki>
