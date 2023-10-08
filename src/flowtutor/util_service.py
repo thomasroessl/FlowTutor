@@ -6,12 +6,13 @@ from threading import Event, Thread
 from blinker import signal
 from shutil import which, rmtree
 import tempfile
-from os import isatty, path, read, ttyname, write
+from os import path, read, write
 import dearpygui.dearpygui as dpg
 
 try:
     import termios
     import pty
+    from os import ttyname, isatty
 except ModuleNotFoundError:
     pass
 
