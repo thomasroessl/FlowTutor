@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import dearpygui.dearpygui as dpg
-from pickle import dump, load
+from pickle import dump
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
     from flowtutor.language_service import LanguageService
     from flowtutor.settings_service import SettingsService
+    from flowtutor.modal_service import ModalService
 
 
 class MenubarMain:
@@ -19,18 +20,20 @@ class MenubarMain:
     def __init__(self,
                  gui: GUI,
                  settings_service: SettingsService = Provide['settings_service'],
-                 language_service: LanguageService = Provide['language_service']) -> None:
+                 language_service: LanguageService = Provide['language_service'],
+                 modal_service: ModalService = Provide['modal_service']) -> None:
         self.gui = gui
         self.settings_service = settings_service
         self.language_service = language_service
+        self.modal_service = modal_service
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
                 dpg.add_menu_item(label='New Program', callback=self.on_new)
                 dpg.add_separator()
-                dpg.add_menu_item(label='Open...', callback=self.on_open)
+                dpg.add_menu_item(label='Open...', callback=lambda: self.modal_service.show_open_dialog(self.gui))
                 dpg.add_separator()
-                dpg.add_menu_item(label='Save', callback=self.on_save)
-                dpg.add_menu_item(label='Save As...', callback=self.on_save_as)
+                dpg.add_menu_item(label='Save', callback=self.on_save, shortcut='S')
+                dpg.add_menu_item(label='Save As...', callback=lambda: self.modal_service.show_save_as_dialog(self.gui))
             with dpg.menu(label='Edit'):
                 dpg.add_menu_item(label='Add Function', callback=self.on_add_function)
                 dpg.add_separator()
@@ -41,7 +44,7 @@ class MenubarMain:
                     dpg.add_menu_item(label='Light', callback=self.on_light_theme_menu_item_click)
                     dpg.add_menu_item(label='Dark', callback=self.on_dark_theme_menu_item_click)
             with dpg.menu(label='Help'):
-                dpg.add_menu_item(label='Paths', callback=self.gui.modal_service.show_paths_window)
+                dpg.add_menu_item(label='Paths', callback=self.modal_service.show_paths_window)
 
     def on_new(self) -> None:
         def callback() -> None:
@@ -53,36 +56,15 @@ class MenubarMain:
             }
             self.gui.redraw_all(True)
             self.gui.refresh_function_tabs()
-        self.gui.modal_service.show_approval_modal(
+        self.modal_service.show_approval_modal(
             'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
-
-    def on_open(self) -> None:
-        self.gui.modal_service.show_open_modal(self.open_callback)
-
-    def open_callback(self, file_path: str) -> None:
-        with open(file_path, 'rb') as file:
-            self.gui.file_path = file_path
-            dpg.set_viewport_title(f'FlowTutor - {file_path}')
-            flowcharts: dict[str, Flowchart] = load(file)
-            self.gui.flowcharts = flowcharts
-            self.language_service.finish_init(self.gui.flowcharts['main'])
-            self.gui.window_types.refresh()
-            self.gui.sidebar_none.refresh()
-            self.gui.redraw_all(True)
-            self.gui.resize()
-            self.gui.refresh_function_tabs()
-            if self.gui.debugger:
-                self.gui.debugger.enable_build_only(self.gui.flowcharts['main'])
-            recents = set(self.settings_service.get_setting('recents').split(','))
-            recents.add(file_path)
-            self.settings_service.set_setting('recents', ','.join(recents))
 
     def on_clear(self) -> None:
         def callback() -> None:
             self.gui.selected_flowchart.reset()
             self.gui.clear_flowchart(True)
             self.gui.redraw_all(True)
-        self.gui.modal_service.show_approval_modal(
+        self.modal_service.show_approval_modal(
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     def on_save(self) -> None:
@@ -90,18 +72,7 @@ class MenubarMain:
             with open(self.gui.file_path, 'wb') as file:
                 dump(self.gui.flowcharts, file)
         else:
-            self.on_save_as()
-
-    def on_save_as(self) -> None:
-        def callback(file_path: str) -> None:
-            with open(file_path, 'wb') as file:
-                self.gui.file_path = file_path
-                dpg.set_viewport_title(f'FlowTutor - {file_path}')
-                dump(self.gui.flowcharts, file)
-                recents = set(self.settings_service.get_setting('recents').split(','))
-                recents.add(file_path)
-                self.settings_service.set_setting('recents', ','.join(recents))
-        self.gui.modal_service.show_save_as_modal(callback)
+            self.modal_service.show_save_as_dialog(self.gui)
 
     def on_light_theme_menu_item_click(self) -> None:
         dpg.bind_theme(create_theme_light())
@@ -122,7 +93,7 @@ class MenubarMain:
         while new_name in self.gui.flowcharts.keys():
             i += 1
             new_name = f'fun_{i}'
-        self.gui.modal_service.show_input_text_modal(
+        self.modal_service.show_input_text_modal(
             'New Function',
             'Name',
             new_name,

@@ -124,6 +124,13 @@ class GUI:
                          'assets/inconsolata.ttf'), 22, tag='header_font')
         dpg.bind_font(default_font)
 
+        with dpg.handler_registry():
+            if self.utils_service.is_mac_os:
+                dpg.add_key_press_handler(dpg.mvKey_LWin, callback=self.on_ctrl_key)
+                dpg.add_key_press_handler(dpg.mvKey_RWin, callback=self.on_ctrl_key)
+            else:
+                dpg.add_key_press_handler(dpg.mvKey_Control, callback=self.on_ctrl_key)
+
         self.menubar_main = MenubarMain(self)
 
         with dpg.window() as self.main_window:
@@ -180,7 +187,6 @@ class GUI:
         dpg.setup_dearpygui()
         dpg.show_viewport()
         dpg.set_primary_window(self.main_window, True)
-
         with dpg.child_window(parent=self.main_group,
                               border=False,
                               height=-1,
@@ -238,20 +244,22 @@ class GUI:
                         dpg.add_table_column(label='Name')
                         dpg.add_table_column(label='Value')
 
-    def on_select_language(self, lang_data: dict[str, Any]) -> None:
-        self.flowcharts['main'].lang_data = lang_data
-        self.language_service.finish_init(self.flowcharts['main'])
-        self.sidebar_none.refresh()
-        if self.debugger:
-            self.debugger.refresh(self.selected_flowchart)
-        self.redraw_all(True)
-
     def refresh_function_tabs(self) -> None:
         for tab in dpg.get_item_children(self.function_tab_bar)[1]:
             dpg.delete_item(tab)
         for func in self.flowcharts.keys():
             dpg.add_tab(label=func, user_data=func, parent=self.function_tab_bar)
         dpg.add_tab_button(label='+', callback=self.menubar_main.on_add_function, parent=self.function_tab_bar)
+
+    def on_ctrl_key(self) -> None:
+        if not self.language_service.is_initialized:
+            return
+        if dpg.is_key_down(dpg.mvKey_A):
+            for node in self.selected_flowchart:
+                self.selected_nodes.append(node)
+                self.redraw_all(True)
+        elif dpg.is_key_down(dpg.mvKey_S):
+            self.menubar_main.on_save()
 
     def on_selected_tab_changed(self, _: Any, tab: Union[int, str]) -> None:
         self.clear_flowchart()
@@ -336,10 +344,6 @@ class GUI:
     def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Sets the mouse poition variable and redraws all objects.'''
         if not self.language_service.is_initialized:
-            self.modal_service.show_welcome_modal(self.parent_size[0],
-                                                  self.on_select_language,
-                                                  self.menubar_main.on_open,
-                                                  self.menubar_main.open_callback)
             return
         self.mouse_position = data
         if not dpg.is_item_hovered(FLOWCHART_TAG):
@@ -462,10 +466,7 @@ class GUI:
             dpg.delete_item(item)
         if select_lang:
             self.language_service.is_initialized = False
-            self.modal_service.show_welcome_modal(self.parent_size[0],
-                                                  self.on_select_language,
-                                                  self.menubar_main.on_open,
-                                                  self.menubar_main.open_callback)
+            self.modal_service.show_welcome_modal(self)
 
     def clear_selected_nodes(self) -> None:
         for selected_node in self.selected_nodes:
