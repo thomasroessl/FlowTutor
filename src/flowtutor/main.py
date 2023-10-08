@@ -20,6 +20,11 @@ def start(utils_service: UtilService = Provide['utils_service']) -> None:
     if dpg.is_dearpygui_running():
         dpg.render_dearpygui_frame()
         gui.redraw_all(True)
+
+    # Shows the welcome modal after the second frame
+    if dpg.is_dearpygui_running():
+        dpg.render_dearpygui_frame()
+        gui.modal_service.show_welcome_modal(gui)
     dpg.start_dearpygui()
     if system() != 'Windows':
         utils_service.stop_tty()
