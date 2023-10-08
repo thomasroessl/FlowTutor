@@ -104,6 +104,7 @@ class UtilService:
             result = path.abspath(path.join(self.root, '..', '..', 'templates', lang_id))
         print(1, self.root)
         print(2, result)
+        print(3, Path(modules['__main__'].__file__ or '').resolve())
         return result
 
     def open_tty(self) -> None:
