@@ -68,7 +68,8 @@ class Node(ABC):
         Also stretches the shape to accommodate the label text.
 
         Parameters:
-            shape-points (list[tuple[float, float]]): The vertices of the shape polygon.'''
+            shape-points (list[tuple[float, float]]): The vertices of the shape polygon.
+        '''
         pos_x, pos_y = self.pos
 
         # Difference between the label with and the shape polygon width.
@@ -251,7 +252,8 @@ class Node(ABC):
         '''Checks if a predecessor of the node is disabled with a comment.
 
         Parameters:
-            flowchart (Flowchart): The flowchart that contains the node.'''
+            flowchart (Flowchart): The flowchart that contains the node.
+        '''
         if not flowchart:
             return False
         containing_node = flowchart.find_containing_node(self)
@@ -281,7 +283,8 @@ class Node(ABC):
 
         Parameters:
             flowchart (Flowchart): The flowchart that contains the node.
-            is_selected (bool): True if the node should be drawn in a selected state.'''
+            is_selected (bool): True if the node should be drawn in a selected state.
+        '''
         # Draw the node in grey, if it is disabled.
         color = (150, 150, 150) if self.is_comment or self.get_disabled_inherited(flowchart) else self.color
 
@@ -357,7 +360,8 @@ class Node(ABC):
 
         Parameters:
             flowchart (Flowchart): The flowchart that contains the node.
-            selected_nodes (list[Node]): A list of the selected nodes.'''
+            selected_nodes (list[Node]): A list of the selected nodes.
+        '''
         self.delete()
         self.draw(flowchart, self in selected_nodes)
 

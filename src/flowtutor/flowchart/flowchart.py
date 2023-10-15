@@ -100,7 +100,8 @@ class Flowchart:
         '''Takes an generator of Nodes and removes duplicates.
 
         Parameters:
-            it (Generator[Node, None, None]): The generator to deduplicate.'''
+            it (Generator[Node, None, None]): The generator to deduplicate.
+        '''
         seen = set()
         for node in it:
             if node not in seen:
@@ -111,7 +112,8 @@ class Flowchart:
         '''Gets all nodes after a specified node, including the node itself.
 
         Parameters:
-            node (Node): The parent node.'''
+            node (Node): The parent node.
+        '''
         yield node
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if (connection.dst_node.tag not in node.scope and node != connection.dst_node):
@@ -121,7 +123,8 @@ class Flowchart:
         '''Gets all nodes after a specified node, excluding the node itself.
 
         Parameters:
-            node (Node): The parent node.'''
+            node (Node): The parent node.
+        '''
         for connection in sorted(node.connections, key=lambda n: n.src_ind, reverse=True):
             if (connection.dst_node.tag not in node.scope and node != connection.dst_node):
                 yield from self.get_all_nodes(connection.dst_node)
@@ -130,14 +133,16 @@ class Flowchart:
         '''Finds the node instance of a specified tag.
 
         Parameters:
-            tag (str): The tag of the searched node.'''
+            tag (str): The tag of the searched node.
+        '''
         return next(filter(lambda n: n is not None and n.tag == tag, self), None)
 
     def find_parent(self, node: Node) -> Optional[Node]:
         '''Finds the parent of a node in the flowchart.
 
         Parameters:
-            node (Node): The child node to find the parent for.'''
+            node (Node): The child node to find the parent for.
+        '''
         return next(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self), None)
 
     def find_function_end(self) -> FunctionEnd:
@@ -152,14 +157,16 @@ class Flowchart:
         '''Finds a parents connected to a node.
 
         Parameters:
-            node (Node): The child node to find parents for.'''
+            node (Node): The child node to find parents for.
+        '''
         return list(filter(lambda n: n is not None and any(c.dst_node == node for c in n.connections), self))
 
     def find_containing_node(self, child: Node) -> Optional[Node]:
         '''Gets the node, that contains the child node (loop, conditional, etc.)
 
         Parameters:
-            child (Node): The child to find the containing node to.'''
+            child (Node): The child to find the containing node to.
+        '''
         current_parent = self.find_parent(child)
         while current_parent:
             if current_parent.tag in child.scope:
@@ -173,14 +180,16 @@ class Flowchart:
 
         Parameters:
             pmin(tuple[float, float]): The min point of the bounding box.
-            pmax(tuple[float, float]): The max point of the bounding box.'''
+            pmax(tuple[float, float]): The max point of the bounding box.
+        '''
         selection_box = box(*pmin, *pmax)
         return list(filter(lambda n: n.shape.intersects(selection_box), self))
 
     def find_successor(self, node: Node) -> Optional[Node]:
         '''Finds the successor node of the curtrent node.
 
-        For decision nodes, this means the node after the decision branches.'''
+        For decision nodes, this means the node after the decision branches.
+        '''
         if isinstance(node, Template) and node.control_flow == 'decision':
             connector = next(filter(lambda n: isinstance(n, Connector)
                              and n.scope and n.scope[-1] == node.tag, self), None)
@@ -197,14 +206,16 @@ class Flowchart:
         '''Finds the node at a specific mouse position in the drawing area.
 
         Parameters:
-            mouse_position (Optional[tuple[int, int]]): The mouse position int the application window.'''
+            mouse_position (Optional[tuple[int, int]]): The mouse position int the application window.
+        '''
         return next(filter(lambda n: n is not None and n.shape.contains(Point(*mouse_position)), self), None) \
             if mouse_position else None
 
     def is_initialized(self) -> bool:
         '''The flowchart is initialized, when all nodes are initialized.
 
-        A node is initialized, when the user has entered all required parameters.'''
+        A node is initialized, when the user has entered all required parameters.
+        '''
         return all(map(lambda n: n.is_initialized, self))
 
     def add_node(self, parent: Node, child: Node, src_ind: int = 0) -> None:
@@ -213,7 +224,8 @@ class Flowchart:
         Parameters:
             parent (Node): The node after which the new node should be inserted.
             child (Node): The new node to be inserted.
-            src_ind (int): The index of the connection point, at which the node is inserted.'''
+            src_ind (int): The index of the connection point, at which the node is inserted.
+        '''
         # The new node starts with the same scope as its parent.
         child.scope = parent.scope.copy()
         if (isinstance(parent, Template) and parent.control_flow == 'decision') or\
@@ -268,7 +280,8 @@ class Flowchart:
         Parameters:
             node (Node): The node to set the position of.
             parent (Node): The parent of the node.
-            src_ind (int): The connection index of the parent to the node.'''
+            src_ind (int): The connection index of the parent to the node.
+        '''
         if isinstance(node, Connector):
             pos_x, pos_y = parent.pos
             pos = (int(pos_x + parent.shape_width/2 - node.shape_width/2),
@@ -324,7 +337,8 @@ class Flowchart:
         '''Moves all children of a node down, so they do not overlap.
 
         Parameters:
-            parent (Node): The node aftwer which all nodes get shifted down.'''
+            parent (Node): The node aftwer which all nodes get shifted down.
+        '''
         children = list(self.deduplicate(self.get_all_children(parent)))
         if not children:
             return

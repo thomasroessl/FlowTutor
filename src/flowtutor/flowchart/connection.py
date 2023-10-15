@@ -36,7 +36,8 @@ class Connection:
         '''Draws the connection in the dearpygui drawing area.
 
         Parameters:
-            parent (Node): The node where the connection originates.'''
+            parent (Node): The node where the connection originates.
+        '''
 
         dst_in_points = self.dst_node.in_points
         src_out_points = parent.out_points

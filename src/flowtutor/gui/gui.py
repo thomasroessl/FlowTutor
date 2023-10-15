@@ -303,7 +303,8 @@ class GUI:
         '''Handle changes of the selected function tab.
 
         Parameters:
-            tab (Union[int, str]): The dpg tag of the tab.'''
+            tab (Union[int, str]): The dpg tag of the tab.
+        '''
         self.clear_flowchart()
         self.selected_flowchart_name = dpg.get_item_user_data(tab)
         self.clear_selected_nodes()
@@ -313,7 +314,8 @@ class GUI:
     def on_hit_line(self, _: Any, **kw: int) -> None:
         '''Handle line hits from the debugger.
 
-        Switches to the corresponding function tab and moves the debug cursor.'''
+        Switches to the corresponding function tab and moves the debug cursor.
+        '''
         line = kw['line']
         if self.debugger:
             self.debugger.enable_all()
@@ -336,7 +338,8 @@ class GUI:
     def on_variables(self, _: Any, **kw: dict[str, str]) -> None:
         '''Handle recieving varaible assignments from the debugger.
 
-        Clears the local variable table and reinserts the new assignments.'''
+        Clears the local variable table and reinserts the new assignments.
+        '''
         variables = kw['variables']
         if self.debugger:
             for row_id in dpg.get_item_children(self.variable_table_id)[1]:
@@ -351,7 +354,8 @@ class GUI:
     def on_program_finished(self, _: Any, **kw: dict[str, str]) -> None:
         '''Handle the program finishing/
 
-        Resets the debugger buttons, the debug cursor and the local variable table.'''
+        Resets the debugger buttons, the debug cursor and the local variable table.
+        '''
         for flowchart in self.flowcharts.values():
             for node in flowchart:
                 node.has_debug_cursor = False
@@ -402,7 +406,8 @@ class GUI:
     def on_hover(self, _: Any, data: tuple[int, int]) -> None:
         '''Handles the mouse hovering over the window.
 
-        Sets the mouse poition variable and redraws all objects.'''
+        Sets the mouse poition variable and redraws all objects.
+        '''
         if not self.language_service.is_initialized:
             return
         self.mouse_position = data
@@ -423,7 +428,8 @@ class GUI:
         '''Handles mouse dragging on the current window.
 
         Redraws the currently dragging node to its new position.
-        If no node is selected, the selection fence gets drawn.'''
+        If no node is selected, the selection fence gets drawn.
+        '''
         if not self.language_service.is_initialized or\
                 not self.mouse_position_on_canvas or not self.is_mouse_dragging:
             return
@@ -538,7 +544,8 @@ class GUI:
         '''Clears the current program to start fresh.
 
         Parameters:
-            select_lang (bool): Shows the language selection if true.'''
+            select_lang (bool): Shows the language selection if true.
+        '''
         self.on_select_node(None)
         self.is_mouse_dragging = False
         for item in dpg.get_item_children(FLOWCHART_TAG)[2]:
@@ -555,7 +562,8 @@ class GUI:
 
     def get_ordered_flowcharts(self) -> list[Flowchart]:
         '''Get a ordered list of flowcharts, by sorting the tabs by their x-position on screen.
-           (workaround for missing feature in dearpygui)'''
+           (workaround for missing feature in dearpygui)
+        '''
         tabs = dpg.get_item_children(self.function_tab_bar)[1]
         filtered_tabs = list(filter(lambda tab: dpg.get_item_user_data(tab), tabs))
         # Put the tabs in a dictionary with their x-position as key
@@ -574,7 +582,8 @@ class GUI:
         '''Redraws all nodes, if they need refresh.
 
         Parameters:
-            force (bool): If this is set to true, all nodes get redrawn, regardless of their needs_refresh state.'''
+            force (bool): If this is set to true, all nodes get redrawn, regardless of their needs_refresh state.
+        '''
         if not self.language_service.is_initialized:
             return
         self.hovered_add_button = None
@@ -639,7 +648,8 @@ class GUI:
         '''Maps the point in screen coordinates to canvas coordinates.
 
         Parameters:
-            point_on_screen (tuple[int, int]): The coordinates of the point relative to the window.'''
+            point_on_screen (tuple[int, int]): The coordinates of the point relative to the window.
+        '''
         offsetX, offsetY = dpg.get_item_rect_min(FLOWCHART_TAG)
         x, y = point_on_screen
         return (x - offsetX, y - offsetY)

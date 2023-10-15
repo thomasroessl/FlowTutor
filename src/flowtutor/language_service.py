@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 class LanguageService:
+    '''A service that facilitates using languages defined in the templates folder.'''
 
     @inject
     def __init__(self,
@@ -26,9 +27,16 @@ class LanguageService:
         self.settings_service = settings_service
         self.is_initialized = False
         self.jinja_env: Optional[Environment] = None
+        '''The currently initialized Jinja environment.'''
         self.template_cache: dict[str, JinjaTemplate] = {}
+        '''A dict of Jinja tmeplates, to avoid regeneration on every call.'''
 
     def finish_init(self, flowchart: Flowchart) -> None:
+        '''Finishes the initilization with the language selected for the flowchart.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart the service gets initialized for.
+        '''
         self.jinja_env = Environment(
             loader=FileSystemLoader(self.utils_service.get_templates_path(flowchart.lang_data['lang_id'])),
             lstrip_blocks=True,
@@ -36,6 +44,11 @@ class LanguageService:
         self.is_initialized = True
 
     def get_node_templates(self, flowchart: Flowchart) -> dict[str, Any]:
+        '''Gets a dictionary of template data, with the template names as keys.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart the nodes a loaded for.
+        '''
         template_file_paths: list[str] = []
         templates_path = self.utils_service.get_templates_path(flowchart.lang_data['lang_id'])
         template_file_paths.extend(
@@ -49,18 +62,41 @@ class LanguageService:
         return templates
 
     def has_function_declarations(self, flowchart: Flowchart) -> bool:
+        '''Checks if the language selected for the flowchart has function declarations.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         return 'function_declaration' in flowchart.lang_data
 
     def has_types(self, flowchart: Flowchart) -> bool:
+        '''Checks if the language selected for the flowchart is typed.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         return 'types' in flowchart.lang_data
 
     def has_main_function(self, flowchart: Flowchart) -> bool:
+        '''Checks if the language selected for the flowchart has a main function.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         return ('has_main_function' not in flowchart.lang_data or flowchart.lang_data['has_main_function'])
 
     def is_compiled(self, flowchart: Flowchart) -> bool:
+        '''Checks if the language selected for the flowchart is compiled.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         return flowchart.lang_data['is_compiled'] is True if 'is_compiled' in flowchart.lang_data else False
 
     def get_languages(self) -> dict[str, Any]:
+        '''Gets a dictionary of available languages. The key is the language identifier and the value is
+        the language data.
+        '''
         language_paths: list[str] = []
         templates_path = self.utils_service.get_templates_path()
         language_paths.extend(
@@ -77,6 +113,11 @@ class LanguageService:
         return languages
 
     def get_comment_specifier(self, flowchart: Flowchart) -> str:
+        '''Gets the comment spcifier for the language of the flowchart.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         return str(flowchart.lang_data['comment_specifier'])\
             if 'comment_specifier' in flowchart.lang_data else '//'
 
@@ -86,6 +127,18 @@ class LanguageService:
                         loop_body: list[tuple[str, Optional[Node]]],
                         if_branch: list[tuple[str, Optional[Node]]],
                         else_branch: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
+        '''Generates the source code for a template node.
+
+        Parameters:
+            template (Template): The template node.
+            flowchart (Flowchart): The flowchart that contains the node.
+            loop_body (list[tuple[str, Optional[Node]]]): A list of 'source code'-'Node' tuples, that have been
+            pre-generated to be inserted into loops.
+            if_branch (list[tuple[str, Optional[Node]]]): A list of 'source code'-'Node' tuples, that have been
+            pre-generated to be inserted into decision branches.
+            else_branch (list[tuple[str, Optional[Node]]]): A list of 'source code'-'Node' tuples, that have been
+            pre-generated to be inserted into decision branches.
+        '''
         template_body = template.body
         template.values['LOOP_BODY'] = '\n'.join([s1 for s1, _ in loop_body])
         template.values['IF_BRANCH'] = '\n'.join([s2 for s2, _ in if_branch])
@@ -116,6 +169,12 @@ class LanguageService:
     def render_function_declaration(self,
                                     flowchart: Flowchart,
                                     function_start: FunctionStart) -> list[tuple[str, Optional[Node]]]:
+        '''Generates the source code for a function definition.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart that contains the node.
+            function_start (FunctionStart): The function start node
+        '''
         rendered: list[tuple[str, Optional[Node]]] = []
         if 'function_declaration' in flowchart.lang_data:
             rendered.append((self.render_line(flowchart.lang_data['function_declaration'],
@@ -127,6 +186,11 @@ class LanguageService:
         return rendered
 
     def render_imports(self, flowchart: Flowchart) -> list[tuple[str, Optional[Node]]]:
+        '''Generates the source code for module imports.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart object.
+        '''
         rendered: list[tuple[str, Optional[Node]]] = []
         if 'import' in flowchart.lang_data:
             for imp in flowchart.imports:
@@ -139,6 +203,15 @@ class LanguageService:
                         function_end: FunctionEnd,
                         flowchart: Flowchart,
                         body: list[tuple[str, Optional[Node]]]) -> list[tuple[str, Optional[Node]]]:
+        '''Generates the source code for a template node.
+
+        Parameters:
+            function_start (FunctionStart): The function start node.
+            function_end (FunctionEnd): The function end node.
+            flowchart (Flowchart): The flowchart that contains the node.
+            body (list[tuple[str, Optional[Node]]]): A list of 'source code'-'Node' tuples, that have been
+            pre-generated to be inserted into function bodies.
+        '''
         values = {
             'FUN_NAME': function_start.name,
             'PARAMETERS': function_start.parameters,
@@ -166,6 +239,12 @@ class LanguageService:
         return rendered
 
     def render_line(self, jinja_template_string: str, values: dict[str, Any]) -> str:
+        '''Generates a single source code line from a Jinja template line.
+
+        Parameters:
+            jinja_template_string (str): The jinja template line.
+            values (dict[str, Any]): A dictionary with variable assignemnts substituted in the template.
+        '''
         if self.jinja_env:
             if jinja_template_string in self.template_cache:
                 jinja_template = self.template_cache[jinja_template_string]
@@ -177,6 +256,12 @@ class LanguageService:
             return ''
 
     def render_jinja_lines(self, template_file_name: str, values: dict[str, Any]) -> list[str]:
+        '''Generates a source code block from a Jinja template.
+
+        Parameters:
+            template_file_name (str): The jinja template file name.
+            values (dict[str, Any]): A dictionary with variable assignemnts substituted in the template.
+        '''
         if self.jinja_env:
             return self.jinja_env.get_template(f'{template_file_name}.jinja').render(values).splitlines()
         else:
@@ -187,6 +272,15 @@ class LanguageService:
                     unassigned_lines: list[tuple[str, Optional[Node]]],
                     default_node: Node,
                     assigned_nodes: set[Node]) -> Optional[Node]:
+        '''Assigns a source code line to a node.
+
+        Parameters:
+            line (str): The line to assign.
+            unassigned_lines (list[tuple[str, Optional[Node]]]): A list of tuple of source code lines and Nodes
+            to be assigned.
+            default_node (Node): The node that gets assigned if no other node fits.
+            assigned_nodes (set[Node]): A set of assigned nodes, to avoid reassignment.
+        '''
         if unassigned_lines and unassigned_lines[-1][0].strip() == line.strip():
             node = unassigned_lines.pop()[1]
         else:
@@ -197,12 +291,24 @@ class LanguageService:
         return node
 
     def get_data_types(self, flowchart: Optional[Flowchart] = None) -> list[str]:
+        '''Get a list of available data types in the flowcharts.
+
+        Includes user defined types and structs.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         struct_defintions = list(map(lambda s: f'{s.name}_t', flowchart.struct_definitions)) if flowchart else []
         type_defintions = list(map(lambda s: s.name, flowchart.type_definitions)) if flowchart else []
         lang_types: list[str] = flowchart.lang_data['types'] if flowchart and 'types' in flowchart.lang_data else []
         return lang_types + type_defintions + struct_defintions
 
     def get_node_shape_data(self, node_type: str) -> tuple[list[list[tuple[float, float]]], tuple[int, int, int]]:
+        '''Gets shape data corresponding to a node type.
+
+        Parameters:
+            node_type (str): The node type to get shape data for.
+        '''
         return cast(tuple[list[list[tuple[float, float]]], tuple[int, int, int]], {
             'data': ([[(20.0, 0.0),
                       (150.0, 0.0),
@@ -289,6 +395,11 @@ class LanguageService:
         }[node_type])
 
     def get_standard_headers(self, flowchart: Flowchart) -> list[str]:
+        '''Get a list of modules, that get imported by default on new programs.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to be checked.
+        '''
         standard_headers: list[str] = flowchart.lang_data['standard_imports']\
             if 'standard_imports' in flowchart.lang_data else []
         return standard_headers

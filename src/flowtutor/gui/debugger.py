@@ -143,7 +143,8 @@ class Debugger:
     def refresh(self, flowchart: Flowchart) -> None:
         '''Refresh the GUI for the current language.
 
-        Compiled lanuages like C get a build button, others do not.'''
+        Compiled lanuages like C get a build button, others do not.
+        '''
         self.flowchart = flowchart
         if self.language_service.is_compiled(self.flowchart):
             dpg.show_item(self.build_button)
@@ -167,7 +168,8 @@ class Debugger:
         '''Enable only the build button. For non-compiled languages this enables the run button.
 
         Parameters:
-            flowchart (Flowchart): The flowchart to debug.'''
+            flowchart (Flowchart): The flowchart to debug.
+        '''
         self.flowchart = flowchart
         self.disable_all()
         if self.language_service.is_compiled(self.flowchart):
@@ -191,7 +193,8 @@ class Debugger:
         '''Disables all children of a dpg item.
 
         Parameters:
-            item (Union[int, str]): The tag of the dpg item.'''
+            item (Union[int, str]): The tag of the dpg item.
+        '''
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -204,7 +207,8 @@ class Debugger:
         '''Enables all children of a dpg item.
 
         Parameters:
-            item (Union[int, str]): The tag of the dpg item.'''
+            item (Union[int, str]): The tag of the dpg item.
+        '''
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -217,7 +221,8 @@ class Debugger:
         '''Sets if the log window should automatically scroll down for new messages.
 
         Parameters:
-            value (bool): True if auto scrolling is on.'''
+            value (bool): True if auto scrolling is on.
+        '''
         self._auto_scroll = value
 
     def _log(self, message: str, level: int) -> None:
@@ -225,7 +230,8 @@ class Debugger:
 
         Parameters:
             message (str): The message to dispaly.
-            level (int): The log level of the message.'''
+            level (int): The log level of the message.
+        '''
 
         if self.log_count > 1000:
             self.clear_log()
@@ -267,35 +273,40 @@ class Debugger:
         '''Logs the character in the logger window.
 
         Parameters:
-            character (str): The character to display.'''
+            character (str): The character to display.
+        '''
         self._log(character, 0)
 
     def log_debug(self, message: str) -> None:
         '''Logs the message in the logger window in DEBUG style.
 
         Parameters:
-            message (str): The message to display.'''
+            message (str): The message to display.
+        '''
         self._log(message, 1)
 
     def log_info(self, message: str) -> None:
         '''Logs the message in the logger window in INFO style.
 
         Parameters:
-            message (str): The message to display.'''
+            message (str): The message to display.
+        '''
         self._log(message, 2)
 
     def log_warning(self, message: str) -> None:
         '''Logs the message in the logger window in WARNING style.
 
         Parameters:
-            message (str): The message to display.'''
+            message (str): The message to display.
+        '''
         self._log(message, 3)
 
     def log_error(self, message: str) -> None:
         '''Logs the message in the logger window in ERROR style.
 
         Parameters:
-            message (str): The message to display.'''
+            message (str): The message to display.
+        '''
         self._log(message, 4)
 
     def clear_log(self) -> None:
@@ -408,6 +419,6 @@ class Debugger:
         self.debug_session = None
 
     def on_recieve_output(self, _: Any, **kw: str) -> None:
-        '''Log outputs to the logger windo.'''
+        '''Log outputs to the logger window.'''
         output = kw['output']
         self.log(output)

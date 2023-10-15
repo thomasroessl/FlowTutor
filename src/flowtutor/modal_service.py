@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 class ModalService:
+    '''A service to handle showing of modal dialogs.'''
 
     @inject
     def __init__(self,
@@ -28,6 +29,14 @@ class ModalService:
         self.utils_service = utils_service
 
     def show_paths_window(self) -> None:
+        '''Shows a Window with a table that shows some useful paths.
+
+        - FlowTutor root
+        - GCC executable
+        - GDB executable
+        - Templates
+        - Working directory
+        '''
         with dpg.window(
                 label="FlowTutor",
                 modal=True,
@@ -63,6 +72,13 @@ class ModalService:
                     dpg.add_input_text(default_value=self.utils_service.get_temp_dir(), width=-1, readonly=True)
 
     def show_approval_modal(self, label: str, message: str, callback: Callable[[], None]) -> None:
+        '''Shows a modal dialog asking for approval from the user.
+
+        Parameters:
+            label (str): The label of the window.
+            message (str): The message to the user.
+            callback (Callable[[], None]): The callback that gets executed upon approval.
+        '''
         client_with = dpg.get_viewport_client_width()
 
         with dpg.window(
@@ -86,6 +102,11 @@ class ModalService:
                     callback=lambda: dpg.delete_item('approval_modal'))
 
     def show_welcome_modal(self, gui: GUI) -> None:
+        '''Shows a modal dialog for creating a new project.
+
+        Parameters:
+            gui (GUI): A reference to the main gui object.
+        '''
         client_with = dpg.get_viewport_client_width()
 
         if dpg.does_item_exist('welcome_modal'):
@@ -153,6 +174,7 @@ class ModalService:
                                                     dpg.hide_item('welcome_modal')))
 
     def on_select_language(self, gui: GUI, lang_data: dict[str, Any]) -> None:
+        '''Handles the event if a language is selected.'''
         gui.flowcharts['main'].lang_data = lang_data
         gui.language_service.finish_init(gui.flowcharts['main'])
         gui.sidebar_none.refresh()
@@ -161,6 +183,12 @@ class ModalService:
         gui.redraw_all(True)
 
     def open_callback(self, gui: GUI, file_path: str) -> None:
+        '''This method is called, when a project file is openend.
+
+        Parameters:
+            gui (GUI): A reference to the main gui object.
+            file_path (str): The path to the project file to be openend.
+        '''
         with open(file_path, 'rb') as file:
             gui.file_path = file_path
             dpg.set_viewport_title(f'FlowTutor - {file_path}')
@@ -179,6 +207,7 @@ class ModalService:
             self.settings_service.set_setting('recents', ','.join(recents))
 
     def show_save_as_dialog(self, gui: GUI) -> None:
+        '''Shows a 'Save As' window for the current project.'''
         def callback(gui: GUI, file_path: str) -> None:
             with open(file_path, 'wb') as file:
                 gui.file_path = file_path
@@ -193,11 +222,11 @@ class ModalService:
         with dpg.file_dialog(tag='save_as_dialog',
                              min_size=[500, 300],
                              directory_selector=False,
-                             # callback=lambda _, data: print(data['file_path_name'])):
                              callback=lambda _, data: callback(gui, data['file_path_name'])):
             dpg.add_file_extension(".flowtutor")
 
     def show_open_dialog(self, gui: GUI) -> None:
+        '''Shows a window for opening an existing project.'''
         if dpg.does_item_exist('open_dialog'):
             dpg.show_item('open_dialog')
             return
@@ -214,6 +243,14 @@ class ModalService:
                               message: str,
                               default_value: str,
                               callback: Callable[[str], None]) -> None:
+        '''Shows a modal dialog asking for approval from the user.
+
+        Parameters:
+            label (str): The label of the window.
+            message (str): The message to the user.
+            default_value (str): The suggested value in the input box.
+            callback (Callable[[], None]): The callback that gets executed on OK.
+        '''
         with dpg.window(
                 label=label,
                 modal=True,
@@ -237,6 +274,13 @@ class ModalService:
                              flowchart: Flowchart,
                              callback: Callable[[Node], None],
                              pos: tuple[int, int]) -> None:
+        '''Shows a window with a list of node types, that can be inserted.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart the new node is to be added to.
+            callback (Callable[[Node], None]): The callback that gets executed upon selection of a node type.
+            pos (tuple[int, int]): The position of the window.
+        '''
         with dpg.window(
                 label='Add Node',
                 pos=pos,

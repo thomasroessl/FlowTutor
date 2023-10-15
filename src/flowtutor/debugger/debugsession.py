@@ -37,7 +37,8 @@ class DebugSession(ABC):
         '''Continue execution of the program until the end or the next break point.
 
         Parameters:
-            flowchart (Flowchart): The instance of the debugged flowchart.'''
+            flowchart (Flowchart): The instance of the debugged flowchart.
+        '''
         pass
 
     @abstractmethod
@@ -50,7 +51,8 @@ class DebugSession(ABC):
         '''Excecute a single step of the program, stepping into functions.
 
         Parameters:
-            flowchart (Flowchart): The instance of the debugged flowchart.'''
+            flowchart (Flowchart): The instance of the debugged flowchart.
+        '''
         pass
 
     @abstractmethod
@@ -58,7 +60,8 @@ class DebugSession(ABC):
         '''Excecute a single step of the program, stepping over functions.
 
         Parameters:
-            flowchart (Flowchart): The instance of the debugged flowchart.'''
+            flowchart (Flowchart): The instance of the debugged flowchart.
+        '''
         pass
 
     @abstractmethod
@@ -66,7 +69,8 @@ class DebugSession(ABC):
         '''Writes user input into the debugger.
 
         Parameters:
-            value (str): The value to send to the debugger.'''
+            value (str): The value to send to the debugger.
+        '''
         pass
 
     @abstractmethod
@@ -76,5 +80,6 @@ class DebugSession(ABC):
         This method has to be called, when the user makes changes to the break points.
 
         Parameters:
-            flowchart (Flowchart): The instance of the debugged flowchart.'''
+            flowchart (Flowchart): The instance of the debugged flowchart.
+        '''
         pass

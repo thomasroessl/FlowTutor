@@ -18,16 +18,24 @@ except ModuleNotFoundError:
 
 
 class UtilService:
+    '''A service for miscellaneous utils.'''
 
     def __init__(self) -> None:
         self.root = Path(modules['__main__'].__file__ or '').parent.resolve()
+        '''THe root directory of the application.'''
         self.temp_dir = tempfile.mkdtemp(None, 'flowtutor-')
+        '''The working directory of the application.'''
         print(self.temp_dir)
         self.tty_name = ''
-        self.tty_fd = 0
+        '''The name of the TTY used for subprocess communication.'''
+        self.tty_fd: int = 0
+        '''The file descriptor of the TTY used for subprocess communication.'''
         self.is_stopped = Event()
+        '''Gets set if the TTY thread gets stopped.'''
         self.is_windows = system() == 'Windows'
+        '''True if the OS is Windows.'''
         self.is_mac_os = system() == 'Darwin'
+        '''True if the OS is MacOS.'''
 
     def cleanup_temp(self) -> None:
         '''Deletes the temporary working directories.'''
@@ -89,7 +97,11 @@ class UtilService:
         return gdb_commands_path
 
     def get_source_path(self, file_ext: str) -> str:
-        '''Gets the path to the generated source code of the flowchart.'''
+        '''Gets the path to the generated source code file of the flowchart.
+
+        Parameters:
+            file_ext (str): The file extension of the source code file.
+        '''
         return path.join(self.temp_dir, f'flowtutor{file_ext}')
 
     def get_break_points_path(self) -> str:
@@ -97,7 +109,11 @@ class UtilService:
         return path.join(self.temp_dir, 'flowtutor_break_points')
 
     def get_templates_path(self, lang_id: str = '') -> str:
-        '''Gets the path to the directory containing templates for predefined nodes.'''
+        '''Gets the path to the directory containing templates for predefined nodes.
+
+        Parameters:
+            lang_id (str): The identifier of the selected language.
+        '''
         if (modules['__main__'].__file__ or '').endswith('.pyw'):
             result = path.join(self.root, 'templates', lang_id)
         else:
@@ -129,7 +145,11 @@ class UtilService:
         Thread(target=output, args=[self.tty_fd]).start()
 
     def write_tty(self, message: str) -> None:
-        '''Writes to the opened pseudoterminal that communicates with with gdb.'''
+        '''Writes to the opened pseudoterminal that communicates with with gdb.
+
+        Parameters:
+            message (str): The message to send.
+        '''
         write(self.tty_fd, (message + '\n').encode('utf-8'))
 
     def stop_tty(self) -> None:

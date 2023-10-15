@@ -16,6 +16,7 @@ def start(utils_service: UtilService = Provide['utils_service']) -> None:
     if system() != 'Windows':
         utils_service.open_tty()
     gui = GUI(2000, 2000)
+
     # Calls the redraw function after the first frame is rendered
     if dpg.is_dearpygui_running():
         dpg.render_dearpygui_frame()
@@ -25,6 +26,7 @@ def start(utils_service: UtilService = Provide['utils_service']) -> None:
     if dpg.is_dearpygui_running():
         dpg.render_dearpygui_frame()
         gui.modal_service.show_welcome_modal(gui)
+
     dpg.start_dearpygui()
     if system() != 'Windows':
         utils_service.stop_tty()

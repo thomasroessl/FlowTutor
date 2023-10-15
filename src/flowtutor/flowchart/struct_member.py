@@ -43,7 +43,8 @@ class StructMember:
     def array_size(self) -> str:
         '''The size of the array.
 
-        Only applicable for arrays.'''
+        Only applicable for arrays.
+        '''
         return self._array_size
 
     @array_size.setter

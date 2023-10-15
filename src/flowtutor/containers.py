@@ -9,6 +9,7 @@ from flowtutor.language_service import LanguageService
 
 
 class Container(containers.DeclarativeContainer):
+    '''The container for dependency injection.'''
 
     utils_service = providers.Singleton(
         UtilService
