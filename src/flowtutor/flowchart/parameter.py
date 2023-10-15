@@ -1,4 +1,5 @@
 class Parameter:
+    '''Represents a function parameter.'''
 
     def __init__(self) -> None:
         self._name = ''
@@ -6,6 +7,7 @@ class Parameter:
 
     @property
     def name(self) -> str:
+        '''The name of the parameter.'''
         return self._name
 
     @name.setter
@@ -14,6 +16,7 @@ class Parameter:
 
     @property
     def type(self) -> str:
+        '''The data type of the parameter.'''
         return self._type
 
     @type.setter

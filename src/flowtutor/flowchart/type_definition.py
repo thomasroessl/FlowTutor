@@ -1,6 +1,7 @@
 
 
 class TypeDefinition:
+    '''Represents a C style type definition.'''
 
     def __init__(self) -> None:
         self._name = ''
@@ -8,6 +9,7 @@ class TypeDefinition:
 
     @property
     def name(self) -> str:
+        '''The name of the type.'''
         return self._name
 
     @name.setter
@@ -16,6 +18,7 @@ class TypeDefinition:
 
     @property
     def definition(self) -> str:
+        '''The definition.'''
         return self._definition
 
     @definition.setter

@@ -3,6 +3,7 @@ from flowtutor.flowchart.struct_member import StructMember
 
 
 class StructDefinition:
+    '''A struct definition for C style structs.'''
 
     def __init__(self) -> None:
         self._name = ''
@@ -10,6 +11,7 @@ class StructDefinition:
 
     @property
     def name(self) -> str:
+        '''The name of the struct.'''
         return self._name
 
     @name.setter
@@ -18,6 +20,7 @@ class StructDefinition:
 
     @property
     def members(self) -> list[StructMember]:
+        '''A list of struct members.'''
         return self._members
 
     def __repr__(self) -> str:

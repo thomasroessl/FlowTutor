@@ -447,14 +447,7 @@ class GUI:
                 self.on_select_node(None)
                 self.redraw_all(True)
                 self.resize()
-
-        if any(map(lambda n: n.has_nested_nodes(), self.selected_nodes)):
-            self.modal_service.show_approval_modal(
-                'Delete Node(s)',
-                'Nested nodes will also be deleted.',
-                callback)
-        else:
-            callback()
+        callback()
 
     def set_sidebar_title(self, title: str) -> None:
         dpg.configure_item(self.sidebar_title_tag, default_value=title)

@@ -15,7 +15,6 @@ class FunctionStart(Node):
     def __init__(self, name: str = '', language_service: LanguageService = Provide['language_service']) -> None:
         super().__init__()
         self._shape_data, self.default_color = language_service.get_node_shape_data('terminator')
-        self._shape_points = self._shape_data[0]
         self._name = name
         self._return_type = 'int'
         self._parameters: list[Parameter] = []
