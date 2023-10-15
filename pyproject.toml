@@ -1,7 +1,7 @@
 [project]
 name = "FlowTutor"
 description = "A graphical programming environment using flowcharts."
-version = "0.10.4"
+version = "0.10.5"
 readme = "README.md"
 authors = [
   {name = "Thomas Rößl", email = "e11775192@student.tuwien.ac.at"}
