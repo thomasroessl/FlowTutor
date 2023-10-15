@@ -1,3 +1,5 @@
+'''Handles the creation of color themes.'''
+
 import dearpygui.dearpygui as dpg
 
 theme_colors: dict[tuple[int, int], tuple[float, float, float, float]] = {}

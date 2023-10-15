@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 
 class SidebarFunctionEnd(Sidebar):
+    '''A GUI sidebar for FunctionEnd nodes.'''
 
     def __init__(self, gui: GUI) -> None:
         self.gui = gui

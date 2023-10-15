@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class SidebarNone(Sidebar):
+    '''A GUI sidebar for no selected nodes.'''
 
     @inject
     def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:

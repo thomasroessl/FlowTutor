@@ -22,9 +22,7 @@ LOADING_INDICATOR_TAG = 'loading_indicator'
 
 
 class Debugger:
-
-    debug_session: Optional[DebugSession] = None
-    flowchart: Optional[Flowchart] = None
+    '''The GUI for debugging.'''
 
     @inject
     def __init__(self,
@@ -33,15 +31,22 @@ class Debugger:
                  language_service: LanguageService = Provide['language_service']) -> None:
         self.utils = utils_service
         self.language_service = language_service
-
-        self.log_level = 0
         self._auto_scroll = True
-        self.filter_id = None
-        self.input_id = None
-        self.window_id = parent
+
+        self.debug_session: Optional[DebugSession] = None
+        '''The DebugSession object used for debugging.'''
+        self.flowchart: Optional[Flowchart] = None
+        '''The flowchart to be debugged.'''
+        self.filter_id: Optional[Union[int, str]] = None
+        '''The tag of the dpg filter item.'''
+        self.input_id: Optional[Union[int, str]] = None
+        '''The tag of the dpg input item used for user input.'''
+        self.window_id: Union[int, str] = parent
+        '''The tag of the parent dpg window.'''
         self.log_count = 0
-        self.log_flush_count = 1000
+        '''The number of logged lines.'''
         self.log_last_line: Optional[Union[int, str]] = None
+        '''The tag of th elast log line dpg item.'''
 
         signal('program-finished').connect(self.on_program_finished)
         signal('program-kiled').connect(self.on_program_killed)
@@ -76,29 +81,30 @@ class Debugger:
                 self.clear_button = dpg.add_button(label='Clear Log',
                                                    pos=(340, 0),
                                                    callback=lambda: dpg.delete_item(self.filter_id, children_only=True))
+                # Set the padding of the dpg group
                 with dpg.theme() as item_theme:
                     with dpg.theme_component(dpg.mvGroup):
                         dpg.add_theme_style(dpg.mvStyleVar_CellPadding, 0.0, category=dpg.mvThemeCat_Core)
                 dpg.bind_item_theme(g1, item_theme)
 
+            # Set the paddin goof the tool buttons
             with dpg.theme() as tool_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
                     dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
                 with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
                     dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
-
             dpg.bind_item_theme(self.build_button, tool_button_theme)
             dpg.bind_item_theme(self.run_button, tool_button_theme)
             dpg.bind_item_theme(self.step_over_button, tool_button_theme)
             dpg.bind_item_theme(self.step_into_button, tool_button_theme)
             dpg.bind_item_theme(self.stop_button, tool_button_theme)
 
+            # Set the padding of the clear button
             with dpg.theme() as clear_button_theme:
                 with dpg.theme_component(dpg.mvButton):
                     dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 12, 6, category=dpg.mvThemeCat_Core)
                 with dpg.theme_component(dpg.mvButton, enabled_state=False):
                     dpg.add_theme_style(dpg.mvStyleVar_FramePadding, 5, 5, category=dpg.mvThemeCat_Core)
-
             dpg.bind_item_theme(self.clear_button, clear_button_theme)
 
         self.child_id = dpg.add_child_window(parent=self.window_id, autosize_x=True, autosize_y=True)
@@ -135,6 +141,9 @@ class Debugger:
                 dpg.add_theme_color(dpg.mvThemeCol_Text, (255, 0, 0, 255))
 
     def refresh(self, flowchart: Flowchart) -> None:
+        '''Refresh the GUI for the current language.
+
+        Compiled lanuages like C get a build button, others do not.'''
         self.flowchart = flowchart
         if self.language_service.is_compiled(self.flowchart):
             dpg.show_item(self.build_button)
@@ -142,17 +151,23 @@ class Debugger:
             dpg.hide_item(self.build_button)
 
     def on_input(self) -> None:
+        '''Handle user input.'''
         input_value = dpg.get_value(self.input_id)
         if self.debug_session:
             self.debug_session.write(input_value)
         dpg.configure_item(self.input_id, default_value='')
 
     def disable_all(self) -> None:
+        '''Diable all controls of the debugger.'''
         self.disable_children(self.controls_group)
         dpg.enable_item(self.auto_scroll_cb)
         dpg.enable_item(self.clear_button)
 
     def enable_build_only(self, flowchart: Flowchart) -> None:
+        '''Enable only the build button. For non-compiled languages this enables the run button.
+
+        Parameters:
+            flowchart (Flowchart): The flowchart to debug.'''
         self.flowchart = flowchart
         self.disable_all()
         if self.language_service.is_compiled(self.flowchart):
@@ -163,14 +178,20 @@ class Debugger:
             dpg.hide_item(self.build_button)
 
     def enable_build_and_run(self) -> None:
+        '''Enables the build and run buttons.'''
         self.disable_all()
         dpg.enable_item(self.build_button)
         dpg.enable_item(self.run_button)
 
     def enable_all(self) -> None:
+        '''Enables all controls of the debugger.'''
         self.enable_children(self.controls_group)
 
     def disable_children(self, item: Union[int, str]) -> None:
+        '''Disables all children of a dpg item.
+
+        Parameters:
+            item (Union[int, str]): The tag of the dpg item.'''
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -180,6 +201,10 @@ class Debugger:
                     dpg.disable_item(child)
 
     def enable_children(self, item: Union[int, str]) -> None:
+        '''Enables all children of a dpg item.
+
+        Parameters:
+            item (Union[int, str]): The tag of the dpg item.'''
         slots = dpg.get_item_children(item)
         for slot in slots.values():
             for child in slot:
@@ -189,14 +214,20 @@ class Debugger:
                     dpg.enable_item(child)
 
     def auto_scroll(self, value: bool) -> None:
+        '''Sets if the log window should automatically scroll down for new messages.
+
+        Parameters:
+            value (bool): True if auto scrolling is on.'''
         self._auto_scroll = value
 
     def _log(self, message: str, level: int) -> None:
+        '''Logs the message in the logger window.
 
-        if level < self.log_level:
-            return
+        Parameters:
+            message (str): The message to dispaly.
+            level (int): The log level of the message.'''
 
-        if self.log_count > self.log_flush_count:
+        if self.log_count > 1000:
             self.clear_log()
 
         theme = None
@@ -233,33 +264,57 @@ class Debugger:
             dpg.set_y_scroll(self.child_id, -1.0)
 
     def log(self, character: str) -> None:
+        '''Logs the character in the logger window.
+
+        Parameters:
+            character (str): The character to display.'''
         self._log(character, 0)
 
     def log_debug(self, message: str) -> None:
+        '''Logs the message in the logger window in DEBUG style.
+
+        Parameters:
+            message (str): The message to display.'''
         self._log(message, 1)
 
     def log_info(self, message: str) -> None:
+        '''Logs the message in the logger window in INFO style.
+
+        Parameters:
+            message (str): The message to display.'''
         self._log(message, 2)
 
     def log_warning(self, message: str) -> None:
+        '''Logs the message in the logger window in WARNING style.
+
+        Parameters:
+            message (str): The message to display.'''
         self._log(message, 3)
 
     def log_error(self, message: str) -> None:
+        '''Logs the message in the logger window in ERROR style.
+
+        Parameters:
+            message (str): The message to display.'''
         self._log(message, 4)
 
     def clear_log(self) -> None:
+        '''Clears the logger window of a ll messages.'''
         dpg.delete_item(self.filter_id, children_only=True)
         self.log_count = 0
 
     def load_start(self) -> None:
+        '''Shows a loading indicator.'''
         dpg.add_loading_indicator(tag=LOADING_INDICATOR_TAG, parent=self.filter_id)
         if self._auto_scroll:
             dpg.set_y_scroll(self.child_id, -1.0)
 
     def load_end(self) -> None:
+        '''Removes the loading indicator.'''
         dpg.delete_item(LOADING_INDICATOR_TAG)
 
     def on_debug_run(self) -> None:
+        '''Starts the debugger and runs the program.'''
         if self.flowchart:
             if not self.debug_session:
                 # Start debugger
@@ -272,6 +327,7 @@ class Debugger:
                 self.debug_session.cont(self.flowchart)
 
     def on_build(self) -> None:
+        '''Compiles the C program using GCC.'''
         self.disable_all()
         self.load_start()
 
@@ -318,33 +374,40 @@ class Debugger:
         self.load_end()
 
     def on_debug_step_over(self) -> None:
+        '''Excecute a single step of the program, stepping over functions.'''
         if not self.debug_session or not self.flowchart:
             return
         self.debug_session.next(self.flowchart)
 
     def on_debug_step_into(self) -> None:
+        '''Excecute a single step of the program, stepping into functions.'''
         if not self.debug_session or not self.flowchart:
             return
         self.debug_session.step(self.flowchart)
 
     def on_debug_stop(self) -> None:
+        '''Stop execution of the program.'''
         if not self.debug_session:
             return
         self.debug_session.stop()
 
     def on_program_finished(self, _: Any, **kw: Any) -> None:
-        sleep(0.5)
+        '''Log a message after program has finished'''
+        sleep(0.3)
         self.log_info('Program ended.')
         self.debug_session = None
 
     def on_program_error(self, _: Any, **kw: str) -> None:
+        '''Log a message on program errors.'''
         error = kw['error']
         self.log_error(error)
 
     def on_program_killed(self, _: Any, **kw: Any) -> None:
+        '''Log a message if the program gets killed.'''
         self.log_info('Program killed.')
         self.debug_session = None
 
     def on_recieve_output(self, _: Any, **kw: str) -> None:
+        '''Log outputs to the logger windo.'''
         output = kw['output']
         self.log(output)

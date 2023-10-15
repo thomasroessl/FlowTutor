@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 
 class SidebarMulti(Sidebar):
+    '''A GUI sidebar for multiple selected nodes.'''
 
     def __init__(self, gui: GUI) -> None:
         self.gui = gui

@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
 
 class SectionTypedefs:
+    '''A GUI section for type definitions.'''
+
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
         with dpg.theme() as self.delete_button_theme:

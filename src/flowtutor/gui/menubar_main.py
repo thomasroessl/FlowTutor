@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class MenubarMain:
+    '''The main menu bar placed at the top of the window.'''
 
     @inject
     def __init__(self,
@@ -47,6 +48,7 @@ class MenubarMain:
                 dpg.add_menu_item(label='Paths', callback=self.modal_service.show_paths_window)
 
     def on_new(self) -> None:
+        '''Handles pressing of the 'New' menu item.'''
         def callback() -> None:
             self.gui.file_path = None
             dpg.set_viewport_title('FlowTutor')
@@ -60,6 +62,7 @@ class MenubarMain:
             'New Program', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     def on_clear(self) -> None:
+        '''Handles pressing of the 'Clear' menu item.'''
         def callback() -> None:
             self.gui.selected_flowchart.reset()
             self.gui.clear_flowchart(True)
@@ -68,6 +71,7 @@ class MenubarMain:
             'Clear', 'Are you sure? Any unsaved changes are going to be lost.', callback)
 
     def on_save(self) -> None:
+        '''Handles pressing of the 'Save' menu item.'''
         if self.gui.file_path:
             with open(self.gui.file_path, 'wb') as file:
                 dump(self.gui.flowcharts, file)
@@ -75,16 +79,19 @@ class MenubarMain:
             self.modal_service.show_save_as_dialog(self.gui)
 
     def on_light_theme_menu_item_click(self) -> None:
+        '''Handles pressing of the 'Light theme' menu item.'''
         dpg.bind_theme(create_theme_light())
         self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'light')
 
     def on_dark_theme_menu_item_click(self) -> None:
+        '''Handles pressing of the 'Dark theme' menu item.'''
         dpg.bind_theme(create_theme_dark())
         self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'dark')
 
     def on_add_function(self) -> None:
+        '''Handles pressing of the 'Add Function' menu item.'''
         def callback(name: str) -> None:
             self.gui.flowcharts[name] = Flowchart(name, self.gui.selected_flowchart.lang_data)
             self.gui.refresh_function_tabs()

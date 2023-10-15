@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class SidebarFunctionStart(Sidebar):
+    '''A GUI sidebar for FunctionStart nodes.'''
 
     @inject
     def __init__(self,

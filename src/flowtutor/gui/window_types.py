@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 
 class WindowTypes:
+    '''A GUI windo for type and struct definitions.'''
 
     def __init__(self, gui: GUI) -> None:
         with dpg.window(tag='type_window',

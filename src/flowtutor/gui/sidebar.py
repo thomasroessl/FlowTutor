@@ -6,6 +6,7 @@ from flowtutor.flowchart.node import Node
 
 
 class Sidebar(ABC):
+    '''A abstract base class for sidebar GUI elements.'''
 
     @abstractmethod
     def hide(self) -> None:

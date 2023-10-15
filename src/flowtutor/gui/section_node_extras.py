@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
 
 class SectionNodeExtras:
+    '''A GUI section for additional node options.'''
+
     def __init__(self, gui: GUI) -> None:
         self.gui = gui
         with dpg.group(show=False) as self.main_group:

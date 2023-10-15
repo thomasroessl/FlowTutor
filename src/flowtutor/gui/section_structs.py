@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class SectionStructs:
+    '''A GUI section for struct definitions.'''
 
     @inject
     def __init__(self, gui: GUI, language_service: LanguageService = Provide['language_service']) -> None:
