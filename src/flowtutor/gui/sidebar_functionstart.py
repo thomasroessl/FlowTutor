@@ -73,6 +73,7 @@ class SidebarFunctionStart(Sidebar):
     def on_delete(self) -> None:
         if isinstance(self.gui.selected_node, FunctionStart):
             del self.gui.flowcharts[self.gui.selected_node.name]
+            self.gui.selected_flowchart_name = next(iter(self.gui.flowcharts))
             self.gui.refresh_function_tabs()
 
     def on_rename(self) -> None:
