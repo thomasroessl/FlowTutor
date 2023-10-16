@@ -4,7 +4,6 @@ import dearpygui.dearpygui as dpg
 
 from flowtutor.flowchart.connector import Connector
 from flowtutor.flowchart.template import Template
-from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.node import Node
@@ -32,10 +31,11 @@ class Connection:
         '''The connection index where the connection originates.'''
         return self._src_ind
 
-    def draw(self, parent: Node) -> None:  # pragma: no cover
+    def draw(self, text_color: tuple[int, int, int, int], parent: Node) -> None:  # pragma: no cover
         '''Draws the connection in the dearpygui drawing area.
 
         Parameters:
+            text_color (tuple[int, int, int, int]): The color of the drawn text
             parent (Node): The node where the connection originates.
         '''
 
@@ -43,8 +43,6 @@ class Connection:
         src_out_points = parent.out_points
 
         out_x, out_y = src_out_points[int(self.src_ind)]
-
-        text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
         with dpg.draw_node(parent=parent.tag):
             if parent == self.dst_node:

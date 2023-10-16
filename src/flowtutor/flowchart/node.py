@@ -5,8 +5,6 @@ from uuid import uuid4
 import dearpygui.dearpygui as dpg
 from shapely.geometry import Polygon
 
-from flowtutor.gui.themes import theme_colors
-
 if TYPE_CHECKING:
     from flowtutor.flowchart.connection import Connection
     from flowtutor.flowchart.flowchart import Flowchart
@@ -278,11 +276,13 @@ class Node(ABC):
 
     def draw(self,
              flowchart: Flowchart,
+             text_color: tuple[int, int, int, int],
              is_selected: bool = False) -> None:  # pragma: no cover
         '''Draws the node in the dearpygui drawing area.
 
         Parameters:
             flowchart (Flowchart): The flowchart that contains the node.
+            text_color (tuple[int, int, int, int]): The color of the drawn text.
             is_selected (bool): True if the node should be drawn in a selected state.
         '''
         # Draw the node in grey, if it is disabled.
@@ -292,7 +292,6 @@ class Node(ABC):
         with dpg.draw_node(
                 tag=self.tag,
                 parent=FLOWCHART_TAG):
-            text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
             # Make the borders thicker if the node is in a selected state.
             thickness = 3 if is_selected else 2 if self.is_hovered else 1
@@ -353,14 +352,15 @@ class Node(ABC):
                     color=text_color)
 
         for connection in self.connections:
-            connection.draw(self)
+            connection.draw(text_color, self)
 
-    def redraw(self, flowchart: Flowchart, selected_nodes: list[Node]) -> None:
+    def redraw(self, flowchart: Flowchart, selected_nodes: list[Node], text_color: tuple[int, int, int, int]) -> None:
         '''Deletes the node and draws a new version of it.
 
         Parameters:
             flowchart (Flowchart): The flowchart that contains the node.
             selected_nodes (list[Node]): A list of the selected nodes.
+            text_color (tuple[int, int, int, int]): The color of the drawn text.
         '''
         self.delete()
         self.draw(flowchart, self in selected_nodes)

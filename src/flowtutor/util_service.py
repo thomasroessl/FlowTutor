@@ -3,6 +3,7 @@ from platform import system
 from select import select
 from sys import modules, stdin
 from threading import Event, Thread
+from typing import Optional
 from blinker import signal
 from shutil import which, rmtree
 import tempfile
@@ -22,7 +23,7 @@ class UtilService:
 
     def __init__(self) -> None:
         self.root = Path(modules['__main__'].__file__ or '').parent.resolve()
-        '''THe root directory of the application.'''
+        '''The root directory of the application.'''
         self.temp_dir = tempfile.mkdtemp(None, 'flowtutor-')
         '''The working directory of the application.'''
         print(self.temp_dir)
@@ -36,6 +37,10 @@ class UtilService:
         '''True if the OS is Windows.'''
         self.is_mac_os = system() == 'Darwin'
         '''True if the OS is MacOS.'''
+        self.theme_colors: dict[tuple[int, int], tuple[int, int, int, int]] = {}
+        '''The colors of the current theme.'''
+        self._theme_light: Optional[int] = None
+        self._theme_dark: Optional[int] = None
 
     def cleanup_temp(self) -> None:
         '''Deletes the temporary working directories.'''
@@ -169,3 +174,161 @@ class UtilService:
         else:
             is_multi_modifier_down = is_multi_modifier_down or dpg.is_key_down(dpg.mvKey_Control)
         return is_multi_modifier_down
+
+    def __set_theme_color(self, target: int, color: tuple[int, int, int, int]) -> None:
+        dpg.add_theme_color(target, color)
+        self.theme_colors[target] = color
+
+    def get_theme_dark(self) -> int:
+        '''Gets the dark dpg theme.'''
+        if self._theme_dark is None:
+            self._theme_dark = self.__create_theme_dark()
+        return self._theme_dark
+
+    def get_theme_light(self) -> int:
+        '''Gets the light dpg theme.'''
+        if self._theme_light is None:
+            self._theme_light = self.__create_theme_light()
+        return self._theme_light
+
+    def __create_theme_dark(self) -> int:
+        '''Creates the dark dpg theme.'''
+        with dpg.theme() as theme_id:
+            with dpg.theme_component(dpg.mvAll):
+                self.__set_theme_color(dpg.mvThemeCol_Text, (255, 255, 255, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TextDisabled, (128, 128, 128, 255))
+                self.__set_theme_color(dpg.mvThemeCol_WindowBg, (15, 15, 15, 240))
+                self.__set_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_PopupBg, (20, 20, 20, 240))
+                self.__set_theme_color(dpg.mvThemeCol_Border, (110, 110, 128, 128))
+                self.__set_theme_color(dpg.mvThemeCol_BorderShadow, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBg, (41, 74, 122, 138))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBgHovered, (66, 150, 250, 102))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBgActive, (66, 150, 250, 171))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBg, (10, 10, 10, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBgActive, (41, 74, 122, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBgCollapsed, (0, 0, 0, 130))
+                self.__set_theme_color(dpg.mvThemeCol_MenuBarBg, (36, 36, 36, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarBg, (5, 5, 5, 135))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrab, (79, 79, 79, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrabHovered, (105, 105, 105, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrabActive, (130, 130, 130, 255))
+                self.__set_theme_color(dpg.mvThemeCol_CheckMark, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_SliderGrab, (61, 133, 224, 255))
+                self.__set_theme_color(dpg.mvThemeCol_SliderGrabActive, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_Button, (66, 150, 250, 102))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (15, 135, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_Header, (66, 150, 250, 79))
+                self.__set_theme_color(dpg.mvThemeCol_HeaderHovered, (66, 150, 250, 204))
+                self.__set_theme_color(dpg.mvThemeCol_HeaderActive, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_Separator, (110, 110, 128, 128))
+                self.__set_theme_color(dpg.mvThemeCol_SeparatorHovered, (26, 102, 191, 199))
+                self.__set_theme_color(dpg.mvThemeCol_SeparatorActive, (26, 102, 191, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGrip, (66, 150, 250, 51))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGripHovered, (66, 150, 250, 171))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGripActive, (66, 150, 250, 242))
+                self.__set_theme_color(dpg.mvThemeCol_Tab, (46, 89, 148, 219))
+                self.__set_theme_color(dpg.mvThemeCol_TabHovered, (66, 150, 250, 204))
+                self.__set_theme_color(dpg.mvThemeCol_TabActive, (51, 105, 173, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TabUnfocused, (18, 26, 38, 247))
+                self.__set_theme_color(dpg.mvThemeCol_TabUnfocusedActive, (36, 66, 107, 255))
+                self.__set_theme_color(dpg.mvThemeCol_DockingPreview, (66, 150, 250, 179))
+                self.__set_theme_color(dpg.mvThemeCol_DockingEmptyBg, (51, 51, 51, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotLines, (156, 156, 156, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotLinesHovered, (255, 110, 89, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotHistogram, (230, 179, 0, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotHistogramHovered, (255, 153, 0, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableHeaderBg, (48, 48, 51, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableBorderStrong, (79, 79, 89, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableBorderLight, (59, 59, 64, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableRowBg, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_TableRowBgAlt, (255, 255, 255, 15))
+                self.__set_theme_color(dpg.mvThemeCol_TextSelectedBg, (66, 150, 250, 89))
+                self.__set_theme_color(dpg.mvThemeCol_DragDropTarget, (255, 255, 0, 230))
+                self.__set_theme_color(dpg.mvThemeCol_NavHighlight, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_NavWindowingHighlight, (255, 255, 255, 179))
+                self.__set_theme_color(dpg.mvThemeCol_NavWindowingDimBg, (204, 204, 204, 51))
+                self.__set_theme_color(dpg.mvThemeCol_ModalWindowDimBg, (204, 204, 204, 89))
+
+            with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
+                self.__set_theme_color(dpg.mvThemeCol_Button, (50, 50, 50, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (50, 50, 50, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (50, 50, 50, 255))
+
+            with dpg.theme_component(dpg.mvButton, enabled_state=False):
+                self.__set_theme_color(dpg.mvThemeCol_Button, (50, 50, 50, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (50, 50, 50, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (50, 50, 50, 255))
+        return int(theme_id)
+
+    def __create_theme_light(self) -> int:
+        '''Creates the light dpg theme.'''
+        with dpg.theme() as theme_id:
+            with dpg.theme_component(dpg.mvAll):
+                self.__set_theme_color(dpg.mvThemeCol_Text, (0, 0, 0, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TextDisabled, (153, 153, 153, 255))
+                self.__set_theme_color(dpg.mvThemeCol_WindowBg, (255, 255, 255, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ChildBg, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_PopupBg, (255, 255, 255, 250))
+                self.__set_theme_color(dpg.mvThemeCol_Border, (0, 0, 0, 77))
+                self.__set_theme_color(dpg.mvThemeCol_BorderShadow, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBg, (230, 230, 230, 255))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBgHovered, (66, 150, 250, 102))
+                self.__set_theme_color(dpg.mvThemeCol_FrameBgActive, (66, 150, 250, 171))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBg, (245, 245, 245, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBgActive, (209, 209, 209, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TitleBgCollapsed, (255, 255, 255, 130))
+                self.__set_theme_color(dpg.mvThemeCol_MenuBarBg, (219, 219, 219, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarBg, (250, 250, 250, 135))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrab, (176, 176, 176, 204))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrabHovered, (125, 125, 125, 204))
+                self.__set_theme_color(dpg.mvThemeCol_ScrollbarGrabActive, (125, 125, 125, 255))
+                self.__set_theme_color(dpg.mvThemeCol_CheckMark, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_SliderGrab, (66, 150, 250, 199))
+                self.__set_theme_color(dpg.mvThemeCol_SliderGrabActive, (117, 138, 204, 153))
+                self.__set_theme_color(dpg.mvThemeCol_Button, (66, 150, 250, 102))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (15, 135, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_Header, (66, 150, 250, 79))
+                self.__set_theme_color(dpg.mvThemeCol_HeaderHovered, (66, 150, 250, 204))
+                self.__set_theme_color(dpg.mvThemeCol_HeaderActive, (66, 150, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_Separator, (99, 99, 99, 158))
+                self.__set_theme_color(dpg.mvThemeCol_SeparatorHovered, (36, 112, 204, 199))
+                self.__set_theme_color(dpg.mvThemeCol_SeparatorActive, (36, 112, 204, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGrip, (89, 89, 89, 43))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGripHovered, (66, 150, 250, 171))
+                self.__set_theme_color(dpg.mvThemeCol_ResizeGripActive, (66, 150, 250, 242))
+                self.__set_theme_color(dpg.mvThemeCol_Tab, (194, 204, 214, 237))
+                self.__set_theme_color(dpg.mvThemeCol_TabHovered, (66, 150, 250, 204))
+                self.__set_theme_color(dpg.mvThemeCol_TabActive, (153, 186, 224, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TabUnfocused, (235, 237, 240, 252))
+                self.__set_theme_color(dpg.mvThemeCol_TabUnfocusedActive, (189, 209, 232, 255))
+                self.__set_theme_color(dpg.mvThemeCol_DockingPreview, (66, 150, 250, 56))
+                self.__set_theme_color(dpg.mvThemeCol_DockingEmptyBg, (51, 51, 51, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotLines, (99, 99, 99, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotLinesHovered, (255, 110, 89, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotHistogram, (230, 179, 0, 255))
+                self.__set_theme_color(dpg.mvThemeCol_PlotHistogramHovered, (255, 114, 0, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableHeaderBg, (199, 222, 250, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableBorderStrong, (145, 145, 163, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableBorderLight, (173, 173, 189, 255))
+                self.__set_theme_color(dpg.mvThemeCol_TableRowBg, (0, 0, 0, 0))
+                self.__set_theme_color(dpg.mvThemeCol_TableRowBgAlt, (77, 77, 77, 23))
+                self.__set_theme_color(dpg.mvThemeCol_TextSelectedBg, (66, 150, 250, 89))
+                self.__set_theme_color(dpg.mvThemeCol_DragDropTarget, (66, 150, 250, 242))
+                self.__set_theme_color(dpg.mvThemeCol_NavHighlight, (66, 150, 250, 204))
+                self.__set_theme_color(dpg.mvThemeCol_NavWindowingHighlight, (179, 179, 179, 179))
+                self.__set_theme_color(dpg.mvThemeCol_NavWindowingDimBg, (51, 51, 51, 51))
+                self.__set_theme_color(dpg.mvThemeCol_ModalWindowDimBg, (51, 51, 51, 89))
+
+            with dpg.theme_component(dpg.mvImageButton, enabled_state=False):
+                self.__set_theme_color(dpg.mvThemeCol_Button, (220, 220, 220, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (220, 220, 220, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (220, 220, 220, 255))
+
+            with dpg.theme_component(dpg.mvButton, enabled_state=False):
+                self.__set_theme_color(dpg.mvThemeCol_Button, (220, 220, 220, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonHovered, (220, 220, 220, 255))
+                self.__set_theme_color(dpg.mvThemeCol_ButtonActive, (220, 220, 220, 255))
+        return int(theme_id)

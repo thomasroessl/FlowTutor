@@ -5,7 +5,6 @@ import dearpygui.dearpygui as dpg
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.node import Node
-from flowtutor.gui.themes import theme_colors
 
 if TYPE_CHECKING:
     from flowtutor.flowchart.flowchart import Flowchart
@@ -21,7 +20,9 @@ class Template(Node):
     '''
 
     @inject
-    def __init__(self, data: Any, language_service: LanguageService = Provide['language_service']) -> None:
+    def __init__(self,
+                 data: Any,
+                 language_service: LanguageService = Provide['language_service']) -> None:
         super().__init__()
         self.language_service = language_service
         self._data = data
@@ -51,14 +52,14 @@ class Template(Node):
 
     def __getstate__(self) -> dict[str, Any]:
         state = self.__dict__.copy()
-        # Delete the language_service reference for pickling
+        # Delete the service references for pickling
         del state['language_service']
         return state
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         self.__dict__.update(state)
         tmp = Template(self.data)
-        # Add back the language_service reference for unpickling
+        # Add back the service references for unpickling
         self.language_service = tmp.language_service
 
     @property
@@ -125,8 +126,9 @@ class Template(Node):
 
     def draw(self,
              flowchart: Flowchart,
+             text_color: tuple[int, int, int, int],
              is_selected: bool = False) -> None:  # pragma: no cover
-        super().draw(flowchart, is_selected)
+        super().draw(flowchart, text_color, is_selected)
         pos_x, pos_y = self.pos
         tag = self.tag+'$'
         if dpg.does_item_exist(tag):
@@ -134,7 +136,6 @@ class Template(Node):
         with dpg.draw_node(
                 tag=tag,
                 parent=self.tag):
-            text_color = theme_colors[(dpg.mvThemeCol_Text, 0)]
 
             # Draws additional elements, bside the general shape.
             if self.control_flow == 'post-loop':

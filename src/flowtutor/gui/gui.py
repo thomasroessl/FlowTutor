@@ -23,7 +23,6 @@ from flowtutor.gui.window_types import WindowTypes
 from flowtutor.codegenerator import CodeGenerator
 from flowtutor.gui.debugger import Debugger
 from flowtutor.gui.sidebar_functionstart import SidebarFunctionStart
-from flowtutor.gui.themes import create_theme_dark, create_theme_light
 
 
 if TYPE_CHECKING:
@@ -206,9 +205,9 @@ class GUI:
 
         # Load used theme from the last time FlowTutor was executed.
         if self.settings_service.get_setting('theme', 'light') == 'light':
-            dpg.bind_theme(create_theme_light())
+            dpg.bind_theme(self.utils_service.get_theme_light())
         else:
-            dpg.bind_theme(create_theme_dark())
+            dpg.bind_theme(self.utils_service.get_theme_dark())
 
         dpg.setup_dearpygui()
         dpg.show_viewport()
@@ -421,7 +420,8 @@ class GUI:
             node.is_hovered = node.shape.contains(Point(*self.mouse_position_on_canvas))
             node.needs_refresh = is_hovered_before != node.is_hovered
             if node.needs_refresh:
-                node.redraw(self.selected_flowchart, self.selected_nodes)
+                node.redraw(self.selected_flowchart, self.selected_nodes,
+                            self.utils_service.theme_colors[dpg.mvThemeCol_Text])
         self.redraw_all()
 
     def on_drag(self) -> None:
@@ -590,7 +590,8 @@ class GUI:
 
         for node in [n for n in self.selected_flowchart if force or n.needs_refresh]:
             node.needs_refresh = False
-            node.redraw(self.selected_flowchart, self.selected_nodes)
+            node.redraw(self.selected_flowchart, self.selected_nodes,
+                        self.utils_service.theme_colors[dpg.mvThemeCol_Text])
 
         self.redraw_add_button()
         if self.selected_flowchart.is_initialized():

@@ -5,13 +5,13 @@ from pickle import dump
 from dependency_injector.wiring import Provide, inject
 
 from flowtutor.flowchart.flowchart import Flowchart
-from flowtutor.gui.themes import create_theme_dark, create_theme_light
 
 if TYPE_CHECKING:
     from flowtutor.gui.gui import GUI
     from flowtutor.language_service import LanguageService
     from flowtutor.settings_service import SettingsService
     from flowtutor.modal_service import ModalService
+    from flowtutor.util_service import UtilService
 
 
 class MenubarMain:
@@ -22,11 +22,13 @@ class MenubarMain:
                  gui: GUI,
                  settings_service: SettingsService = Provide['settings_service'],
                  language_service: LanguageService = Provide['language_service'],
-                 modal_service: ModalService = Provide['modal_service']) -> None:
+                 modal_service: ModalService = Provide['modal_service'],
+                 utils_service: UtilService = Provide['utils_service']) -> None:
         self.gui = gui
         self.settings_service = settings_service
         self.language_service = language_service
         self.modal_service = modal_service
+        self.utils_service = utils_service
         with dpg.viewport_menu_bar(tag='menu_bar'):
             with dpg.menu(label='File'):
                 dpg.add_menu_item(label='New Program', callback=self.on_new)
@@ -80,13 +82,13 @@ class MenubarMain:
 
     def on_light_theme_menu_item_click(self) -> None:
         '''Handles pressing of the 'Light theme' menu item.'''
-        dpg.bind_theme(create_theme_light())
+        dpg.bind_theme(self.utils_service.get_theme_light())
         self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'light')
 
     def on_dark_theme_menu_item_click(self) -> None:
         '''Handles pressing of the 'Dark theme' menu item.'''
-        dpg.bind_theme(create_theme_dark())
+        dpg.bind_theme(self.utils_service.get_theme_dark())
         self.gui.redraw_all(True)
         self.gui.settings_service.set_setting('theme', 'dark')
 
