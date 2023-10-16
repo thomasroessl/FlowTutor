@@ -51,8 +51,8 @@ class FunctionEnd(Node):
 
     @property
     def label(self) -> str:
-        return f'return {self.return_value};'
+        return f'return {self.return_value}'
 
     @property
     def is_initialized(self) -> bool:
-        return self.is_comment or len(self.return_value) > 0
+        return True

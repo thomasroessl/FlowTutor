@@ -1,4 +1,5 @@
 def {{FUN_NAME}}({% for p in PARAMETERS %}{{p.name}}{{ ", " if not loop.last else "" }}{% endfor %}):
 {% if BODY %}  {{BODY | indent(2)}}
-{% else %}  pass
+{% elif not RETURN_VALUE %}  pass
+{% else %} return {{RETURN_VALUE}}
 {% endif %}
