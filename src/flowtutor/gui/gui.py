@@ -381,7 +381,7 @@ class GUI:
 
         dpg.hide_item('function_management_group')
 
-        # SHows the correct sidebars.
+        # Shows the correct sidebars.
         if len(self.selected_nodes) > 1:
             self.section_node_extras.hide()
             self.sidebar_multi.show(node)
@@ -449,7 +449,7 @@ class GUI:
             nodes_in_selection = self.selected_flowchart.find_nodes_in_selection(
                 self.drag_origin,
                 self.mouse_position_on_canvas)
-            self.clear_selected_nodes()
+
             if nodes_in_selection:
                 # Selectes nodes inside fence.
                 for selected_node in nodes_in_selection:
