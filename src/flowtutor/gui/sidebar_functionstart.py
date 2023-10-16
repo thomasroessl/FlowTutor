@@ -35,7 +35,7 @@ class SidebarFunctionStart(Sidebar):
                                borders_innerH=True, borders_outerH=True, borders_innerV=True,
                                borders_outerV=True) as self.table:
 
-                    dpg.add_table_column(label='Name')
+                    self.name_column = dpg.add_table_column(label='Name')
                     self.type_column = dpg.add_table_column(label='Type')
                     dpg.add_table_column(label='', width_fixed=True, width=12)
 
@@ -93,11 +93,13 @@ class SidebarFunctionStart(Sidebar):
         for child in dpg.get_item_children(self.table)[1]:
             dpg.delete_item(child)
 
+        # The types column gets removed, if the language has no types.
+        # It gets readded, if it had been removed before and the language has types.
         has_types = self.language_service.has_types(self.gui.selected_flowchart)
-        if has_types:
-            dpg.show_item(self.type_column)
-        else:
-            dpg.hide_item(self.type_column)
+        if has_types and not dpg.does_item_exist(self.type_column):
+            self.type_column = dpg.add_table_column(label='Type', parent=self.table, before=self.name_column)
+        elif dpg.does_item_exist(self.type_column):
+            dpg.delete_item(self.type_column)
 
         for i, entry in enumerate(entries):
             with dpg.table_row(parent=self.table):
@@ -115,8 +117,6 @@ class SidebarFunctionStart(Sidebar):
                                                             .__setattr__('type', data),
                                                             self.gui.redraw_all(True)),
                                   width=-1, default_value=entry.type)
-                else:
-                    dpg.add_text('')
 
                 delete_button = dpg.add_image_button('trash_image', user_data=i, callback=lambda s: (
                     self.parameters().pop(dpg.get_item_user_data(s)),
