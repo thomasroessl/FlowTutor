@@ -363,7 +363,7 @@ class Node(ABC):
             text_color (tuple[int, int, int, int]): The color of the drawn text.
         '''
         self.delete()
-        self.draw(flowchart, self in selected_nodes)
+        self.draw(flowchart, text_color, self in selected_nodes)
 
     def delete(self) -> None:  # pragma: no cover
         '''Deletes the drawn instance of the node from the drawing area.'''

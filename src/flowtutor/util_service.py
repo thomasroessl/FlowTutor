@@ -37,7 +37,7 @@ class UtilService:
         '''True if the OS is Windows.'''
         self.is_mac_os = system() == 'Darwin'
         '''True if the OS is MacOS.'''
-        self.theme_colors: dict[tuple[int, int], tuple[int, int, int, int]] = {}
+        self.theme_colors: dict[int, tuple[int, int, int, int]] = {}
         '''The colors of the current theme.'''
         self._theme_light: Optional[int] = None
         self._theme_dark: Optional[int] = None
