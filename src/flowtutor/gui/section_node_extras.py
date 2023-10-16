@@ -24,13 +24,23 @@ class SectionNodeExtras:
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('comment', data),
                                               self.gui.selected_node.__setattr__('needs_refresh', True),
                                               self.gui.redraw_all()))
-            with dpg.group():
+
+            dpg.add_spacer(height=3)
+            dpg.add_separator()
+            dpg.add_spacer(height=3)
+
+            with dpg.group(horizontal=True):
                 dpg.add_text('Break Point')
                 self.node_break_point = dpg.add_checkbox(
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('break_point', data),
                                               self.gui.selected_node.__setattr__('needs_refresh', True),
                                               self.gui.redraw_all()))
-            with dpg.group() as self.node_is_comment_group:
+
+            dpg.add_spacer(height=3)
+            dpg.add_separator()
+            dpg.add_spacer(height=3)
+
+            with dpg.group(horizontal=True) as self.node_is_comment_group:
                 dpg.add_text('Disabled')
                 self.node_is_comment = dpg.add_checkbox(
                     callback=lambda _, data: (self.gui.selected_node.__setattr__('is_comment', data),

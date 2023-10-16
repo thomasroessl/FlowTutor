@@ -31,14 +31,14 @@ class SidebarTemplate(Sidebar):
             return
         self.gui.set_sidebar_title(node.data['label'])
         dpg.show_item(self.main_group)
-        label_inputs = []
         with dpg.group(parent=self.main_group):
             for parameter in node.parameters:
                 if 'visible' in parameter and not eval(f"{parameter['visible']}", node.values):
                     continue
                 var_type = parameter['type'] if 'type' in parameter else 'text'
-                with dpg.group(horizontal=True) as input_group:
-                    if var_type == 'checkbox':
+
+                if var_type == 'checkbox':
+                    with dpg.group(horizontal=True):
                         dpg.add_checkbox(label=parameter['label'],
                                          default_value=node.values.__getitem__(parameter['name']) or False,
                                          user_data=parameter,
@@ -47,9 +47,9 @@ class SidebarTemplate(Sidebar):
                                           self.gui.redraw_all(True),
                                           self.hide(),
                                           self.show(node)))
-                    elif var_type == 'textarea':
-                        label = dpg.add_text(parameter['label'])
-                        dpg.configure_item(input_group, horizontal=False)
+                elif var_type == 'textarea':
+                    with dpg.group():
+                        dpg.add_text(parameter['label'])
                         dpg.add_input_text(width=-1,
                                            height=-200,
                                            multiline=True,
@@ -58,9 +58,9 @@ class SidebarTemplate(Sidebar):
                                            callback=lambda s, data:
                                            (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
                                             self.gui.redraw_all(True)))
-                    else:
-                        label = dpg.add_text(parameter['label'])
-                        label_inputs.append((label, input_group))
+                else:  # var_type == 'text'
+                    with dpg.group():
+                        dpg.add_text(parameter['label'])
                         if 'options' in parameter:
                             options = parameter['options']
                             if options == '{{TYPES}}':
@@ -80,6 +80,3 @@ class SidebarTemplate(Sidebar):
                                                (node.values.__setitem__(dpg.get_item_user_data(s)['name'], data),
                                                 self.gui.redraw_all(True)))
         dpg.split_frame()
-        for label, input_group in label_inputs:
-            if dpg.get_item_rect_size(label)[0] > dpg.get_item_rect_size(input_group)[0] / 2:
-                dpg.configure_item(input_group, horizontal=False)
