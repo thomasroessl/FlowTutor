@@ -1,12 +1,22 @@
 [project]
 name = "FlowTutor"
 description = "A graphical programming environment using flowcharts."
-version = "0.10.7"
+version = "0.10.8"
 readme = "README.md"
 authors = [
   {name = "Thomas Rößl", email = "e11775192@student.tuwien.ac.at"}
 ]
 requires-python = ">=3.9"
+dependencies = [
+    "appdirs>=1.4",
+    "blinker>=1.6",
+    "dearpygui>=1.10",
+    "Shapely>=2.0",
+    "dependency-injector>=4.41",
+    "pygdbmi>=0.11",
+    "urllib3>=1.26",
+    "Jinja2>=3.1"
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
@@ -21,13 +31,42 @@ classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"
 ]
 
+[project.optional-dependencies]
+testing = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "mypy>=1.6",
+    "flake8>=6.1",
+    "tox>=4.11"
+]
+deployment = [
+    "pynsist>=2.8",
+    "twine>=4.0",
+    "build>=1.0"
+]
+
 [project.urls]
-documentation = "https://github.com/thomasroessl/FlowTutor/wiki"
-source = "https://github.com/thomasroessl/FlowTutor"
-changelog = "https://github.com/thomasroessl/FlowTutor/releases"
+Documentation = "https://github.com/thomasroessl/FlowTutor/wiki"
+Source = "https://github.com/thomasroessl/FlowTutor"
+Changelog = "https://github.com/thomasroessl/FlowTutor/releases"
+
+[project.scripts]
+flowtutor = "flowtutor.main:main"
+
+[project.gui-scripts]
+flowtutor = "flowtutor.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+flowtutor = ["py.typed"]
 
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=68.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.mypy]
