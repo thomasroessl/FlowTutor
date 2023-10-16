@@ -223,12 +223,12 @@ class ModalService:
                              min_size=[500, 300],
                              directory_selector=False,
                              callback=lambda _, data: callback(gui, data['file_path_name'])):
-            dpg.add_file_extension('.flowtutor')
+            dpg.add_file_extension('.flowtutor', color=self.utils_service.theme_colors[dpg.mvThemeCol_Text])
 
     def show_open_dialog(self, gui: GUI) -> None:
         '''Shows a window for opening an existing project.'''
         if dpg.does_item_exist('open_dialog'):
-            dpg.show_item('open_dialog', color=self.utils_service.theme_colors[dpg.mvThemeCol_Text])
+            dpg.show_item('open_dialog')
             return
         with dpg.file_dialog(tag='open_dialog',
                              min_size=[500, 300],
