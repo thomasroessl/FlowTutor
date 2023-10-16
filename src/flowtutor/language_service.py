@@ -153,13 +153,15 @@ class LanguageService:
             path = Path(template.data['file_name'])
             filename_without_ext = path.stem.split('.')[0]
             try:
-                unassigned_lines = loop_body.copy()
+                unassigned_lines: list[tuple[str, Node | None]] = []
+                unassigned_lines.extend(loop_body)
+                unassigned_lines.extend(if_branch)
+                unassigned_lines.extend(else_branch)
                 unassigned_lines.reverse()
                 assigned_nodes: set[Node] = set()
                 rendered.extend(
                     [(l1, self.assign_node(l1, unassigned_lines, template, assigned_nodes))
                      for l1 in self.render_jinja_lines(filename_without_ext, template.values)])
-
             except TemplateNotFound:
                 return [('', None)]
         if template.is_comment:
