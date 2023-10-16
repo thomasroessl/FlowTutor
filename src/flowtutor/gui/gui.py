@@ -635,15 +635,18 @@ class GUI:
     def resize(self) -> None:
         '''Sets the size of the drawing area.'''
         width, height = self.parent_size
-        width += 14
+        width_offset = 0
         for node in self.selected_flowchart:
             (_, _, max_x, max_y) = node.bounds
             if max_x > width:
                 width = max_x
             if max_y > height:
                 height = max_y + 100
+                # If the drawing area needs a vertical scroll bar, then accomodate this by subtracting the width of the
+                # scroll bar, from the drawing are width
+                width_offset = 14
         dpg.set_item_height(FLOWCHART_TAG, height)
-        dpg.set_item_width(FLOWCHART_TAG, width)
+        dpg.set_item_width(FLOWCHART_TAG, width - width_offset)
 
     def get_point_on_canvas(self, point_on_screen: tuple[int, int]) -> tuple[int, int]:
         '''Maps the point in screen coordinates to canvas coordinates.
