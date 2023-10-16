@@ -38,7 +38,7 @@ class ModalService:
         - Working directory
         '''
         with dpg.window(
-                label="FlowTutor",
+                label='FlowTutor',
                 modal=True,
                 tag='paths_window',
                 width=600,
@@ -127,7 +127,7 @@ class ModalService:
                 pos=(client_with / 2 - 250, 30)):
             with dpg.theme() as lang_button_theme:
                 with dpg.theme_component(dpg.mvImageButton):
-                    dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255), category=dpg.mvThemeCat_Core)
+                    dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 255, 0), category=dpg.mvThemeCat_Core)
 
             with dpg.table(policy=dpg.mvTable_SizingFixedFit,
                            header_row=True,
@@ -135,8 +135,8 @@ class ModalService:
                            borders_innerV=True,
                            borders_innerH=True,
                            borders_outerV=True):
-                dpg.add_table_column(label="New", width_fixed=True, no_sort=True)
-                dpg.add_table_column(label="Open", width_stretch=True, no_sort=True)
+                dpg.add_table_column(label='New', width_fixed=True, no_sort=True)
+                dpg.add_table_column(label='Open', width_stretch=True, no_sort=True)
                 with dpg.table_row():
                     with dpg.table_cell():
                         dpg.add_spacer(height=1)
@@ -223,12 +223,12 @@ class ModalService:
                              min_size=[500, 300],
                              directory_selector=False,
                              callback=lambda _, data: callback(gui, data['file_path_name'])):
-            dpg.add_file_extension(".flowtutor")
+            dpg.add_file_extension('.flowtutor')
 
     def show_open_dialog(self, gui: GUI) -> None:
         '''Shows a window for opening an existing project.'''
         if dpg.does_item_exist('open_dialog'):
-            dpg.show_item('open_dialog')
+            dpg.show_item('open_dialog', color=self.utils_service.theme_colors[dpg.mvThemeCol_Text])
             return
         with dpg.file_dialog(tag='open_dialog',
                              min_size=[500, 300],
@@ -236,7 +236,7 @@ class ModalService:
                              cancel_callback=lambda: self.show_welcome_modal(
                                  gui) if not self.language_service.is_initialized else None,
                              callback=lambda _, data: self.open_callback(gui, data['file_path_name'])):
-            dpg.add_file_extension(".flowtutor")
+            dpg.add_file_extension('.flowtutor', color=self.utils_service.theme_colors[dpg.mvThemeCol_Text])
 
     def show_input_text_modal(self,
                               label: str,
