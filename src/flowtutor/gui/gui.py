@@ -1,7 +1,7 @@
 from __future__ import annotations
+from importlib.resources import files
 from re import search
 from typing import TYPE_CHECKING, Any, Optional, Type, Union, cast
-from os.path import join, dirname
 from shapely.geometry import Point
 from blinker import signal
 from dependency_injector.wiring import Provide, inject
@@ -125,9 +125,11 @@ class GUI:
 
         dpg.create_context()
 
+        assets_path = files('flowtutor.gui.assets')
+
         # Load image assets.
         for image in ['c', 'python', 'run', 'stop', 'step_into', 'step_over', 'hammer', 'trash', 'pencil']:
-            image_path = join(dirname(__file__), f'assets/{image}.png')
+            image_path = str(assets_path.joinpath(f'{image}.png'))
             image_width, image_height, _, image_data = dpg.load_image(image_path)
             with dpg.texture_registry():
                 dpg.add_static_texture(width=image_width, height=image_height,
@@ -135,9 +137,8 @@ class GUI:
 
         # Load typeface assets.
         with dpg.font_registry():
-            default_font = dpg.add_font(join(dirname(__file__), 'assets/inconsolata.ttf'), 18)
-            dpg.add_font(join(dirname(__file__),
-                         'assets/inconsolata.ttf'), 22, tag='header_font')
+            default_font = dpg.add_font(str(assets_path.joinpath('inconsolata.ttf')), 18)
+            dpg.add_font(str(assets_path.joinpath('inconsolata.ttf')), 22, tag='header_font')
         dpg.bind_font(default_font)
 
         # Register keyboard handlers, for shortcuts

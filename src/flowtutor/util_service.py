@@ -1,4 +1,5 @@
 from pathlib import Path
+from importlib.resources import files
 from platform import system
 from select import select
 from sys import modules, stdin
@@ -41,6 +42,7 @@ class UtilService:
         '''The colors of the current theme.'''
         self._theme_light: Optional[int] = None
         self._theme_dark: Optional[int] = None
+        self.templates_path = files('flowtutor.templates')
 
     def cleanup_temp(self) -> None:
         '''Deletes the temporary working directories.'''
@@ -119,11 +121,7 @@ class UtilService:
         Parameters:
             lang_id (str): The identifier of the selected language.
         '''
-        if (modules['__main__'].__file__ or '').endswith('.pyw'):
-            result = path.join(self.root, 'templates', lang_id)
-        else:
-            result = path.abspath(path.join(self.root, '..', '..', 'templates', lang_id))
-        return result
+        return str(self.templates_path.joinpath(lang_id))
 
     def open_tty(self) -> None:
         '''Opens a pseudoterminal for communication with gdb.'''

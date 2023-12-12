@@ -1,1 +1,2 @@
 include src/flowtutor/gui/assets/*
+recursive-include src/flowtutor/templates *.json *.json
