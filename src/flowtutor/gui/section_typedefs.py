@@ -44,7 +44,7 @@ class SectionTypedefs:
                 dpg.add_text('Definition')
                 dpg.add_input_text(indent=100,
                                    width=-1,
-                                   default_value=d.name,
+                                   default_value=d.definition,
                                    user_data=i,
                                    callback=lambda s, data: (
                                        self.type_definitions()[dpg.get_item_user_data(
