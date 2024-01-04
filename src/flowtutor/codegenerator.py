@@ -110,7 +110,7 @@ class CodeGenerator:
         nodes: list[Optional[Node]] = []
         code_lines: list[str] = []
         if source:
-            code_lines, nodes = map(list, zip(*source))  # type: ignore
+            code_lines, nodes = map(list, zip(*source))
 
         # All nodes get their line indices reset.
         for flowchart in all_flowcharts:

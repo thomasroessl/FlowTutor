@@ -195,7 +195,10 @@ class Flowchart:
                              and n.scope and n.scope[-1] == node.tag, self), None)
             if connector:
                 connection = connector.find_connection(0)
-                return None if not connection else connection.dst_node
+                if connection:
+                    return connection.dst_node if connection.dst_node.tag not in node.scope else None
+                else:
+                    return None
             else:
                 return None
         else:

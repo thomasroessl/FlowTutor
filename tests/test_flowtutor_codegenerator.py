@@ -358,6 +358,31 @@ class TestCodeGenerator:
         print(expected)
         assert code == expected, 'While-Loop.'
 
+    def test_code_from_conditional_in_whileloop(
+            self, flowchart: Flowchart, code_generator: CodeGenerator, nodes: dict[str, Any]):
+        loop = Template(nodes['While loop'])
+        loop.values['CONDITION'] = 'x > 5'
+        flowchart.add_node(flowchart.root, loop)
+
+        conditional = Template(nodes['Conditional'])
+        conditional.values['CONDITION'] = 'x == 3'
+        flowchart.add_node(loop, conditional, 1)
+
+        code, _ = code_generator.generate_code([flowchart])
+        expected = '\n'.join([
+            '#include <stdio.h>',
+            '',
+            'int main() {',
+            '  while(x > 5) {',
+            '    if(x == 3) {',
+            '    }',
+            '  }',
+            '  return 0;',
+            '}'])
+        print(code)
+        print(expected)
+        assert code == expected, 'Conditional inside While-Loop.'
+
     def test_code_from_do_while_loop(self, flowchart: Flowchart, code_generator: CodeGenerator, nodes: dict[str, Any]):
         loop = Template(nodes['Do-While loop'])
         loop.values['CONDITION'] = 'x > 5'
