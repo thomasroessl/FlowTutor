@@ -1,6 +1,6 @@
 import dbm
 from os.path import join
-from appdirs import user_config_dir
+from platformdirs import user_config_dir
 from pathlib import Path
 
 

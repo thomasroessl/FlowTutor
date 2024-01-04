@@ -1,7 +1,7 @@
-blinker==1.6.3
+blinker==1.7.0
 dearpygui==1.10.1
 Shapely==2.0.2
-appdirs==1.4.4
+platformdirs==3.11.0
 dependency-injector==4.41.0
 pygdbmi==0.11.0.0
 urllib3==1.26.5
