@@ -12,4 +12,6 @@ omit =
     */flowtutor/main.py 
     */flowtutor/gui/*
     */flowtutor/modal_service.py
+    */flowtutor/util_service.py
+    */flowtutor/settings_service.py
     */flowtutor/debugger/*
