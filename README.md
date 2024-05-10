@@ -18,7 +18,7 @@
 
 The following programs have to be available on the system for FlowTutor to be able to run:
 
-- [Python] 3.9, 3.10, 3.11
+- [Python] 3.9, 3.10, 3.11, 3.12
 - For C programs only:
     - [GCC] - C-Compiler
     - [GDB] - Debugger
