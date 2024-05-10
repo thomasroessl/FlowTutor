@@ -1,8 +1,8 @@
-blinker==1.7.0
-dearpygui==1.10.1
-Shapely==2.0.2
-platformdirs==3.11.0
-dependency-injector==4.41.0
+blinker==1.8.2
+dearpygui==1.11.1
+Shapely==2.0.4
+platformdirs==4.2.1
+dependency-injector-fork==4.42.1
 pygdbmi==0.11.0.0
-urllib3==1.26.5
-Jinja2==3.1.2
+urllib3==2.2.1
+Jinja2==3.1.4

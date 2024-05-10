@@ -1,20 +1,20 @@
 [project]
 name = "FlowTutor"
 description = "A graphical programming environment using flowcharts."
-version = "0.10.12"
+version = "0.10.13"
 readme = "README.md"
 authors = [
   {name = "Thomas Rößl", email = "e11775192@student.tuwien.ac.at"}
 ]
-requires-python = ">=3.9, <3.12"
+requires-python = ">=3.9, <=3.12"
 dependencies = [
-    "platformdirs>=3.11",
-    "blinker>=1.7",
-    "dearpygui>=1.10",
+    "platformdirs>=4.2",
+    "blinker>=1.8",
+    "dearpygui>=1.11",
     "Shapely>=2.0",
-    "dependency-injector>=4.41",
+    "dependency-injector-fork>=4.42",
     "pygdbmi>=0.11",
-    "urllib3>=1.26",
+    "urllib3>=2.2",
     "Jinja2>=3.1"
 ]
 classifiers = [
@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
     "Topic :: Education",
     "Topic :: Software Development",
@@ -66,7 +67,7 @@ where = ["src"]
 flowtutor = ["py.typed"]
 
 [build-system]
-requires = ["setuptools>=69.0.3", "wheel"]
+requires = ["setuptools>=69.5.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.mypy]
