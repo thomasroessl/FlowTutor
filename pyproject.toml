@@ -34,16 +34,16 @@ classifiers = [
 
 [project.optional-dependencies]
 testing = [
-    "pytest>=7.4",
-    "pytest-cov>=4.1",
-    "mypy>=1.8",
-    "flake8>=6.1",
-    "tox>=4.11"
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "mypy>=1.10",
+    "flake8>=7.0",
+    "tox>=4.15"
 ]
 deployment = [
     "pynsist>=2.8",
-    "twine>=4.0",
-    "build>=1.0"
+    "twine>=5.0",
+    "build>=1.2"
 ]
 
 [project.urls]
